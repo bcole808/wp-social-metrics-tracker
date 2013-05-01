@@ -1,0 +1,51 @@
+/* Admin CSS */
+
+.wp-list-table #views,  
+.wp-list-table #comments { width:15%; }
+
+.wp-list-table #social { width:250px; }
+
+/* Align thead lables */
+
+.wp-list-table #views a, 
+.wp-list-table #social a, 
+.wp-list-table #comments a { width:90%; }
+
+.wp-list-table #views a span, 
+.wp-list-table #social a span, 
+.wp-list-table #comments a span { float:right; }
+
+
+.wp-list-table #views .sorting-indicator, 
+.wp-list-table #social .sorting-indicator, 
+.wp-list-table #comments .sorting-indicator { margin:7px; }
+
+.wp-list-table td.date { color:#666; font-size:10px; }
+
+.wp-list-table td.views,
+.wp-list-table td.social,
+.wp-list-table td.comments { text-align: right; padding:10px; }
+
+.wp-list-table .bar,
+.wp-list-table .total { display: inline-block; float:right; border-radius:2px; }
+
+.wp-list-table .bar { margin-left:5px; height:20px; overflow: visible; }
+.wp-list-table .bar span { overflow: hidden; height:20px; float: left; text-align: center; text-indent: -9999px; font-size:9px; line-height:21px; font-weight:300; }
+
+.wp-list-table td.social .bar { overflow: hidden; }
+
+.wp-list-table td.social .bar .facebook { display: inline-block; background-color:#3B5998; color:#CCCCCC; }
+.wp-list-table td.social .bar .twitter { display: inline-block; background-color:#9AE4E8; color:#EEEEEE; }
+.wp-list-table td.social .bar .other { display: inline-block; background-color:#666; color:#CCCCCC; }
+
+.wp-list-table tr:hover td.social .bar.stats span { text-indent: 0;}
+
+.wp-list-table td.social .bar { max-width:190px; min-width:5px; }
+.wp-list-table td.views .bar { max-width:80%; min-width:18px; background-color:#a9243b; color:#EEEEEE; }
+.wp-list-table td.comments .bar { max-width:80%; min-width:18px; background-color:#02bac1; color:#EEEEEE; }
+
+.wp-list-table td .total { height:16px; overflow: hidden; }
+
+.wp-list-table td.social .total { padding:2px 5px; }
+.wp-list-table td.views .total { padding:2px 5px; background-color:#a9243b; }
+.wp-list-table td.comments .total { padding:2px 5px; background-color:#02bac1; }
