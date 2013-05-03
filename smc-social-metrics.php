@@ -27,12 +27,6 @@ function smc_get_views($post_id = 0) {
 
 function smc_do_update($post_id) {
 
-	// debug
-	// update_post_meta($post_id, "socialcount_TOTAL", 2);
-	// update_post_meta($post_id, "ga_pageviews", 2);
-	// $permalink = 'http://blogs.chapman.edu/students/2013/04/24/summer-job-web-design-and-development-assistant/';
-	// return true;
-
 	$permalink = get_permalink($post_id);
 
 	// Method A (3rd party service)
@@ -49,11 +43,26 @@ function smc_do_update($post_id) {
 	
 
 	// Get Google Analytics views
-	require ('smc-ga-query.php');
-	$ga_pageviews = smc_ga_getPageviewsByURL($permalink);
-	if ($ga_pageviews > 0) {
-		update_post_meta($post_id, "ga_pageviews", $ga_pageviews);
-	}
+	
+	// $token = array(
+	// 	"access_token" => "ya29.AHES6ZTi8ngwM7YwAJau89M53eGb8gZ77wonXSivG4b2vOannO5Ayg",
+	// 	"token_type"=>"Bearer",
+	// 	"expires_in"=>3600,
+	// 	"refresh_token"=>"1\/pJz7wwbyUt4H4DZP6HWDDgT4inzyAD54Yuw9oviX-MU",
+	// 	"created"=>1367598856
+	// );
+
+	// update_site_option('smc_ga_token', serialize(json_encode($token)));
+	
+	$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
+
+	if (strlen($smc_ga_token) > 1) {
+		require_once ('smc-ga-query.php');
+		$ga_pageviews = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
+		if ($ga_pageviews > 0) {
+			update_post_meta($post_id, "ga_pageviews", $ga_pageviews);
+		}
+	} 
 
 	update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
 
@@ -125,39 +134,78 @@ function smc_get_socialcount($post_id = 0, $update = true) {
 if ( is_admin() ){
 	
 	function smc_setup_menus () {
-		add_menu_page( 'Commmunity Impact Dashboard', 'Social Insight', 'activate_plugins', 'smc_social_impact_browse', 'smc_social_impact_browse_output', '',100 );
+		$icon = get_option('siteurl') . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/img/smc-social-metrics-icon.png';
+		add_menu_page( 'Social Insight Dashboard', 'Social Insight', 'publish_posts', 'smc-social-insight', 'smc_social_insight_dashboard', '',100 );
+		add_options_page( 'Social Insight Settings', 'Social Insight', 'manage_options', 'smc-social-insight-settings', 'smc_social_insight_settings' );
 	}
 
 	add_action('admin_menu', 'smc_setup_menus');
 
+
+	add_action('admin_head', 'admin_register_head');
 	function admin_register_head() {
 	    $siteurl = get_option('siteurl');
 	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css';
 	    echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
 	}
-	add_action('admin_head', 'admin_register_head');
-
-	function smc_social_impact_browse_output() {
-
+	
+	function smc_social_insight_dashboard() {
+		
 	 	require('smc-dashboard-view.php');
-
 	 	smc_render_dashboard_view();
-
 	}
+
+	function smc_social_insight_settings() {
+		require('smc-settings-view.php');
+		smc_render_settings_view();
+	}
+
+	/* settings link in plugin management screen */
+	function smc_social_insight_settings_link($actions, $file) {
+	if(false !== strpos($file, 'smc-social-metrics'))
+	 $actions['settings'] = '<a href="options-general.php?page=smc-social-insight-settings">Settings</a>';
+	return $actions; 
+	}
+	add_filter('plugin_action_links', 'smc_social_insight_settings_link', 2, 2);
+	
 
 	register_activation_hook( __FILE__, 'smc_schedule_full_update' );
 	function smc_schedule_full_update() {
+		wp_schedule_single_event( time(), 'smc_schedule_full_update_cron' );
+	}
+
+	add_action( 'smc_schedule_full_update_cron', 'smc_do_full_update', 10 );
+	function smc_do_full_update() {
 		$querydata = query_posts(array(
 		    'order'=>'desc',
 		    'orderby'=>'post_date',
 		    'posts_per_page'=>-1,
-		    'post_status'   => 'publish'
+		    'post_status'   => 'publish',
+		    'meta_query' => array(
+		       'relation' => 'OR',
+		        array(
+		         'key' => 'ga_pageviews',
+		         'compare' => 'NOT EXISTS', // works!
+		         'value' => '' // This is ignored, but is necessary...
+		        ),
+		        array(
+		         'key' => 'ga_pageviews',
+		         'compare' => '<=',
+		         'value' => '0'
+		        )
+		    )
 		)); 
 		$nextTime = time();
 		foreach ($querydata as $querydatum ) {
 			wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
 			$nextTime = $nextTime + 10;
 		}
+	}
+
+	register_deactivation_hook( __FILE__, 'smc_uninstall' );
+
+	function smc_uninstall() {
+		delete_site_option('smc_ga_token');
 	}
 
 } // end admin

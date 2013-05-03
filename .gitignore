@@ -2,3 +2,19 @@
 _notes/dwsync.xml
 
 lib/_notes/dwsync.xml
+
+lib/.DS_Store
+
+.DS_Store
+
+lib/google-api-php-client/service/_notes/dwsync.xml
+
+lib/google-api-php-client/io/_notes/dwsync.xml
+
+lib/google-api-php-client/contrib/_notes/dwsync.xml
+
+lib/google-api-php-client/cache/_notes/dwsync.xml
+
+lib/google-api-php-client/auth/_notes/dwsync.xml
+
+lib/google-api-php-client/_notes/dwsync.xml

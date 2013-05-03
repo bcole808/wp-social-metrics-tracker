@@ -112,7 +112,9 @@ class TT_Example_List_Table extends WP_List_Table {
             // case 'comments':
             //     return number_format($item['comment_count'],0,'.',',');
             case 'date':
-                return date("M j, Y",strtotime($item['post_date']));
+                $dateString = date("M j, Y",strtotime($item['post_date']));
+                if(current_user_can( 'activate_plugins' )) $dateString = $dateString . '<br>U: ' . date("n/j G:i:s",$item['socialcount_LAST_UPDATED']);  
+                return $dateString;
             default:
                 return 'Not Set';
                 //return print_r($item,true); //Show the whole array for troubleshooting purposes
@@ -387,7 +389,7 @@ class TT_Example_List_Table extends WP_List_Table {
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
         $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'views'; //If no sort, default
 
-        $limit = -1;
+        $limit = 30;
 
         if ($orderby == 'views') {
             $querydata = query_posts(array(
@@ -395,7 +397,8 @@ class TT_Example_List_Table extends WP_List_Table {
                 'orderby'=>'meta_value_num',
                 'meta_key'=>'ga_pageviews',
                 'posts_per_page'=>$limit,
-                'post_status'   => 'publish'
+                'post_status'   => 'publish',
+                'suppress_filters' => true
             )); 
         }
 
@@ -404,7 +407,8 @@ class TT_Example_List_Table extends WP_List_Table {
                 'order'=>$order,
                 'orderby'=>'comment_count',
                 'posts_per_page'=>$limit,
-                'post_status'   => 'publish'
+                'post_status'   => 'publish',
+                'suppress_filters' => true
             )); 
         }
 
@@ -414,7 +418,8 @@ class TT_Example_List_Table extends WP_List_Table {
                 'orderby'=>'meta_value_num',
                 'meta_key'=>'socialcount_TOTAL',
                 'posts_per_page'=>$limit,
-                'post_status'   => 'publish'
+                'post_status'   => 'publish',
+                'suppress_filters' => true
             )); 
         }
 
@@ -423,7 +428,8 @@ class TT_Example_List_Table extends WP_List_Table {
                 'order'=>$order,
                 'orderby'=>'post_date',
                 'posts_per_page'=>$limit,
-                'post_status'   => 'publish'
+                'post_status'   => 'publish',
+                'suppress_filters' => true
             )); 
         }
 
@@ -442,6 +448,7 @@ class TT_Example_List_Table extends WP_List_Table {
             $item['socialcount_total'] = smc_get_socialcount($querydatum->ID, false);
             $item['socialcount_twitter'] = get_post_meta($querydatum->ID, "socialcount_twitter", true);
             $item['socialcount_facebook'] = get_post_meta($querydatum->ID, "socialcount_facebook", true);
+			$item['socialcount_LAST_UPDATED'] = get_post_meta($querydatum->ID, "socialcount_LAST_UPDATED", true);
             $item['views'] = smc_get_views($querydatum->ID);
             $item['permalink'] = get_permalink($querydatum->ID);
 
@@ -568,10 +575,66 @@ function smc_render_dashboard_view(){
     <div class="wrap">
         
         <div id="icon-users" class="icon32"><br/></div>
-        <h2>Community Insight Dashboard</h2>
+        <h2>Social Insight Dashboard</h2>
         
+
+        <?php if(current_user_can( 'activate_plugins' ) && $_SERVER['REMOTE_ADDR'] == '206.211.141.101') { ?> 
+        <div style="background:#fdfce8;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
+            <h1>Admin Debug Data:</h1>
+            <?php
+            // Verify the API authorization
+            require_once ('smc-ga-query.php');
+            smc_gapi_loginout();
+
+
+            $url = add_query_arg('smc_schedule_full_update', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+            echo '<br><a href="'.$url.'">Schedule full update</a>';
+
+            if (isset($_GET['smc_schedule_full_update'])) {
+                smc_do_full_update();
+
+                $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+                header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+                return true;
+            }
+
+
+            // $querydata = query_posts(array(
+            //     'order'=>'desc',
+            //     'orderby'=>'post_date',
+            //     'posts_per_page'=>-1,
+            //     'post_status'   => 'publish',
+            //     'meta_query' => array(
+            //        'relation' => 'OR',
+            //         array(
+            //          'key' => 'ga_pageviews',
+            //          'compare' => 'NOT EXISTS', // works!
+            //          'value' => '' // This is ignored, but is necessary...
+            //         ),
+            //         array(
+            //          'key' => 'ga_pageviews',
+            //          'compare' => '<=',
+            //          'value' => '0'
+            //         )
+            //     )
+            // )); 
+
+            // foreach ($querydata as $querydatum ) {
+            //     echo( $id . ' - '. $querydatum->post_title . ' - '.$querydatum->ID ) ;
+            //     echo '<br>';
+            //     $id = $id + 1;
+            // }
+
+            // die();
+
+            ?>
+        </div>
+        <?php } // end if is admin ?>
+
         <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
-            <p>PLUGIN IN ALPHA TESTING via Ben Cole. </p> 
+            <h1>This tool is in beta testing. </h1> 
+            <h3><span style="color:red; font-weight:bold;">Data is still being imported; numbers may be inaccurate. </span></h3>
+            <p> Please email cole@chapman.edu if you find any bugs or issues with this tool.  </p>
         </div>
         
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
@@ -581,6 +644,17 @@ function smc_render_dashboard_view(){
             <!-- Now we can render the completed list table -->
             <?php $testListTable->display() ?>
         </form>
+
+        <h2>Frequently Asked Questions</h2>
+        
+        <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
+            <h3>What is Social Score?</h3>
+            <p>This is the number of people who shared, liked, or tweeted a post across various social networks. This number includes Facebook, Twitter, Google+, and LinkedIn. </p>
+            <h3>How are Views calculated?</h3>
+            <p>Data is gathered from Google Analytics. A view is counted when someone loads a post in their browser or on a mobile device.</p>
+            <h3>When is the data updated?</h3>
+            <p>Data is delayed by up to a few hours. When the used for the first time, this plugin will take some time to retrieve data for all of the posts. </p>
+        </div>
         
     </div>
     <?php
