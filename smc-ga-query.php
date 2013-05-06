@@ -41,9 +41,6 @@ function smc_gapi_loginout() {
 
 	$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
 
-	echo "Token Data:";
-	print_r($smc_ga_token);
-
 
 	// Token found, connect and test
 	if (strlen($smc_ga_token) > 1) {
@@ -62,10 +59,34 @@ function smc_gapi_loginout() {
 	} else {
 	// No token found, display login. 
 
-	    $authUrl = $client->createAuthUrl();
-	    echo "<a class='login' href='$authUrl'>Connect Me!</a>";
-
+		$authUrl = $client->createAuthUrl();
+		printf( '<div class="error"> <p> %s </p> </div>', "Social Insights is not receiving data from Google Analytics. Please <a class='login' href='$authUrl'>sign in to Google Analytics.</a> " );
 	}
+
+}
+
+function smc_queue_length() {
+
+	$queue = array();
+	$cron = _get_cron_array();
+	foreach ( $cron as $timestamp => $cronhooks ) {
+		foreach ( (array) $cronhooks as $hook => $events ) {
+			foreach ( (array) $events as $key => $event ) {
+				if ($hook == 'smc_update_single_post') {
+					array_push($queue, $cron[$timestamp][$hook][$key]['args'][0]);
+				}
+			}
+		}
+	}
+
+	$count = count($queue);
+	if ($count >= 1) {
+		$label = ($count >=2) ? ' items' : ' item';
+		printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
+	}
+
+	$url = add_query_arg(array('smc_schedule_full_update' => 1), 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+	echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all posts for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync. Are you sure?\")'>Synchronize all data now</a>";
 
 }
 

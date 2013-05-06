@@ -113,7 +113,6 @@ class TT_Example_List_Table extends WP_List_Table {
             //     return number_format($item['comment_count'],0,'.',',');
             case 'date':
                 $dateString = date("M j, Y",strtotime($item['post_date']));
-                if(current_user_can( 'activate_plugins' )) $dateString = $dateString . '<br>U: ' . date("n/j G:i:s",$item['socialcount_LAST_UPDATED']);  
                 return $dateString;
             default:
                 return 'Not Set';
@@ -143,7 +142,8 @@ class TT_Example_List_Table extends WP_List_Table {
         //Build row actions
         $actions = array(
             'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
-            'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID'])
+            'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
+            'update'    => sprintf('Data updated %s',timeago($item['socialcount_LAST_UPDATED']))
         );
         
         //Return the title contents
@@ -388,8 +388,19 @@ class TT_Example_List_Table extends WP_List_Table {
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
         $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'views'; //If no sort, default
-
+        
         $limit = 30;
+
+        $range = (isset($_GET['range'])) ? $_GET['range'] : 6;
+        $range_bottom = ($range > 0) ? " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') ) : '';
+        $range_top = "' AND post_date < '".date("Y-m-d")."'";
+
+        function filter_where( $where = '' ) {
+            $where .= $range_bottom . $range_top;
+            return $where;
+        }
+
+        add_filter( 'posts_where', 'filter_where' );
 
         if ($orderby == 'views') {
             $querydata = query_posts(array(
@@ -432,6 +443,9 @@ class TT_Example_List_Table extends WP_List_Table {
                 'suppress_filters' => true
             )); 
         }
+
+        // Remove our date filter
+        remove_filter( 'posts_where', 'filter_where' );
 
         $data=array();
 
@@ -539,6 +553,34 @@ class TT_Example_List_Table extends WP_List_Table {
             'total_pages' => ceil($total_items/$per_page)   //WE have to calculate the total number of pages
         ) );
     }
+
+
+    /**
+     * Add extra markup in the toolbars before or after the list
+     * @param string $which, helps you decide if you add the markup after (bottom) or before (top) the list
+     */
+    function extra_tablenav( $which ) {
+        if ( $which == "top" ){
+            //The code that goes before the table is here
+            $range = (isset($_GET['range'])) ? $_GET['range'] : 6;
+            ?>
+            <label for="range">Show only:</label>
+                    <select name="range">
+                        <option value="1"<?php if ($range == 1) echo 'selected="selected"'; ?>>Items published within 1 Month</option>
+                        <option value="6"<?php if ($range == 6) echo 'selected="selected"'; ?>>Items published within 6 Months</option>
+                        <option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
+                        <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>All Items</option>
+                    </select>
+
+                    <input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
+
+            <?php
+        }
+        if ( $which == "bottom" ){
+            //The code that goes after the table is there
+            echo"Hi, I'm after the table";
+        }
+    }
     
 }
 
@@ -585,11 +627,7 @@ function smc_render_dashboard_view(){
             // Verify the API authorization
             require_once ('smc-ga-query.php');
             smc_gapi_loginout();
-
-
-            $url = add_query_arg('smc_schedule_full_update', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-            echo '<br><a href="'.$url.'">Schedule full update</a>';
-
+            
             if (isset($_GET['smc_schedule_full_update'])) {
                 smc_do_full_update();
 
@@ -631,6 +669,14 @@ function smc_render_dashboard_view(){
         </div>
         <?php } // end if is admin ?>
 
+        <?php
+
+        // Verify the API authorization
+        require_once ('smc-ga-query.php');
+        smc_gapi_loginout();
+        smc_queue_length();
+        ?>
+
         <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
             <h1>This tool is in beta testing. </h1> 
             <h3><span style="color:red; font-weight:bold;">Data is still being imported; numbers may be inaccurate. </span></h3>
@@ -638,9 +684,12 @@ function smc_render_dashboard_view(){
         </div>
         
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-        <form id="movies-filter" method="get">
+        <form id="smc-social-insight" method="get">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+
+            
+           
             <!-- Now we can render the completed list table -->
             <?php $testListTable->display() ?>
         </form>
@@ -659,3 +708,28 @@ function smc_render_dashboard_view(){
     </div>
     <?php
 }
+
+function timeago($time)
+{
+   $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
+   $lengths = array("60","60","24","7","4.35","12","10");
+
+   $now = time();
+
+       $difference     = $now - $time;
+       $tense         = "ago";
+
+   for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
+       $difference /= $lengths[$j];
+   }
+
+   $difference = round($difference);
+
+   if($difference != 1) {
+       $periods[$j].= "s";
+   }
+
+   return "$difference $periods[$j] ago";
+}
+
+?>
