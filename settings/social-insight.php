@@ -2,12 +2,10 @@
 
 global $wpsf_settings;
 
-
-
 $wpsf_settings[] = array(
-    'section_id' => 'smc',
-    'section_title' => 'Social Insight Settings',
-    'section_description' => 'Configuration for this plugin.',
+    'section_id' => 'options',
+    'section_title' => 'General Options',
+    'section_description' => 'Configuration for the operation of the plugin and display of data.',
     'section_order' => 10,
     'fields' => array(
         array(
@@ -40,11 +38,18 @@ $wpsf_settings[] = array(
             'std' => 1
         ),
         array(
+            'id' => 'enable_comments',
+            'title' => 'Track Comments',
+            'desc' => 'Display the number of comments on each item.',
+            'type' => 'checkbox',
+            'std' => 1
+        ),
+        array(
             'id' => 'ttl_hours',
             'title' => 'Data TTL',
             'desc' => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts. This will affect your quota for Google APIs.',
             'type' => 'select',
-            'std' => '1',
+            'std' => '12',
             'choices' => array(
                 '1' => '1 Hour',
                 '2' => '2 Hours',
@@ -72,6 +77,19 @@ $wpsf_settings[] = array(
                 'post_date' => 'Post Publish Date'
             )
         ),
+        array(
+            'id' => 'default_date_range_months',
+            'title' => 'Default Date Range',
+            'desc' => 'Reports should display posts published within this date range. ',
+            'type' => 'select',
+            'std' => '6',
+            'choices' => array(
+                '1' => '1 Month',
+                '6' => '6 Months',
+                '12' => '12 Months',
+                '0' => 'All Time'
+            )
+        ),
     )
 );
 
@@ -82,28 +100,28 @@ $wpsf_settings[] = array(
     'section_order' => 20,
     'fields' => array(
         array(
-            'id' => 'ga_client_id',
+            'id' => 'client_id',
             'title' => 'Google API Client ID',
             'desc' => 'Obtained from Google after creating a developer account.',
             'type' => 'text',
             'std' => ''
         ),
         array(
-            'id' => 'ga_client_secret',
+            'id' => 'client_secret',
             'title' => 'Google API Client Secret',
             'desc' => 'Obtained from Google after creating a developer account.',
             'type' => 'text',
             'std' => ''
         ),
         array(
-            'id' => 'ga_developer_key',
+            'id' => 'developer_key',
             'title' => 'Google API Developer Key',
             'desc' => 'Obtained from Google after creating a developer account.',
             'type' => 'text',
             'std' => ''
         ),
         array(
-            'id' => 'ga_client_id',
+            'id' => 'client_id',
             'title' => 'Google API Client ID',
             'desc' => 'Obtained from Google after creating a developer account.',
             'type' => 'text',

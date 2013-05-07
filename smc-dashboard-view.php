@@ -67,11 +67,9 @@ class TT_Example_List_Table extends WP_List_Table {
      * use the parent reference to set some default configs.
      ***************************************************************************/
     function __construct(){
-        global $status, $page, $data_max;
+        global $status, $page, $data_max, $smc_options;
 
         $data_max = array();
-
-        $options = get_option('socialinsight_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -238,14 +236,21 @@ class TT_Example_List_Table extends WP_List_Table {
      * @return array An associative array containing column information: 'slugs'=>'Visible Titles'
      **************************************************************************/
     function get_columns(){
-        $columns = array(
-            'date'      => 'Date',
-            'title'     => 'Title',
-            // 'type'      => 'Content Type',
-            'social'    => 'Social Score',
-            'views'     => 'Views',
-            'comments'  => 'Comments'
-        );
+        global $smc_options;
+
+        $columns['date'] = 'Date';
+        $columns['title'] = 'Title';
+
+        if ($smc_options['socialinsight_options_enable_social']) {
+            $columns['social'] = 'Social';
+        }
+        if ($smc_options['socialinsight_options_enable_analytics']) {
+            $columns['views'] = 'Views';
+        }
+        if ($smc_options['socialinsight_options_enable_comments']) {
+            $columns['comments'] = 'Comments';
+        }
+
         return $columns;
     }
     
@@ -331,6 +336,7 @@ class TT_Example_List_Table extends WP_List_Table {
      **************************************************************************/
     function prepare_items() {
         global $wpdb; //This is used only if making any database queries
+        global $smc_options;
 
         /**
          * First, lets decide how many records per page to show
@@ -389,11 +395,11 @@ class TT_Example_List_Table extends WP_List_Table {
 
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['socialinsight_default_sort_column']; //If no sort, default
+        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
         
         $limit = 30;
 
-        $range = (isset($_GET['range'])) ? $_GET['range'] : 6;
+        $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
         $range_bottom = ($range > 0) ? " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') ) : '';
         $range_top = "' AND post_date < '".date("Y-m-d")."'";
 
@@ -411,6 +417,7 @@ class TT_Example_List_Table extends WP_List_Table {
                 'meta_key'=>'ga_pageviews',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
+                'post_type'     => '',
                 'suppress_filters' => true
             )); 
         }
@@ -421,6 +428,7 @@ class TT_Example_List_Table extends WP_List_Table {
                 'orderby'=>'comment_count',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
+                'post_type'     => '',
                 'suppress_filters' => true
             )); 
         }
@@ -432,6 +440,7 @@ class TT_Example_List_Table extends WP_List_Table {
                 'meta_key'=>'socialcount_TOTAL',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
+                'post_type'     => '',
                 'suppress_filters' => true
             )); 
         }
@@ -564,7 +573,7 @@ class TT_Example_List_Table extends WP_List_Table {
     function extra_tablenav( $which ) {
         if ( $which == "top" ){
             //The code that goes before the table is here
-            $range = (isset($_GET['range'])) ? $_GET['range'] : 6;
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
             ?>
             <label for="range">Show only:</label>
                     <select name="range">
@@ -577,6 +586,10 @@ class TT_Example_List_Table extends WP_List_Table {
                     <input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
             <?php
+            if (current_user_can('manage_options')) {
+                $url = add_query_arg(array('smc_schedule_full_update' => 1), 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+                echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all items for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync or after installing the plugin. Are you sure?\")'>Synchronize all data</a>";
+            }
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
@@ -609,6 +622,15 @@ class TT_Example_List_Table extends WP_List_Table {
  * it's the way the list tables are used in the WordPress core.
  */
 function smc_render_dashboard_view(){
+    global $smc_options;
+
+    if (isset($_GET['smc_schedule_full_update'])) {
+        smc_do_full_update();
+
+        $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+        header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+        return true;
+    }
     
     //Create an instance of our package class...
     $testListTable = new TT_Example_List_Table();
@@ -620,78 +642,29 @@ function smc_render_dashboard_view(){
         
         <div id="icon-users" class="icon32"><br/></div>
         <h2>Social Insight Dashboard</h2>
-        
-
-        <?php if(current_user_can( 'activate_plugins' ) && $_SERVER['REMOTE_ADDR'] == '206.211.141.101') { ?> 
-        <div style="background:#fdfce8;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
-            <h1>Admin Debug Data:</h1>
-            <?php
-            // Verify the API authorization
-            require_once ('smc-ga-query.php');
-            smc_gapi_loginout();
-            
-            if (isset($_GET['smc_schedule_full_update'])) {
-                smc_do_full_update();
-
-                $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-                header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
-                return true;
-            }
-
-
-            // $querydata = query_posts(array(
-            //     'order'=>'desc',
-            //     'orderby'=>'post_date',
-            //     'posts_per_page'=>-1,
-            //     'post_status'   => 'publish',
-            //     'meta_query' => array(
-            //        'relation' => 'OR',
-            //         array(
-            //          'key' => 'ga_pageviews',
-            //          'compare' => 'NOT EXISTS', // works!
-            //          'value' => '' // This is ignored, but is necessary...
-            //         ),
-            //         array(
-            //          'key' => 'ga_pageviews',
-            //          'compare' => '<=',
-            //          'value' => '0'
-            //         )
-            //     )
-            // )); 
-
-            // foreach ($querydata as $querydatum ) {
-            //     echo( $id . ' - '. $querydatum->post_title . ' - '.$querydatum->ID ) ;
-            //     echo '<br>';
-            //     $id = $id + 1;
-            // }
-
-            // die();
-
-            ?>
-        </div>
-        <?php } // end if is admin ?>
 
         <?php
+        if(!is_array($smc_options)) {
+            printf( '<div class="error"> <p> %s </p> </div>', "An administrator must <a class='login' href='options-general.php?page=smc_settings'>update the plugin settings </a> in order to enable data tracking." );
 
+            return false;
+        }
+        ?>
+    
+        <?php
         // Verify the API authorization
         require_once ('smc-ga-query.php');
-        smc_gapi_loginout();
+        if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {
+            smc_gapi_loginout();
+        }
         smc_queue_length();
         ?>
-
-        <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
-            <h1>This tool is in beta testing. </h1> 
-            <h3><span style="color:red; font-weight:bold;">Data is still being imported; numbers may be inaccurate. </span></h3>
-            <p> Please email cole@chapman.edu if you find any bugs or issues with this tool.  </p>
-        </div>
 
 
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
         <form id="smc-social-insight" method="get">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-
-            
            
             <!-- Now we can render the completed list table -->
             <?php $testListTable->display() ?>

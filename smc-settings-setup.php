@@ -42,7 +42,7 @@ class SMC_Settings {
 	    ?>
 		<div class="wrap">
 			<div id="icon-options-general" class="icon32"></div>
-			<h2>WP Settings Framework Example</h2>
+			<h2>Social Insight Configuration</h2>
 			<?php 
 			// Output your settings form
 			$this->smc_settings->settings(); 

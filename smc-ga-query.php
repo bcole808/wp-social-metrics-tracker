@@ -1,14 +1,24 @@
 <?php
 
-define('GAPI_CLIENT_ID', "526667588909.apps.googleusercontent.com");
-define('GAPI_CLIENT_SECRET', "1TrAYMW2XgNng6C_I_bf8YSE");
-define('GAPI_DEVELOPER_KEY', "AIzaSyBfagnRehDAvx6wnArifJV5x01X96T3m5M");
+// define('GAPI_CLIENT_ID', "526667588909.apps.googleusercontent.com");
+// define('GAPI_CLIENT_SECRET', "1TrAYMW2XgNng6C_I_bf8YSE");
+// define('GAPI_DEVELOPER_KEY', "AIzaSyBfagnRehDAvx6wnArifJV5x01X96T3m5M");
+// define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
+// define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
+// define('GAPI_PROFILE_ID', 58596075); // 58596075 = blogs.chapman.edu
+
+global $smc_options;
+
+define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
+define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);
+define('GAPI_DEVELOPER_KEY', $smc_options['socialinsight_ga_developer_key']);
 define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
 define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
 define('GAPI_PROFILE_ID', 58596075); // 58596075 = blogs.chapman.edu
 
 
 function smc_gapi_loginout() {
+
 
 	if (isset($_GET['logout'])) {
 	    delete_site_option('smc_ga_token');
@@ -56,11 +66,13 @@ function smc_gapi_loginout() {
 	    $logout_url = add_query_arg('logout', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 	    echo '<br><a href="'.$logout_url.'">Logout</a>';
 
+	} else if(strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
+		// No GAPI settings added 
+		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=smc_settings'>add your Google API account detailes.</a>" );
 	} else {
-	// No token found, display login. 
-
+		// No token found, display login. 
 		$authUrl = $client->createAuthUrl();
-		printf( '<div class="error"> <p> %s </p> </div>', "Social Insights is not receiving data from Google Analytics. Please <a class='login' href='$authUrl'>sign in to Google Analytics.</a> " );
+		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='$authUrl'>sign in to Google Analytics.</a> Social Insights will not receive data from Google Analytics until you do." );
 	}
 
 }
@@ -84,9 +96,6 @@ function smc_queue_length() {
 		$label = ($count >=2) ? ' items' : ' item';
 		printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
 	}
-
-	$url = add_query_arg(array('smc_schedule_full_update' => 1), 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-	echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all posts for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync. Are you sure?\")'>Synchronize all data now</a>";
 
 }
 
