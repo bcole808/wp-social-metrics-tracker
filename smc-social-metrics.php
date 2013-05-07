@@ -11,6 +11,8 @@ Author URI: http://www.bencole.net
 /**
  * Retrieve the number of views for a post
  */
+
+
 function smc_get_views($post_id = 0) {
 
 	$current_views = get_post_meta($post_id, "ga_pageviews", true);
@@ -30,16 +32,18 @@ function smc_do_update($post_id) {
 	$permalink = get_permalink($post_id);
 
 	// Method A (3rd party service)
-	$json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
-	$counts = json_decode($json, true);
+	if ($smc_options['socialinsight_enable_social']) {
+		$json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
+		$counts = json_decode($json, true);
 
-	$total_count = $counts['Facebook']['total_count'] + $counts['Twitter'] +$counts['LinkedIn'] + $counts['LinkedIn'];
+		$total_count = $counts['Facebook']['total_count'] + $counts['Twitter'] +$counts['LinkedIn'] + $counts['LinkedIn'];
 
-	update_post_meta($post_id, "socialcount_facebook", $counts['Facebook']['total_count']);
-	update_post_meta($post_id, "socialcount_twitter", $counts['Twitter']);
-	update_post_meta($post_id, "socialcount_googleplus", $counts['GooglePlusOne']);
-	update_post_meta($post_id, "socialcount_linkedin", $counts['LinkedIn']);
-	update_post_meta($post_id, "socialcount_TOTAL", $total_count);
+		update_post_meta($post_id, "socialcount_facebook", $counts['Facebook']['total_count']);
+		update_post_meta($post_id, "socialcount_twitter", $counts['Twitter']);
+		update_post_meta($post_id, "socialcount_googleplus", $counts['GooglePlusOne']);
+		update_post_meta($post_id, "socialcount_linkedin", $counts['LinkedIn']);
+		update_post_meta($post_id, "socialcount_TOTAL", $total_count);
+	}
 	
 
 	// Get Google Analytics views
@@ -53,16 +57,17 @@ function smc_do_update($post_id) {
 	// );
 
 	// update_site_option('smc_ga_token', serialize(json_encode($token)));
-	
-	$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
+	if ($smc_options['socialinsight_enable_analytics']) {
+		$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
 
-	if (strlen($smc_ga_token) > 1) {
-		require_once ('smc-ga-query.php');
-		$ga_pageviews = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
-		if ($ga_pageviews > 0) {
-			update_post_meta($post_id, "ga_pageviews", $ga_pageviews);
-		}
-	} 
+		if (strlen($smc_ga_token) > 1) {
+			require_once ('smc-ga-query.php');
+			$ga_pageviews = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
+			if ($ga_pageviews > 0) {
+				update_post_meta($post_id, "ga_pageviews", $ga_pageviews);
+			}
+		} 
+	}
 
 	update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
 
@@ -134,12 +139,16 @@ function smc_get_socialcount($post_id = 0, $update = true) {
 if ( is_admin() ){
 	
 	function smc_setup_menus () {
-		$icon = get_option('siteurl') . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/img/smc-social-metrics-icon.png';
-		add_menu_page( 'Social Insight Dashboard', 'Social Insight', 'publish_posts', 'smc-social-insight', 'smc_social_insight_dashboard', '',100 );
-		add_options_page( 'Social Insight Settings', 'Social Insight', 'manage_options', 'smc-social-insight-settings', 'smc_social_insight_settings' );
+		if(current_user_can( $smc_options['socialinsight_report_visibility'] )) {
+			$icon = get_option('siteurl') . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/img/smc-social-metrics-icon.png';
+			add_menu_page( 'Social Insight Dashboard', 'Social Insight', 'publish_posts', 'smc-social-insight', 'smc_social_insight_dashboard', '',100 );
+		}
 	}
-
+	
 	add_action('admin_menu', 'smc_setup_menus');
+	
+
+	include_once('smc-settings-setup.php');
 
 
 	add_action('admin_head', 'admin_register_head');

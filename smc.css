@@ -11,9 +11,15 @@
 .toplevel_page_smc-social-insight .wp-list-table #social a, 
 .toplevel_page_smc-social-insight .wp-list-table #comments a { width:90%; }
 
-.toplevel_page_smc-social-insight .wp-list-table #views a span, 
-.toplevel_page_smc-social-insight .wp-list-table #social a span, 
-.toplevel_page_smc-social-insight .wp-list-table #comments a span { float:right; }
+.toplevel_page_smc-social-insight .wp-list-table thead .column-views a span, 
+.toplevel_page_smc-social-insight .wp-list-table thead .column-social a span, 
+.toplevel_page_smc-social-insight .wp-list-table thead .column-comments a span,
+.toplevel_page_smc-social-insight .wp-list-table tfoot .column-views a span, 
+.toplevel_page_smc-social-insight .wp-list-table tfoot .column-social a span, 
+.toplevel_page_smc-social-insight .wp-list-table tfoot .column-comments a span { float:right; }
+
+.toplevel_page_smc-social-insight .wp-list-table tfoot .column-social a,
+.toplevel_page_smc-social-insight .wp-list-table tfoot .column-comments a { float:right; padding-right:17px;}
 
 
 .toplevel_page_smc-social-insight .wp-list-table #views .sorting-indicator, 

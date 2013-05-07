@@ -4,7 +4,7 @@ define('GAPI_CLIENT_ID', "526667588909.apps.googleusercontent.com");
 define('GAPI_CLIENT_SECRET', "1TrAYMW2XgNng6C_I_bf8YSE");
 define('GAPI_DEVELOPER_KEY', "AIzaSyBfagnRehDAvx6wnArifJV5x01X96T3m5M");
 define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
-define('GAPI_APPLICATION_NAME', "http://localhost/ga_test/test.php");
+define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
 define('GAPI_PROFILE_ID', 58596075); // 58596075 = blogs.chapman.edu
 
 

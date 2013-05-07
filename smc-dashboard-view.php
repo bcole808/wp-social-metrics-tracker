@@ -70,6 +70,8 @@ class TT_Example_List_Table extends WP_List_Table {
         global $status, $page, $data_max;
 
         $data_max = array();
+
+        $options = get_option('socialinsight_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -387,7 +389,7 @@ class TT_Example_List_Table extends WP_List_Table {
 
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'views'; //If no sort, default
+        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['socialinsight_default_sort_column']; //If no sort, default
         
         $limit = 30;
 
@@ -682,7 +684,8 @@ function smc_render_dashboard_view(){
             <h3><span style="color:red; font-weight:bold;">Data is still being imported; numbers may be inaccurate. </span></h3>
             <p> Please email cole@chapman.edu if you find any bugs or issues with this tool.  </p>
         </div>
-        
+
+
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
         <form id="smc-social-insight" method="get">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
