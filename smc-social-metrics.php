@@ -108,10 +108,15 @@ add_action( 'smc_update_single_post', 'smc_do_update', 10, 1 );
 // Schedule an update on each individual page load
 add_action("wp_head", "smc_schedule_update");
 function smc_schedule_update($post_id) {
+	global $smc_options;
 	$ttl = $smc_options['socialinsight_options_ttl_hours'] * 3600;
 
+	global $post;
+	if ($post->post_type == 'attachment') {
+		return false;
+	}
+
 	if ($post_id <= 0) {
-		global $post;
 		$post_id = $post->ID;
 	}
 

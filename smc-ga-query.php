@@ -57,15 +57,14 @@ function smc_gapi_loginout() {
 
 	    $url_parts = parse_url(home_url());
 	    $url_path = $url_parts['path'] . '/';
-		$url_path = '/happenings/2013/05/08/random-url-thing/';
 
 	    $ga_pageviews = smc_ga_getPageviewsByURL($url_path,$smc_ga_token);
 	    if ($ga_pageviews >= 0) {
-	        echo "Connected to ga API successfully. Returned $ga_pageviews views for ".$url_path;
+	        //echo "Connected to ga API successfully. Returned $ga_pageviews views for ".$url_path;
 	    }
 
-	    $logout_url = add_query_arg('logout', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-	    echo '<br><a href="'.$logout_url.'">Logout</a>';
+	    //$logout_url = add_query_arg('logout', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+	    //echo '<br><a href="'.$logout_url.'">Disconnect Google Analytics</a>';
 
 	} else if(strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
 		// No GAPI settings added 

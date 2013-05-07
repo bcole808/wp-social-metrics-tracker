@@ -143,7 +143,7 @@ class TT_Example_List_Table extends WP_List_Table {
         $actions = array(
             'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
             'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-            'update'    => sprintf('Data updated %s',timeago($item['socialcount_LAST_UPDATED']))
+            'update'    => sprintf('Updated %s',timeago($item['socialcount_LAST_UPDATED']))
         );
         
         //Return the title contents
@@ -396,14 +396,24 @@ class TT_Example_List_Table extends WP_List_Table {
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
         $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
+    
+        // Get custom post types to display in our report. 		
+		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
+        unset($post_types['page']);
+		unset($post_types['attachment']);
         
         $limit = 30;
 
-        $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
-        $range_bottom = ($range > 0) ? " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') ) : '';
-        $range_top = "' AND post_date < '".date("Y-m-d")."'";
-
         function filter_where( $where = '' ) {
+			global $smc_options;
+						
+			$range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
+			
+			if ($range <= 0) return $where;
+			
+        	$range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
+        	$range_top = "' AND post_date <= '".date("Y-m-d")."'";
+						
             $where .= $range_bottom . $range_top;
             return $where;
         }
@@ -411,49 +421,50 @@ class TT_Example_List_Table extends WP_List_Table {
         add_filter( 'posts_where', 'filter_where' );
 
         if ($orderby == 'views') {
-            $querydata = query_posts(array(
+            $querydata = new WP_Query(array(
                 'order'=>$order,
                 'orderby'=>'meta_value_num',
                 'meta_key'=>'ga_pageviews',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
-                'post_type'     => '',
-                'suppress_filters' => true
+                'post_type'     => $post_types
             )); 
         }
 
         if ($orderby == 'comments') {
-            $querydata = query_posts(array(
+            $querydata = new WP_Query(array(
                 'order'=>$order,
                 'orderby'=>'comment_count',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
-                'post_type'     => '',
-                'suppress_filters' => true
+                'post_type'     => $post_types
             )); 
         }
 
         if ($orderby == 'social') {
-            $querydata = query_posts(array(
+            $querydata = new WP_Query(array(
                 'order'=>$order,
                 'orderby'=>'meta_value_num',
                 'meta_key'=>'socialcount_TOTAL',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
-                'post_type'     => '',
-                'suppress_filters' => true
+                'post_type'     => $post_types
             )); 
         }
 
         if ($orderby == 'post_date') {
-            $querydata = query_posts(array(
+            $querydata = new WP_Query(array(
                 'order'=>$order,
                 'orderby'=>'post_date',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
-                'suppress_filters' => true
+				'post_type'     => $post_types
             )); 
         }
+		
+		//$querydata = new WP_Query("post_status=publish&orderby=meta_value_num&meta_key=socialcount_TOTAL");
+
+        //print_r($querydata->query_vars);
 
         // Remove our date filter
         remove_filter( 'posts_where', 'filter_where' );
@@ -464,18 +475,20 @@ class TT_Example_List_Table extends WP_List_Table {
         $this->data_max['views'] = 1;
         $this->data_max['comment_count'] = 1;
 
-        foreach ($querydata as $querydatum ) {
+        // foreach ($querydata as $querydatum ) {
+        if ( $querydata->have_posts() ) : while ( $querydata->have_posts() ) : $querydata->the_post();
+            global $post;
 
-            $item['ID'] = $querydatum->ID;
-            $item['post_title'] = $querydatum->post_title;
-            $item['post_date'] = $querydatum->post_date;
-            $item['comment_count'] = $querydatum->comment_count;
-            $item['socialcount_total'] = smc_get_socialcount($querydatum->ID, false);
-            $item['socialcount_twitter'] = get_post_meta($querydatum->ID, "socialcount_twitter", true);
-            $item['socialcount_facebook'] = get_post_meta($querydatum->ID, "socialcount_facebook", true);
-			$item['socialcount_LAST_UPDATED'] = get_post_meta($querydatum->ID, "socialcount_LAST_UPDATED", true);
-            $item['views'] = smc_get_views($querydatum->ID);
-            $item['permalink'] = get_permalink($querydatum->ID);
+            $item['ID'] = $post->ID;
+            $item['post_title'] = $post->post_title;
+            $item['post_date'] = $post->post_date;
+            $item['comment_count'] = $post->comment_count;
+            $item['socialcount_total'] = smc_get_socialcount($post->ID, false);
+            $item['socialcount_twitter'] = get_post_meta($post->ID, "socialcount_twitter", true);
+            $item['socialcount_facebook'] = get_post_meta($post->ID, "socialcount_facebook", true);
+			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
+            $item['views'] = smc_get_views($post->ID);
+            $item['permalink'] = get_permalink($post->ID);
 
             $this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
             // $this->data_max['socialcount_total']['average'] += $item['socialcount_total'];
@@ -487,7 +500,8 @@ class TT_Example_List_Table extends WP_List_Table {
             // $this->data_max['comment_count']['average'] += $item['comment_count'];
 
            array_push($data, $item);
-        }
+        endwhile;
+        endif;
 
         // Calculate the averages
         // $num_entries = count($querydatum);
@@ -571,6 +585,7 @@ class TT_Example_List_Table extends WP_List_Table {
      * @param string $which, helps you decide if you add the markup after (bottom) or before (top) the list
      */
     function extra_tablenav( $which ) {
+        global $smc_options;
         if ( $which == "top" ){
             //The code that goes before the table is here
             $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
@@ -580,7 +595,7 @@ class TT_Example_List_Table extends WP_List_Table {
                         <option value="1"<?php if ($range == 1) echo 'selected="selected"'; ?>>Items published within 1 Month</option>
                         <option value="6"<?php if ($range == 6) echo 'selected="selected"'; ?>>Items published within 6 Months</option>
                         <option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
-                        <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>All Items</option>
+                        <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
                     </select>
 
                     <input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
@@ -593,7 +608,6 @@ class TT_Example_List_Table extends WP_List_Table {
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
-            echo"Hi, I'm after the table";
         }
     }
     
@@ -642,8 +656,10 @@ function smc_render_dashboard_view(){
         
         <div id="icon-users" class="icon32"><br/></div>
         <h2>Social Insight Dashboard</h2>
+        <p style="color:red; font-weight:bold;">This plugin is in beta testing. Please report any issues to cole@chapman.edu</p>
 
         <?php
+			
         if(!is_array($smc_options)) {
             printf( '<div class="error"> <p> %s </p> </div>', "An administrator must <a class='login' href='options-general.php?page=smc_settings'>update the plugin settings </a> in order to enable data tracking." );
 
@@ -657,24 +673,27 @@ function smc_render_dashboard_view(){
         if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {
             smc_gapi_loginout();
         }
-        smc_queue_length();
         ?>
 
 
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-        <form id="smc-social-insight" method="get">
+        <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
            
             <!-- Now we can render the completed list table -->
             <?php $testListTable->display() ?>
         </form>
 
+        <?php smc_queue_length(); ?>
+
         <h2>Frequently Asked Questions</h2>
         
         <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
             <h3>What is Social Score?</h3>
-            <p>This is the number of people who shared, liked, or tweeted a post across various social networks. This number includes Facebook, Twitter, Google+, and LinkedIn. </p>
+            <p>This is the number of people who shared, liked, or tweeted a post across various social networks. This number includes Facebook, Twitter, Google+, LinkedIn, Reddit, Digg, Delicious, StumbleUpon, and Pinterest. </p>
             <h3>How are Views calculated?</h3>
             <p>Data is gathered from Google Analytics. A view is counted when someone loads a post in their browser or on a mobile device.</p>
             <h3>When is the data updated?</h3>

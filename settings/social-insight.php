@@ -89,7 +89,7 @@ $wpsf_settings[] = array(
                 '12' => '12 Months',
                 '0' => 'All Time'
             )
-        ),
+        )
     )
 );
 
