@@ -57,9 +57,10 @@ function smc_gapi_loginout() {
 
 	    $url_parts = parse_url(home_url());
 	    $url_path = $url_parts['path'] . '/';
+		$url_path = '/happenings/2013/05/08/random-url-thing/';
 
 	    $ga_pageviews = smc_ga_getPageviewsByURL($url_path,$smc_ga_token);
-	    if ($ga_pageviews > 0) {
+	    if ($ga_pageviews >= 0) {
 	        echo "Connected to ga API successfully. Returned $ga_pageviews views for ".$url_path;
 	    }
 
@@ -179,7 +180,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 				'dimensions'	=> 'ga:pagePath',
 				'sort' 			=> '-ga:pageviews',
 				'filters'		=> 'ga:pagePath=='.$url_path,
-				'max-results'	=> '5'
+				'max-results'	=> '1'
 			);
 
 			$result = $service->data_ga->get(
@@ -195,6 +196,8 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			$single_result = 0;
 			$single_result = $result->getRows();
 			$single_result = $single_result[0][1];
+
+			if (!$single_result) $single_result = 0;
 
 			
 			//echo "Database token updated.";
