@@ -112,7 +112,7 @@ function smc_schedule_update($post_id) {
 	$ttl = $smc_options['socialinsight_options_ttl_hours'] * 3600;
 
 	global $post;
-	if ($post->post_type == 'attachment') {
+	if ($post->post_type == 'attachment' || $post->post_status != 'publish') {
 		return false;
 	}
 
@@ -158,7 +158,7 @@ if ( is_admin() ){
 	function smc_setup_menus () {
 		global $smc_options; 
 		$icon = get_option('siteurl') . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/img/smc-social-metrics-icon.png';
-		add_menu_page( 'Social Insight Dashboard', 'Social Insight', $smc_options['socialinsight_options_report_visibility'], 'smc-social-insight', 'smc_social_insight_dashboard', '',100 );
+		add_menu_page( 'Social Insight Dashboard', 'Social Insight', $smc_options['socialinsight_options_report_visibility'], 'smc-social-insight', 'smc_social_insight_dashboard', $icon, 30 );
 	}
 	
 	add_action('admin_menu', 'smc_setup_menus');
@@ -194,36 +194,52 @@ if ( is_admin() ){
 	
 
 	// register_activation_hook( __FILE__, 'smc_schedule_full_update' );
+	// Only works from activation?
 	function smc_schedule_full_update() {
 		wp_schedule_single_event( time(), 'smc_schedule_full_update_cron' );
 	}
 
 	add_action( 'smc_schedule_full_update_cron', 'smc_do_full_update', 10 );
 	function smc_do_full_update() {
-		$querydata = query_posts(array(
-		    'order'=>'desc',
-		    'orderby'=>'post_date',
-		    'posts_per_page'=>-1,
-		    'post_status'   => 'publish'
-		    // 'meta_query' => array(
-		    //    'relation' => 'OR',
-		    //     array(
-		    //      'key' => 'ga_pageviews',
-		    //      'compare' => 'NOT EXISTS', // works!
-		    //      'value' => '' // This is ignored, but is necessary...
-		    //     ),
-		    //     array(
-		    //      'key' => 'ga_pageviews',
-		    //      'compare' => '<=',
-		    //      'value' => '0'
-		    //     )
-		    // )
-		)); 
-		$nextTime = time();
-		foreach ($querydata as $querydatum ) {
-			wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
-			$nextTime = $nextTime + 10;
-		}
+        // Get posts that have not ever been updated
+        $querydata = query_posts(array(
+            'order'=>'DESC',
+            'orderby'=>'post_date',
+            'posts_per_page'=>-1,
+            'post_status'   => 'publish',
+            'meta_query' => array(
+                array(
+                 'key' => 'socialcount_LAST_UPDATED',
+                 'compare' => 'NOT EXISTS', // works!
+                 'value' => '' // This is ignored, but is necessary...
+                )
+            )
+        )); 
+        $nextTime = time();
+        foreach ($querydata as $querydatum ) {
+            wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
+            $nextTime = $nextTime + 5;
+        }
+
+        // Get posts which HAVE been updated
+         $querydata = query_posts(array(
+            'order'=>'DESC',
+            'orderby'=>'post_date',
+            'posts_per_page'=>-1,
+            'post_status'   => 'publish',
+            'meta_query' => array(
+                array(
+                 'key' => 'socialcount_LAST_UPDATED',
+                 'compare' => '>=', // works!
+                 'value' => '0' // This is ignored, but is necessary...
+                )
+            )
+        )); 
+
+         foreach ($querydata as $querydatum ) {
+             wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
+             $nextTime = $nextTime + 30;
+         }
 	}
 
 	register_deactivation_hook( __FILE__, 'smc_uninstall' );

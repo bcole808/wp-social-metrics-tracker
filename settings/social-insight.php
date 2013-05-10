@@ -96,7 +96,7 @@ $wpsf_settings[] = array(
 $wpsf_settings[] = array(
     'section_id' => 'ga',
     'section_title' => 'Google Analytics API Settings',
-    'section_description' => 'Enter your Google Analytics API Developer Info. You can sign up and create an API account here: <a href="https://code.google.com/apis/console/">https://code.google.com/apis/console/</a>',
+    'section_description' => 'Enter your Google Analytics API Developer Info. You can sign up and create an API account here: <a href="https://code.google.com/apis/console/">https://code.google.com/apis/console/</a> IMPORTANT NOTE: On a Wordpress multi-site network the Google Analytics account authorization info will persist across all sites! Different profiles can be selected per site but the same login must be used.',
     'section_order' => 20,
     'fields' => array(
         array(

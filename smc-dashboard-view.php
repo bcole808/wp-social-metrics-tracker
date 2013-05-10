@@ -1,13 +1,4 @@
 <?php
-/*
-Plugin Name: Custom List Table Example
-Plugin URI: http://www.mattvanandel.com/
-Description: A highly documented plugin that demonstrates how to create custom List Tables using official WordPress APIs.
-Version: 1.1
-Author: Matt Van Andel
-Author URI: http://www.mattvanandel.com
-License: GPL2
-*/
 /*  Copyright 2011  Matthew Van Andel  (email : matt@mattvanandel.com)
 
     This program is free software; you can redistribute it and/or modify
@@ -602,7 +593,7 @@ class TT_Example_List_Table extends WP_List_Table {
 
             <?php
             if (current_user_can('manage_options')) {
-                $url = add_query_arg(array('smc_schedule_full_update' => 1), 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+                $url = add_query_arg(array('smc_schedule_full_update' => 1), 'admin.php?page=smc-social-insight');
                 echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all items for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync or after installing the plugin. Are you sure?\")'>Synchronize all data</a>";
             }
         }
@@ -638,12 +629,16 @@ class TT_Example_List_Table extends WP_List_Table {
 function smc_render_dashboard_view(){
     global $smc_options;
 
+    if(!is_array($smc_options)) {
+        printf( '<div class="error"> <p> %s </p> </div>', "An administrator must <a class='login' href='options-general.php?page=smc_settings'>update the plugin settings </a> in order to enable data tracking." );
+
+        die();
+    }
+
     if (isset($_GET['smc_schedule_full_update'])) {
         smc_do_full_update();
-
-        $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-        header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
-        return true;
+        printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=smc-social-insight">Return to report view</a>');
+        die();
     }
     
     //Create an instance of our package class...
@@ -656,23 +651,16 @@ function smc_render_dashboard_view(){
         
         <div id="icon-users" class="icon32"><br/></div>
         <h2>Social Insight Dashboard</h2>
-        <p style="color:red; font-weight:bold;">This plugin is in beta testing. Please report any issues to cole@chapman.edu</p>
+        <p style="font-weight:bold;">This plugin is in beta testing. Please report any issues to cole@chapman.edu</p>
 
-        <?php
-			
-        if(!is_array($smc_options)) {
-            printf( '<div class="error"> <p> %s </p> </div>', "An administrator must <a class='login' href='options-general.php?page=smc_settings'>update the plugin settings </a> in order to enable data tracking." );
 
-            return false;
-        }
-        ?>
-    
         <?php
         // Verify the API authorization
         require_once ('smc-ga-query.php');
         if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {
             smc_gapi_loginout();
         }
+
         ?>
 
 

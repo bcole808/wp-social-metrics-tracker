@@ -1,12 +1,4 @@
 <?php
-
-// define('GAPI_CLIENT_ID', "526667588909.apps.googleusercontent.com");
-// define('GAPI_CLIENT_SECRET', "1TrAYMW2XgNng6C_I_bf8YSE");
-// define('GAPI_DEVELOPER_KEY', "AIzaSyBfagnRehDAvx6wnArifJV5x01X96T3m5M");
-// define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
-// define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
-// define('GAPI_PROFILE_ID', 58596075); // 58596075 = blogs.chapman.edu
-
 global $smc_options;
 
 define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
@@ -14,19 +6,11 @@ define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);
 define('GAPI_DEVELOPER_KEY', $smc_options['socialinsight_ga_developer_key']);
 define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
 define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
-define('GAPI_PROFILE_ID', 58596075); // 58596075 = blogs.chapman.edu
 
+require_once 'lib/google-api-php-client/Google_Client.php';
+require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';
 
 function smc_gapi_loginout() {
-
-
-	if (isset($_GET['logout'])) {
-	    delete_site_option('smc_ga_token');
-	}
-
-	// session_start();
-	require_once 'lib/google-api-php-client/Google_Client.php';
-	require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';
 
 	$client = new Google_Client();
 	$client->setApplicationName(GAPI_APPLICATION_NAME);
@@ -39,42 +23,128 @@ function smc_gapi_loginout() {
 	$client->setDeveloperKey(GAPI_DEVELOPER_KEY);
 	$service = new Google_AnalyticsService($client);
 
-	// Authorize if returning from server
+
+
+	// If we are logging out
+
+	if (isset($_GET['logout'])) {
+	    delete_site_option('smc_ga_token');
+	    delete_option('smc_ga_profile');
+	}
+
+	// If we are receiving an auth code from Google
 	if (isset($_GET['code'])) {
 	    $client->authenticate();
 	    update_site_option('smc_ga_token', serialize($client->getAccessToken()));
 
-	    $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-	    header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
-	    return true;
+	    // $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+	    // header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+	    // return true;
 	}
 
 	$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
+	$smc_ga_profile = unserialize(get_option('smc_ga_profile'));
 
-
-	// Token found, connect and test
-	if (strlen($smc_ga_token) > 1) {
-
-	    $url_parts = parse_url(home_url());
-	    $url_path = $url_parts['path'] . '/';
-
-	    $ga_pageviews = smc_ga_getPageviewsByURL($url_path,$smc_ga_token);
-	    if ($ga_pageviews >= 0) {
-	        //echo "Connected to ga API successfully. Returned $ga_pageviews views for ".$url_path;
-	    }
-
-	    //$logout_url = add_query_arg('logout', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-	    //echo '<br><a href="'.$logout_url.'">Disconnect Google Analytics</a>';
-
-	} else if(strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
-		// No GAPI settings added 
+	// If the API details have not been entered
+	if (strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
 		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=smc_settings'>add your Google API account detailes.</a>" );
-	} else {
-		// No token found, display login. 
-		$authUrl = $client->createAuthUrl();
-		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='$authUrl'>sign in to Google Analytics.</a> Social Insights will not receive data from Google Analytics until you do." );
+		return false;
 	}
 
+	// No token found, display login. 
+	if (strlen($smc_ga_token) <= 0) {
+		
+		$authUrl = $client->createAuthUrl();
+		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='$authUrl'>sign in to Google Analytics.</a> Social Insights will not receive data from Google Analytics until you do." );
+		return false;
+	}
+
+	// No profile found, display select page. 
+	if (strlen($smc_ga_profile['id']) <= 0) {
+
+		if (isset($_GET['profile_id'])) {
+
+			$profile_array = array('id'=>$_GET['profile_id'], 'name'=>urldecode($_GET['profile_name']));
+
+			update_option('smc_ga_profile', serialize($profile_array));
+			$smc_ga_profile = unserialize(get_option('smc_ga_profile'));
+
+		} else {
+
+			// Authenticate
+			try {
+		  		$client->setAccessToken($smc_ga_token);
+
+		  		$smc_ga_token_obj = json_decode($smc_ga_token);
+		  		$refresh_token = $smc_ga_token_obj->refresh_token;
+
+		  		if (($smc_ga_token_obj->created + $smc_ga_token_obj->expires_in) < time()) {
+			  		$client->refreshToken($refresh_token);
+			  		update_site_option('smc_ga_token', serialize($client->getAccessToken()));
+			  	}
+			} catch (Google_AuthException $e) {
+				// The authentication failed!
+				// We delete the failed token and force the user to re-auth. 
+				echo "Authentication error.";
+				delete_site_option('smc_ga_token');
+				delete_option('smc_ga_profile');
+				echo $e->getMessage();
+			}
+
+			$message = "<h3>Select the profile associated with this Wordpress blog:</h3>";
+			$profiles = getProfilesArray($service);
+			foreach ($profiles as $profile) {
+				$message .= $profile['parent'].': <a href="admin.php?page=smc-social-insight&profile_id='.$profile['id'].'&profile_name='.urlencode($profile['name']).'">'.$profile['name'] . ' ('.$profile['id'].')</a><br>';
+			}
+			printf( '<div class="error"> <p> %s </p> </div>', $message );
+			return false;
+		}
+	}
+
+
+	// Token found
+	if (strlen($smc_ga_token) > 1 && current_user_can('manage_options')) {
+
+	    //$url_parts = parse_url(home_url());
+	    //$url_path = $url_parts['path'] . '/';
+
+	    $logout_url = add_query_arg(array('logout'=>1), 'admin.php?page=smc-social-insight');
+	    echo '<br>Google API is connected to '.$smc_ga_profile['name'].' <a href="'.$logout_url.'">Disconnect Google Analytics</a>';
+
+	} 
+
+}
+
+// Return an array with all of the profile IDs associated with the current Analytics account. 
+function getProfilesArray($analytics) {
+	
+	$return = array();
+
+	$result = $analytics->management_accounts->listManagementAccounts();
+	$accounts = $result->items;
+	foreach ($accounts as $account) {
+	    // print "Found an account with an ID of {$account->id} and a name of {$account->name}\n"; 
+
+	    $accountId = $account->id;
+	    $result = $analytics->management_webproperties->listManagementWebproperties($accountId);
+	    $webProperties = $result->items;
+	     
+	    foreach ($webProperties as $webProperty) {
+	        // print "Found a web property for the site {$webProperty->websiteUrl}, with an ID of {$webProperty->id} and a name of {$webProperty->name}<br>"; 
+
+	        $webPropertyId = $webProperty->id;
+	        $result = $analytics->management_profiles->listManagementProfiles($accountId, $webPropertyId);
+	        $profiles = $result->items;
+	         
+	        foreach ($profiles as $profile) {
+	            // print "Found a profile with an ID of {$profile->id} and a name of {$profile->name}<br>"; 
+	            array_push($return, array('id'=> $profile->id,'name'=> $profile->name, 'parent'=>$account->name));
+	        }
+	         
+	    }
+	}
+
+	return $return;
 }
 
 function smc_queue_length() {
@@ -105,9 +175,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 	$url_parts = parse_url($full_url);
 	$url_path = $url_parts['path'];
 
-	// session_start();
-	require_once 'lib/google-api-php-client/Google_Client.php';
-	require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';
+	$smc_ga_profile = unserialize(get_option('smc_ga_profile'));
 
 	$client = new Google_Client();
 	$client->setApplicationName(GAPI_APPLICATION_NAME);
@@ -119,10 +187,6 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 	$client->setRedirectUri(GAPI_REDIRECT_URI);
 	$client->setDeveloperKey(GAPI_DEVELOPER_KEY);
 	$service = new Google_AnalyticsService($client);
-
-
-	//echo "Token Data:<br>";
-	//print_r(strlen($smc_ga_token));
 
 	if (strlen($ga_token) > 1) {
 		//echo "<br>Restored saved token from the database!<br>";
@@ -142,30 +206,12 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			// The authentication failed!
 			// We delete the failed token and force the user to re-auth. 
 			delete_site_option('smc_ga_token');
+			delete_option('smc_ga_profile');
 
 			echo $e->getMessage();
 		}
 	} else {
-		// there is no valid token
-
-
-		// try {
-
-		// 	$token = array(
-		// 		"access_token" => "ya29.AHES6ZSe8SYY6rVyBOpom4WQRDnXbuT3NQgwwb9f1SMq1c8IDgvQ9w",
-		// 		"token_type"=>"Bearer",
-		// 		"expires_in"=>3600,
-		// 		"refresh_token"=>"1\/G9AcbBD4yOzXgjM5P63n0_1N_Q2BepbV305P2Bqm3xU",
-		// 		"created"=>1367598587
-		// 	);
-
-		//     $client->setAccessToken(json_encode($token));
-
-	 //    } catch (Google_AuthException $e) {
-	 //    	echo $e->getMessage();
-	 //    }
-
-
+		return false;
 	}
 
 	if ($client->getAccessToken()) {
@@ -183,7 +229,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			);
 
 			$result = $service->data_ga->get(
-				'ga:' . GAPI_PROFILE_ID, // profile id
+				'ga:' . $smc_ga_profile['id'], // profile id
 				'2005-01-01', // start
 				date('Y-m-d'), // end
 				'ga:pageviews',
@@ -205,6 +251,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 
 		} catch (Exception $e) {
 			delete_site_option('smc_ga_token');
+			delete_option('smc_ga_profile');
 			echo $e->getMessage();
 		}
 

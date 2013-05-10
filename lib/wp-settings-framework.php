@@ -1,13 +1,4 @@
 <?php
-/**
- * WordPress Settings Framework
- * 
- * @author Gilbert Pellegrom
- * @link https://github.com/gilbitron/WordPress-Settings-Framework
- * @version 1.4
- * @license MIT
- */
-
 if( !class_exists('WordPressSettingsFramework') ){
     /**
      * WordPressSettingsFramework class
