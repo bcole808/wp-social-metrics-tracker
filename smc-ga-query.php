@@ -85,6 +85,8 @@ function smc_gapi_loginout() {
 			} catch (Google_AuthException $e) {
 				// The authentication failed!
 				// We delete the failed token and force the user to re-auth. 
+				mail("cole@chapman.edu","smc-social-insight Exception 1",print_r($e,true));
+
 				echo "Authentication error.";
 				delete_site_option('smc_ga_token');
 				delete_option('smc_ga_profile');
@@ -109,7 +111,7 @@ function smc_gapi_loginout() {
 	    //$url_path = $url_parts['path'] . '/';
 
 	    $logout_url = add_query_arg(array('logout'=>1), 'admin.php?page=smc-social-insight');
-	    echo '<br>Google API is connected to '.$smc_ga_profile['name'].' <a href="'.$logout_url.'">Disconnect Google Analytics</a>';
+	    echo '<br>Google API is connected to '.$smc_ga_profile['name'].'('.$smc_ga_profile['id'].') <a href="'.$logout_url.'">Disconnect Google Analytics</a>';
 
 	} 
 
@@ -177,6 +179,11 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 
 	$smc_ga_profile = unserialize(get_option('smc_ga_profile'));
 
+	if (strlen($smc_ga_profile['id']) <= 0) { 
+		mail('cole@chapman.edu','Missing profile ID', $full_url);
+		return false;
+	}
+
 	$client = new Google_Client();
 	$client->setApplicationName(GAPI_APPLICATION_NAME);
 
@@ -205,8 +212,10 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 		} catch (Google_AuthException $e) {
 			// The authentication failed!
 			// We delete the failed token and force the user to re-auth. 
+
+			mail("cole@chapman.edu","smc-social-insight Exception 2",print_r($e,true));
+
 			delete_site_option('smc_ga_token');
-			delete_option('smc_ga_profile');
 
 			echo $e->getMessage();
 		}
@@ -250,8 +259,9 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			return ($single_result);
 
 		} catch (Exception $e) {
+			mail("cole@chapman.edu","smc-social-insight Exception 3", print_r($e,true));
+
 			delete_site_option('smc_ga_token');
-			delete_option('smc_ga_profile');
 			echo $e->getMessage();
 		}
 
