@@ -166,15 +166,48 @@ if ( is_admin() ){
 
 	include_once('smc-settings-setup.php');
 
-	add_action('admin_head', 'admin_register_head');
-	function admin_register_head() {
+	add_action('admin_head', 'admin_header_scripts');
+	function admin_header_scripts() {
 	    $siteurl = get_option('siteurl');
 	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css';
 	    echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
 	}
+
+
+
+	// BEGIN DASHBOARD
+
+	function smc_social_insight_widget_setup() {
+	    //wp_add_dashboard_widget( 'social_chapman_widget_dashboard', __( 'Test My Dashboard' ), 'social_chapman_widget_dashboard' );
+	    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
+
+	    // Remove recent comments on dashboard
+	    remove_meta_box('dashboard_quick_press', 'dashboard', 'core'); // recent comments
+	    remove_meta_box('dashboard_primary', 'dashboard', 'side'); // recent comments
+	    remove_meta_box('dashboard_secondary', 'dashboard', 'side'); // recent comments
+	    remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side'); // recent comments
+	}
+	add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
+
+
+	function smc_social_insight_widget() {
+
+		add_action('admin_head', 'admin_header_scripts');
+
+		require('smc-widget-view.php');
+
+		//Create an instance of our package class...
+		$socialInsightTable = new TT_Example_List_Table();
+		//Fetch, prepare, sort, and filter our data...
+		$socialInsightTable->prepare_items();
+
+		$socialInsightTable->display();
+	}
+
+	// END DASHBOARD
+
 	
 	function smc_social_insight_dashboard() {
-		
 	 	require('smc-dashboard-view.php');
 	 	smc_render_dashboard_view();
 	}
