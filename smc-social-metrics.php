@@ -169,7 +169,7 @@ if ( is_admin() ){
 	add_action('admin_head', 'admin_header_scripts');
 	function admin_header_scripts() {
 	    $siteurl = get_option('siteurl');
-	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css';
+	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css?ver=5-24-13';
 	    echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
 	}
 
@@ -178,6 +178,11 @@ if ( is_admin() ){
 	// BEGIN DASHBOARD
 
 	function smc_social_insight_widget_setup() {
+		global $smc_options;
+		if (!current_user_can($smc_options['socialinsight_options_report_visibility'])) {
+			return false;
+		}
+
 	    //wp_add_dashboard_widget( 'social_chapman_widget_dashboard', __( 'Test My Dashboard' ), 'social_chapman_widget_dashboard' );
 	    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
 
@@ -186,7 +191,8 @@ if ( is_admin() ){
 	    remove_meta_box('dashboard_primary', 'dashboard', 'side'); // recent comments
 	    remove_meta_box('dashboard_secondary', 'dashboard', 'side'); // recent comments
 	    remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side'); // recent comments
-	}
+	}	
+
 	add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
 
 

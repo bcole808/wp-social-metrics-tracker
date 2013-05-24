@@ -122,8 +122,8 @@ class TT_Example_List_Table extends WP_List_Table {
         
         //Build row actions
         $actions = array(
-            'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
-            //'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
+            // 'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
+            'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
             'pubdate'   => 'Published on ' . date("M j, Y",strtotime($item['post_date'])),
             //'update'    => sprintf('Stats updated %s',timeago($item['socialcount_LAST_UPDATED']))
         );
@@ -224,7 +224,7 @@ class TT_Example_List_Table extends WP_List_Table {
         $columns['title'] = 'Title';
 
         if ($smc_options['socialinsight_options_enable_social']) {
-            $columns['social'] = 'Social';
+            $columns['social'] = 'Social Score';
         }
         if ($smc_options['socialinsight_options_enable_analytics']) {
             $columns['views'] = 'Views';
@@ -376,10 +376,9 @@ class TT_Example_List_Table extends WP_List_Table {
         //     LIMIT 2");
 
 
-        // $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-        // $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
         $order = 'DESC';
-        $orderby = 'social';
+        $orderby = $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
+        
     
         // Get custom post types to display in our report. 		
 		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));

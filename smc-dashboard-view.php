@@ -233,7 +233,7 @@ class TT_Example_List_Table extends WP_List_Table {
         $columns['title'] = 'Title';
 
         if ($smc_options['socialinsight_options_enable_social']) {
-            $columns['social'] = 'Social';
+            $columns['social'] = 'Social Score';
         }
         if ($smc_options['socialinsight_options_enable_analytics']) {
             $columns['views'] = 'Views';
@@ -685,7 +685,7 @@ function smc_render_dashboard_view(){
             <h3>How are Views calculated?</h3>
             <p>Data is gathered from Google Analytics. A view is counted when someone loads a post in their browser or on a mobile device.</p>
             <h3>When is the data updated?</h3>
-            <p>Data is delayed by up to a few hours. When the used for the first time, this plugin will take some time to retrieve data for all of the posts. </p>
+            <p>Data is delayed by up to a few hours. An algorithm dynamically adjusts the update frequency of each post based on its popularity. </p>
         </div>
         
     </div>
