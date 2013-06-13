@@ -147,7 +147,7 @@ class TT_Example_List_Table extends WP_List_Table {
     function column_social($item) {
 
         //return print_r($item,true);
-        $total = $item['socialcount_total'];
+        $total = max($item['socialcount_total'], 1);
 
         $facebook = $item['socialcount_facebook'];
         $facebook_percent = floor($facebook / $total * 100);

@@ -259,9 +259,9 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			return ($single_result);
 
 		} catch (Exception $e) {
-			mail("cole@chapman.edu","smc-social-insight Exception 3", print_r($e,true));
+			mail("cole@chapman.edu","smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
 
-			delete_site_option('smc_ga_token');
+			//delete_site_option('smc_ga_token');
 			echo $e->getMessage();
 		}
 
