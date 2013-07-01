@@ -11,6 +11,9 @@ Author URI: http://www.bencole.net
 global $smc_options;
 $smc_options = get_option('socialinsight_settings');
 
+// Include the Inside.Chapman Notification Scripts
+include_once('inside-chapman-link.php'); // comment out to disable
+
 // Retrieve the number of views for a post
 function smc_get_views($post_id = 0) {
 	$current_views = get_post_meta($post_id, "ga_pageviews", true);
@@ -37,40 +40,52 @@ function smc_do_update($post_id) {
 
 		// Get JSON data from api.sharedcount.com
 		$json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
-		$counts = json_decode($json, true);
+		$shared_count_service_data = json_decode($json, true);
 
+		// Load data into stats array
+		$stats = array();
+		$stats['socialcount_facebook'] = $shared_count_service_data['Facebook']['total_count'];
+		$stats['socialcount_twitter'] = $shared_count_service_data['Twitter'];
+		$stats['socialcount_googleplus'] = $shared_count_service_data['GooglePlusOne'];
+		$stats['socialcount_linkedin'] = $shared_count_service_data['LinkedIn'];
+		$stats['socialcount_pinterest'] = $shared_count_service_data['Pinterest'];
+		$stats['socialcount_diggs'] = $shared_count_service_data['Diggs'];
+		$stats['socialcount_delicious'] = $shared_count_service_data['Delicious'];
+		$stats['socialcount_reddit'] = $shared_count_service_data['Reddit'];
+		$stats['socialcount_stumbleupon'] = $shared_count_service_data['StumbleUpon'];
+
+		// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
+		$stats['socialcount_TOTAL'] = array_sum($stats);
+		update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
 
 		// Facebook
-		if ($counts['Facebook']['total_count'] > 0) 
-			update_post_meta($post_id, "socialcount_facebook", $counts['Facebook']['total_count']);
+		if ($stats['socialcount_facebook'] > 0) 
+			update_post_meta($post_id, "socialcount_facebook", $stats['socialcount_facebook']);
 		// Twitter
-		if ($counts['Twitter'] > 0) 
-			update_post_meta($post_id, "socialcount_twitter", $counts['Twitter']);
+		if ($stats['socialcount_twitter'] > 0) 
+			update_post_meta($post_id, "socialcount_twitter", $stats['socialcount_twitter']);
 		// Google+
-		if ($counts['GooglePlusOne'] > 0) 
-			update_post_meta($post_id, "socialcount_googleplus", $counts['GooglePlusOne']);
+		if ($stats['socialcount_googleplus'] > 0) 
+			update_post_meta($post_id, "socialcount_googleplus", $stats['socialcount_googleplus']);
 		// LinkedIn
-		if ($counts['LinkedIn'] > 0) 
-			update_post_meta($post_id, "socialcount_linkedin", $counts['LinkedIn']);
+		if ($stats['socialcount_linkedin'] > 0) 
+			update_post_meta($post_id, "socialcount_linkedin", $stats['socialcount_linkedin']);
 		// Pinterest
-		if ($counts['Pinterest'] > 0) 
-			update_post_meta($post_id, "socialcount_pinterest", $counts['Pinterest']);
+		if ($stats['socialcount_pinterest'] > 0) 
+			update_post_meta($post_id, "socialcount_pinterest", $stats['socialcount_pinterest']);
 		// Diggs
-		if ($counts['Diggs'] > 0) 
-			update_post_meta($post_id, "socialcount_diggs", $counts['Diggs']);
+		if ($stats['socialcount_diggs'] > 0) 
+			update_post_meta($post_id, "socialcount_diggs", $stats['socialcount_diggs']);
 		// Delicious
-		if ($counts['Delicious'] > 0) 
-			update_post_meta($post_id, "socialcount_delicious", $counts['Delicious']);
+		if ($stats['socialcount_delicious'] > 0) 
+			update_post_meta($post_id, "socialcount_delicious", $stats['socialcount_delicious']);
 		// Reddit
-		if ($counts['Reddit'] > 0) 
-			update_post_meta($post_id, "socialcount_reddit", $counts['Reddit']);
+		if ($stats['socialcount_reddit'] > 0) 
+			update_post_meta($post_id, "socialcount_reddit", $stats['socialcount_reddit']);
 		// StumbleUpon
-		if ($counts['StumbleUpon'] > 0) 
-			update_post_meta($post_id, "socialcount_stumbleupon", $counts['StumbleUpon']);
+		if ($stats['socialcount_stumbleupon'] > 0) 
+			update_post_meta($post_id, "socialcount_stumbleupon", $stats['socialcount_stumbleupon']);
 
-		$total_count = $counts['Facebook']['total_count'] + $counts['Twitter'] +$counts['LinkedIn'] + $counts['GooglePlusOne'] + $counts['Pinterest'] + $counts['Diggs'] + $counts['Delicious'] + $counts['Reddit'] + $counts['StumbleUpon'];
-
-		update_post_meta($post_id, "socialcount_TOTAL", $total_count);
 	}
 
 	// If analytics are being tracked, pull update
@@ -79,28 +94,21 @@ function smc_do_update($post_id) {
 
 		if (strlen($smc_ga_token) > 1) {
 			require_once ('smc-ga-query.php');
-			$ga_pageviews = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
-			if ($ga_pageviews > 0) {
-				update_post_meta($post_id, "ga_pageviews", $ga_pageviews);
+
+			// Execute GA API query
+			$stats['ga_pageviews'] = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
+			if ($stats['ga_pageviews'] > 0) {
+				update_post_meta($post_id, "ga_pageviews", $stats['ga_pageviews']);
 			}
 		}
 	}
 
 	update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
 
-	/*
-	// Method B (directly from each social network)
+	// Custom action hook allows us to extend this function. 
+	do_action('smc_social_insight_sync', $post_id, $stats);
 
-	$json = file_get_contents("http://api.ak.facebook.com/restserver.php?v=1.0&method=links.getStats&urls=".rawurlencode($permalink)."&format=json");
-	$counts = json_decode($json, true);
-	echo "the Facebook count was: ".$counts[0]['total_count'];
-
-	$json = file_get_contents("http://urls.api.twitter.com/1/urls/count.json?url=".rawurlencode($permalink));
-	$counts = json_decode($json, true);
-	echo "Twitter returned: ".$counts['count'];
-	*/
-
-	return $total_count;
+	return $stats['socialcount_TOTAL'];
 }
 
 add_action( 'smc_update_single_post', 'smc_do_update', 10, 1 );
@@ -163,7 +171,6 @@ if ( is_admin() ){
 	
 	add_action('admin_menu', 'smc_setup_menus');
 	
-
 	include_once('smc-settings-setup.php');
 
 	add_action('admin_head', 'admin_header_scripts');
@@ -172,7 +179,6 @@ if ( is_admin() ){
 	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css?ver=5-24-13';
 	    echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
 	}
-
 
 
 	// BEGIN DASHBOARD
