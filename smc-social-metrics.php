@@ -192,11 +192,6 @@ if ( is_admin() ){
 	    //wp_add_dashboard_widget( 'social_chapman_widget_dashboard', __( 'Test My Dashboard' ), 'social_chapman_widget_dashboard' );
 	    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
 
-	    // Remove recent comments on dashboard
-	    remove_meta_box('dashboard_quick_press', 'dashboard', 'core'); // recent comments
-	    remove_meta_box('dashboard_primary', 'dashboard', 'side'); // recent comments
-	    remove_meta_box('dashboard_secondary', 'dashboard', 'side'); // recent comments
-	    remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side'); // recent comments
 	}	
 
 	add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
