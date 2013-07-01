@@ -34,7 +34,8 @@ if (!function_exists('smcNotificationPush')) {
 		// Configs
 		$post_url 					= 'http://127.0.0.1/'; // URL to send a POST notification to
 		$send_post_notifications 	= false; // Used for production
-		$send_email_notifications 	= true; // Used for debugging
+		$send_update_post_emails 	= true; // Used for debugging
+		$send_refresh_stats_emails 	= false; // Used for debugging
 		$emails 					= 'cole@chapman.edu'; // seperate multiple emails with commas
 		$domain_restriction			= ''; // Only execute if DOMAIN_CURRENT_SITE is set to this (useful for dev/production env)
 
@@ -153,7 +154,7 @@ if (!function_exists('smcNotificationPush')) {
 
 		$json = json_encode($data);
 
-		if ($send_email_notifications) {
+		if (($send_update_post_emails && $data['action'] != 'refresh_stats')  || ($send_refresh_stats_emails && $data['action'] == 'refresh_stats')) {
 
 			$headers = 'From: '.get_bloginfo('name').' <no-reply@mail.chapman.edu>' . "\r\n" .
 			'Reply-To: no-reply@mail.chapman.edu' . "\r\n";
