@@ -655,6 +655,7 @@ function smc_render_dashboard_view(){
 
 
         <?php
+
         // Verify the API authorization
         require_once ('smc-ga-query.php');
         if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {

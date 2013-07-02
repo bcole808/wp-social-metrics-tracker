@@ -94,6 +94,47 @@ $wpsf_settings[] = array(
 );
 
 $wpsf_settings[] = array(
+    'section_id' => 'inside',
+    'section_title' => 'Inside.Chapman.edu Link',
+    'section_description' => 'Synchronize posts and meta data to Inside.Chapman.edu for publication.',
+    'section_order' => 15,
+    'fields' => array(
+        array(
+            'id' => 'push_enabled',
+            'title' => 'Enable Sync',
+            'desc' => 'Send posts to Inside.Chapman.edu',
+            'type' => 'checkbox',
+            'std' => ''
+        ),
+        // array(
+        //     'id' => 'remote_url',
+        //     'title' => 'POST URL',
+        //     'desc' => 'URL to send notifications to. ',
+        //     'type' => 'text',
+        //     'std' => ''
+        // ),
+        array(
+            'id' => 'debug',
+            'title' => 'Email Notifications',
+            'desc' => 'Used for debugging. Recipient is hard-coded. ',
+            'type' => 'checkboxes',
+            'std' => array(),
+            'choices' => array(
+                'send_update_post_emails' => 'Send emails when posts are updated. (less frequent)',
+                'send_refresh_stats_emails' => 'Send emails when meta data is synchronized. (frequent)'
+            )
+        ),
+        // array(
+        //     'id' => 'emails',
+        //     'title' => 'Notification Emails',
+        //     'desc' => 'Seperate multiple emails with commas.',
+        //     'type' => 'text',
+        //     'std' => ''
+        // ),
+    )
+);
+
+$wpsf_settings[] = array(
     'section_id' => 'ga',
     'section_title' => 'Google Analytics API Settings',
     'section_description' => 'Enter your Google Analytics API Developer Info. You can sign up and create an API account here: <a href="https://code.google.com/apis/console/">https://code.google.com/apis/console/</a> IMPORTANT NOTE: On a Wordpress multi-site network the Google Analytics account authorization info will persist across all sites! Different profiles can be selected per site but the same login must be used.',

@@ -470,13 +470,10 @@ class TT_Example_List_Table extends WP_List_Table {
             $item['permalink'] = get_permalink($post->ID);
 
             $this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
-            // $this->data_max['socialcount_total']['average'] += $item['socialcount_total'];
 
             $this->data_max['views'] = max($this->data_max['views'], $item['views']);
-            // $this->data_max['views']['average'] += $item['views'];
 
             $this->data_max['comment_count'] = max($this->data_max['comment_count'], $item['comment_count']);
-            // $this->data_max['comment_count']['average'] += $item['comment_count'];
 
            array_push($data, $item);
         endwhile;
@@ -576,29 +573,6 @@ class TT_Example_List_Table extends WP_List_Table {
         }
     }
     
-}
-
-function timeago($time)
-{
-   $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
-   $lengths = array("60","60","24","7","4.35","12","10");
-
-   $now = time();
-
-       $difference     = $now - $time;
-       $tense         = "ago";
-
-   for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-       $difference /= $lengths[$j];
-   }
-
-   $difference = round($difference);
-
-   if($difference != 1) {
-       $periods[$j].= "s";
-   }
-
-   return "$difference $periods[$j] ago";
 }
 
 ?>

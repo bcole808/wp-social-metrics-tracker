@@ -31,13 +31,21 @@ function queue_smcNotificationPush_stats($post_ID, $cached_stats) {
 if (!function_exists('smcNotificationPush')) {
 	function smcNotificationPush($post_ID, $action = 'debug', $post_data = false, $cached_stats = false) {
 
+		// global $smc_options;
+		$smc_options = get_option('socialinsight_settings');
+
 		// Configs
-		$post_url 					= 'http://127.0.0.1/'; // URL to send a POST notification to
-		$send_post_notifications 	= false; // Used for production
-		$send_update_post_emails 	= true; // Used for debugging
-		$send_refresh_stats_emails 	= false; // Used for debugging
+		$post_url 					= ''; // URL to send a POST notification to
 		$emails 					= 'cole@chapman.edu'; // seperate multiple emails with commas
-		$domain_restriction			= ''; // Only execute if DOMAIN_CURRENT_SITE is set to this (useful for dev/production env)
+		$domain_restriction			= ''; // Only execute if we are running on this domain (useful for dev/production env). Leave blank to allow all. 
+
+		$send_post_notifications 	= filter_var($smc_options['socialinsight_inside_push_enabled'], FILTER_VALIDATE_BOOLEAN); // Used for production
+		$send_update_post_emails 	= filter_var($smc_options['socialinsight_inside_debug_send_update_post_emails'], FILTER_VALIDATE_BOOLEAN); // Used for debugging
+		$send_refresh_stats_emails 	= filter_var($smc_options['socialinsight_inside_debug_send_refresh_stats_emails'], FILTER_VALIDATE_BOOLEAN); // Used for debugging
+
+		// $send_post_notifications 	= false; // Used for production
+		// $send_update_post_emails 	= true; // Used for debugging
+		// $send_refresh_stats_emails 	= false; // Used for debugging
 
 		$domain_current_site = (defined('DOMAIN_CURRENT_SITE')) ? DOMAIN_CURRENT_SITE : $_SERVER['SERVER_NAME'];
 
@@ -47,13 +55,13 @@ if (!function_exists('smcNotificationPush')) {
 
 		// Do not run this function if we are not on an allowed domain
 		if ($domain_restriction && $domain_restriction != $domain_current_site) {
-			echo "Domain restriction failed: ".$domain_current_site . ' does not match ' .$domain_restriction;
+			//Domain restriction failed
 			return false; 
 		}
 
 		// Do not execute a push if the blog is not public!
 		if (!get_option('blog_public')) {
-			echo "BLOG IS NOT PUBLIC";
+			// BLOG IS NOT PUBLIC
 			return false;
 		}
 
