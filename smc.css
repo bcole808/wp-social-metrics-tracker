@@ -57,6 +57,26 @@
 #smc-social-insight .wp-list-table td.comments .total { padding:2px 5px; background-color:#02bac1; }
 
 
+/* Chart 2 */
+
+#smc-social-insight .wp-list-table td.decayed .bar { max-width:80%; min-width:32px; line-height:19px; padding-right:5px; background-color:#555555; color:#EEEEEE; }
+
+#smc-social-insight .wp-list-table td.aggregate .bar .social { display: inline-block; background-color:#3B5998; color:#CCCCCC; }
+#smc-social-insight .wp-list-table td.aggregate .bar .views { display: inline-block; background-color:#a9243b; color:#EEEEEE; }
+#smc-social-insight .wp-list-table td.aggregate .bar .comments { display: inline-block; background-color:#02bac1; color:#CCCCCC; }
+
+#smc-social-insight .wp-list-table tr:hover td.aggregate .bar.stats span { text-indent: 0;}
+
+
+#smc-social-insight .wp-list-table td.aggregate .bar {
+   -webkit-transition: all 0.1s ease-out;
+     -moz-transition: all 0.1s ease-out;
+       -o-transition: all 0.1s ease-out;
+          transition: all 0.1s ease-out;
+      }
+#smc-social-insight .wp-list-table td.aggregate .bar:hover { min-width:80%; opacity:0.9; }
+#smc-social-insight .wp-list-table td.aggregate .bar:hover span { text-indent: 0; }
+
 /* Dashboard */
 #dashboard-widgets #smc-social-insight .inside { padding:0; margin:0; }
 #dashboard-widgets #smc-social-insight .tablenav.top { display:none; }

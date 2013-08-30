@@ -443,6 +443,17 @@ class TT_Example_List_Table extends WP_List_Table {
             )); 
         }
 
+        if ($orderby == 'aggregate') {
+            $querydata = new WP_Query(array(
+                'order'=>$order,
+                'orderby'=>'meta_value_num',
+                'meta_key'=>'social_aggregate_score',
+                'posts_per_page'=>$limit,
+                'post_status'   => 'publish',
+                'post_type'     => $post_types
+            )); 
+        }
+
         if ($orderby == 'post_date') {
             $querydata = new WP_Query(array(
                 'order'=>$order,
@@ -584,6 +595,7 @@ class TT_Example_List_Table extends WP_List_Table {
             <label for="range">Show only:</label>
                     <select name="range">
                         <option value="1"<?php if ($range == 1) echo 'selected="selected"'; ?>>Items published within 1 Month</option>
+                        <option value="3"<?php if ($range == 3) echo 'selected="selected"'; ?>>Items published within 3 Months</option>
                         <option value="6"<?php if ($range == 6) echo 'selected="selected"'; ?>>Items published within 6 Months</option>
                         <option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
                         <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
@@ -651,8 +663,6 @@ function smc_render_dashboard_view(){
         
         <div id="icon-users" class="icon32"><br/></div>
         <h2>Social Insight Dashboard</h2>
-        <p style="font-weight:bold;">This plugin is in beta testing. Please report any issues to cole@chapman.edu</p>
-
 
         <?php
 

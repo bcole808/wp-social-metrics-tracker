@@ -35,16 +35,16 @@ if (!function_exists('smcNotificationPush')) {
 		$smc_options = get_option('socialinsight_settings');
 
 		// Configs
-		$post_url 					= ''; // URL to send a POST notification to
+		$post_url 					= 'http://hummingbird.insidechapman.net:3001/callback/wordpress'; // URL to send a POST notification to
 		$emails 					= 'cole@chapman.edu'; // seperate multiple emails with commas
-		$domain_restriction			= ''; // Only execute if we are running on this domain (useful for dev/production env). Leave blank to allow all. 
+		$domain_restriction			= 'blogs.chapman.edu'; // Only execute if we are running on this domain (useful for dev/production env). Leave blank to allow all. 
 
 		$send_post_notifications 	= filter_var($smc_options['socialinsight_inside_push_enabled'], FILTER_VALIDATE_BOOLEAN); // Used for production
-		$send_update_post_emails 	= filter_var($smc_options['socialinsight_inside_debug_send_update_post_emails'], FILTER_VALIDATE_BOOLEAN); // Used for debugging
-		$send_refresh_stats_emails 	= filter_var($smc_options['socialinsight_inside_debug_send_refresh_stats_emails'], FILTER_VALIDATE_BOOLEAN); // Used for debugging
+		$send_update_post_emails 	= ($smc_options['socialinsight_inside_debug_send_update_post_emails'] == 'send_update_post_emails'); // Used for debugging
+		$send_refresh_stats_emails 	= ($smc_options['socialinsight_inside_debug_send_refresh_stats_emails'] == 'send_refresh_stats_emails'); // Used for debugging
 
 		// $send_post_notifications 	= false; // Used for production
-		// $send_update_post_emails 	= true; // Used for debugging
+		// $send_update_post_emails 	= false; // Used for debugging
 		// $send_refresh_stats_emails 	= false; // Used for debugging
 
 		$domain_current_site = (defined('DOMAIN_CURRENT_SITE')) ? DOMAIN_CURRENT_SITE : $_SERVER['SERVER_NAME'];
@@ -106,6 +106,8 @@ if (!function_exists('smcNotificationPush')) {
 				'post' => array (
 					'guid'			=> $post_data->guid,
 					'stats'			=> array(
+						'social_aggregate_score'			=> ($cached_stats) ? $cached_stats['social_aggregate_score'] 		 : get_post_meta($post_ID, 'social_aggregate_score', true),
+						'social_aggregate_score_decayed'	=> ($cached_stats) ? $cached_stats['social_aggregate_score_decayed'] : get_post_meta($post_ID, 'social_aggregate_score_decayed', true),
 						'ga_pageviews'	=> ($cached_stats) ? $cached_stats['ga_pageviews'] : get_post_meta($post_ID, 'ga_pageviews', true),
 						'comment_count'	=> $post_data->comment_count,
 						'social_score'	=> array(
@@ -148,7 +150,7 @@ if (!function_exists('smcNotificationPush')) {
 					'post_date'		=> $post_data->post_date,
 					'post_modified'	=> $post_data->post_modified,
 					'post_title'	=> get_the_title($post_ID),
-					'post_content'	=> $post_data->post_content,
+					'post_content'	=> apply_filters('the_content', $post_data->post_content),
 					'post_excerpt'	=> $smc_post_excerpt,
 					'guid'			=> $post_data->guid,
 					'permalink'		=> get_permalink($post_ID),
@@ -172,7 +174,7 @@ if (!function_exists('smcNotificationPush')) {
 			$to = $emails;
 			$subject = $data['source']['domain'].': '.$data['action']. ': '.$data['post']['post_title']; ;
 
-			$message = '<h3>DEBUG NOTICE: smcNotificationPush() was called.</h3><br><pre>'.print_r($data, true).'</pre>';
+			$message = '<h3>DEBUG NOTICE: smcNotificationPush() was called. JSON Data:</h3><br><pre>'.print_r($json, true).'</pre>';
 
 			wp_mail($to, $subject, $message, $headers);
 		}
@@ -180,16 +182,19 @@ if (!function_exists('smcNotificationPush')) {
 		if ($send_post_notifications && $post_url) {
 
 			// Create a cURL connection
-			$ch = curl_init($url);
+			$ch = curl_init($post_url);
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt ($ch, CURLOPT_HTTPHEADER, Array("Content-Type: application/json"));
 			$response = curl_exec($ch);
-			curl_close($ch);
-
+			
 			// If the cURL response was not received, notify admin
-			if (!$response) mail($emails,'smcNotificationPush() error', 'The cURL POST failed. The JSON which was sent was: '.$json);
+			if ($response === false) {
+				$error = curl_error($ch);
+				mail($emails,'smcNotificationPush() error', 'The cURL POST failed. Error message: '.$error.'.  The JSON which was sent was: '.$json);
+			}
+
+			curl_close($ch);
 
 			return $response;
 		} 
