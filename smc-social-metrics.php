@@ -52,6 +52,7 @@ function smc_score_decay($score, $datePublished) {
 	// Config
 	$GRACE_PERIOD = 10.5;
 	$SECONDS_PER_DAY = 60*60*24;
+	$BOOST_PERIOD = 5;
 
 	// Data validation
 	if (!$score) return false;
@@ -60,11 +61,20 @@ function smc_score_decay($score, $datePublished) {
 	if (!$timestamp) return false;
 	if ($score < 0 || $timestamp <= 0) return false;
 
-	// Magic formula aka "Secret Sauce"
 	$daysActive = (time() - $timestamp) / $SECONDS_PER_DAY;
-	$aggregate = $score / (1.0 + pow(M_E,($daysActive - $GRACE_PERIOD)));
 
-	return  $aggregate;
+	// If newer than 5 days, boost. 
+	if ($daysActive < 5) {
+
+		$k = $score / ($BOOST_PERIOD*$BOOST_PERIOD);
+		$new_score = $k*($daysActive - $BOOST_PERIOD)*($daysActive - $BOOST_PERIOD) + $score;
+
+	// If older than 5 days, decay. 
+	} else {
+		$new_score = $score / (1.0 + pow(M_E,($daysActive - $GRACE_PERIOD)));
+	}
+
+	return  $new_score;
 }
 
 
@@ -85,52 +95,56 @@ function smc_do_update($post_id) {
 
 		// Get JSON data from api.sharedcount.com
 		$json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
-		$shared_count_service_data = json_decode($json, true);
 
-		// Load data into stats array
-		$stats = array();
-		$stats['socialcount_facebook'] = $shared_count_service_data['Facebook']['total_count'];
-		$stats['socialcount_twitter'] = $shared_count_service_data['Twitter'];
-		$stats['socialcount_googleplus'] = $shared_count_service_data['GooglePlusOne'];
-		$stats['socialcount_linkedin'] = $shared_count_service_data['LinkedIn'];
-		$stats['socialcount_pinterest'] = $shared_count_service_data['Pinterest'];
-		$stats['socialcount_diggs'] = $shared_count_service_data['Diggs'];
-		$stats['socialcount_delicious'] = $shared_count_service_data['Delicious'];
-		$stats['socialcount_reddit'] = $shared_count_service_data['Reddit'];
-		$stats['socialcount_stumbleupon'] = $shared_count_service_data['StumbleUpon'];
+		// Verify response
+		if ($json !== false) {
+			$shared_count_service_data = json_decode($json, true);
 
-		// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
-		$stats['socialcount_TOTAL'] = array_sum($stats);
-		update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
+			// Load data into stats array
+			$stats = array();
+			$stats['socialcount_facebook'] = $shared_count_service_data['Facebook']['total_count'];
+			$stats['socialcount_twitter'] = $shared_count_service_data['Twitter'];
+			$stats['socialcount_googleplus'] = $shared_count_service_data['GooglePlusOne'];
+			$stats['socialcount_linkedin'] = $shared_count_service_data['LinkedIn'];
+			$stats['socialcount_pinterest'] = $shared_count_service_data['Pinterest'];
+			$stats['socialcount_diggs'] = $shared_count_service_data['Diggs'];
+			$stats['socialcount_delicious'] = $shared_count_service_data['Delicious'];
+			$stats['socialcount_reddit'] = $shared_count_service_data['Reddit'];
+			$stats['socialcount_stumbleupon'] = $shared_count_service_data['StumbleUpon'];
 
-		// Facebook
-		if ($stats['socialcount_facebook'] > 0) 
-			update_post_meta($post_id, "socialcount_facebook", $stats['socialcount_facebook']);
-		// Twitter
-		if ($stats['socialcount_twitter'] > 0) 
-			update_post_meta($post_id, "socialcount_twitter", $stats['socialcount_twitter']);
-		// Google+
-		if ($stats['socialcount_googleplus'] > 0) 
-			update_post_meta($post_id, "socialcount_googleplus", $stats['socialcount_googleplus']);
-		// LinkedIn
-		if ($stats['socialcount_linkedin'] > 0) 
-			update_post_meta($post_id, "socialcount_linkedin", $stats['socialcount_linkedin']);
-		// Pinterest
-		if ($stats['socialcount_pinterest'] > 0) 
-			update_post_meta($post_id, "socialcount_pinterest", $stats['socialcount_pinterest']);
-		// Diggs
-		if ($stats['socialcount_diggs'] > 0) 
-			update_post_meta($post_id, "socialcount_diggs", $stats['socialcount_diggs']);
-		// Delicious
-		if ($stats['socialcount_delicious'] > 0) 
-			update_post_meta($post_id, "socialcount_delicious", $stats['socialcount_delicious']);
-		// Reddit
-		if ($stats['socialcount_reddit'] > 0) 
-			update_post_meta($post_id, "socialcount_reddit", $stats['socialcount_reddit']);
-		// StumbleUpon
-		if ($stats['socialcount_stumbleupon'] > 0) 
-			update_post_meta($post_id, "socialcount_stumbleupon", $stats['socialcount_stumbleupon']);
+			// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
+			$stats['socialcount_TOTAL'] = array_sum($stats);
+			update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
 
+			// Facebook
+			if ($stats['socialcount_facebook'] > 0) 
+				update_post_meta($post_id, "socialcount_facebook", $stats['socialcount_facebook']);
+			// Twitter
+			if ($stats['socialcount_twitter'] > 0) 
+				update_post_meta($post_id, "socialcount_twitter", $stats['socialcount_twitter']);
+			// Google+
+			if ($stats['socialcount_googleplus'] > 0) 
+				update_post_meta($post_id, "socialcount_googleplus", $stats['socialcount_googleplus']);
+			// LinkedIn
+			if ($stats['socialcount_linkedin'] > 0) 
+				update_post_meta($post_id, "socialcount_linkedin", $stats['socialcount_linkedin']);
+			// Pinterest
+			if ($stats['socialcount_pinterest'] > 0) 
+				update_post_meta($post_id, "socialcount_pinterest", $stats['socialcount_pinterest']);
+			// Diggs
+			if ($stats['socialcount_diggs'] > 0) 
+				update_post_meta($post_id, "socialcount_diggs", $stats['socialcount_diggs']);
+			// Delicious
+			if ($stats['socialcount_delicious'] > 0) 
+				update_post_meta($post_id, "socialcount_delicious", $stats['socialcount_delicious']);
+			// Reddit
+			if ($stats['socialcount_reddit'] > 0) 
+				update_post_meta($post_id, "socialcount_reddit", $stats['socialcount_reddit']);
+			// StumbleUpon
+			if ($stats['socialcount_stumbleupon'] > 0) 
+				update_post_meta($post_id, "socialcount_stumbleupon", $stats['socialcount_stumbleupon']);
+
+		} // end if $json !== false
 	}
 
 	// If analytics are being tracked, pull update
@@ -243,11 +257,10 @@ if ( is_admin() ){
 	
 	include_once('smc-settings-setup.php');
 
-	add_action('admin_head', 'admin_header_scripts');
+	add_action('admin_enqueue_scripts', 'admin_header_scripts');
 	function admin_header_scripts() {
-	    $siteurl = get_option('siteurl');
-	    $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/smc.css?ver=5-24-13';
-	    echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
+	    wp_register_style( 'smc_social_metrics_css', plugins_url( 'smc.css' , __FILE__ ), false, '11-15-13' );
+	    wp_enqueue_style( 'smc_social_metrics_css' );
 	}
 
 
