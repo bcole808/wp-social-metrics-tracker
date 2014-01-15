@@ -8,6 +8,8 @@ Author: Ben Cole, Strategic Marketing & Communications, Chapman University
 Author URI: http://smc.chapman.edu
 */
 
+date_default_timezone_set('America/Los_Angeles');
+
 global $smc_options;
 $smc_options = get_option('socialinsight_settings');
 

@@ -652,7 +652,18 @@ function smc_render_dashboard_view(){
         printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=smc-social-insight">Return to report view</a>');
         die();
     }
-    
+
+    $is_restricted = get_site_transient( 'inside_chapman_link_suspended' ); 
+    if ($is_restricted && current_user_can('manage_options')) {
+
+        if ($_REQUEST['reset_inside_smc_link']) {
+            delete_site_transient('inside_chapman_link_suspended');
+            delete_site_transient('inside_chapman_link_suspended_next_timeout');
+            printf( '<div class="updated"> <p> %s </p> </div>',  'The link to Inside.Chapman.edu has been enabled!');
+        } else {
+            printf( '<div class="error"> <p> %s </p> </div>', "Data syncing with Inside.Chapman.edu is currently paused due to a connectivity error. <a href=\"admin.php?page=smc-social-insight&reset_inside_smc_link=1\">Attempt to re-enable data syncing</a>" );
+        }
+    }    
     //Create an instance of our package class...
     $testListTable = new TT_Example_List_Table();
     //Fetch, prepare, sort, and filter our data...

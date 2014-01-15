@@ -40,7 +40,7 @@ if (!function_exists('smcNotificationPush')) {
 		$emails 					= 'cole@chapman.edu, miles.zimm@gmail.com'; // seperate multiple emails with commas
 		$domain_restriction			= 'blogs.chapman.edu'; // Only execute if we are running on this domain. Leave blank to allow all. 
 
-		$timeout_on_failed_push	= 7200; // 2 hours
+		$timeout_on_failed_push	= 120; // This is added to itself for each successive failure within 1 hour of expiry. 
 
 		$send_post_notifications 	= ($smc_options['socialinsight_inside_push_enabled'] == 1); // Used for production
 		$send_update_post_emails 	= ($smc_options['socialinsight_inside_debug_send_update_post_emails'] == 'send_update_post_emails'); // Used for debugging
@@ -208,9 +208,15 @@ if (!function_exists('smcNotificationPush')) {
 
 			// If the cURL response was not received, notify admin
 			if ($response === false) {
-				set_site_transient( 'inside_chapman_link_suspended', true, $timeout_on_failed_push ); // Suspend on error
 
-				$time_back = date("M j, g:i a", time() + $timeout_on_failed_push);  
+				$next_timeout = get_site_transient( 'inside_chapman_link_suspended_next_timeout' ) ?: $timeout_on_failed_push; 
+
+				set_site_transient( 'inside_chapman_link_suspended', true, $next_timeout ); // Suspend on error
+				set_site_transient( 'inside_chapman_link_suspended_next_timeout', $next_timeout + $timeout_on_failed_push, $next_timeout + 60*60 ); // Suspend on error
+
+
+
+				$time_back = date("M j, g:i a", time() + $next_timeout);  
 
 				$error = curl_error($ch);
 				mail($emails,'smcNotificationPush() error', 'The Inside.Chapman link has been suspended until '.$time_back.' because the cURL POST failed. Error message: '.$error.'.  The JSON which was sent was: '.$json);
@@ -280,6 +286,9 @@ if (!function_exists('createImageDataArray')) {
 		if (!$image_data) return false;
 		if ($image_data[1] < $minimum_size) return false;
 		if ($image_data[2] < ($minimum_size / 2)) return false;
+
+		// Do not allow portrait orientation images
+		if ($image_data[1] < $image_data[2]) return false;
 
 		$image_data_thumbnail 	= wp_get_attachment_image_src($image_id, 'thumbnail');
 		$image_data_medium 		= wp_get_attachment_image_src($image_id, 'Featured Rectangle'); // "Featured Rectangle"
