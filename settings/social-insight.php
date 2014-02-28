@@ -1,6 +1,7 @@
 <?php
 
 global $wpsf_settings;
+$wpsf_settings = array();
 
 $wpsf_settings[] = array(
     'section_id' => 'options',
@@ -10,13 +11,28 @@ $wpsf_settings[] = array(
     'fields' => array(
         array(
             'id' => 'report_visibility',
-            'title' => 'Report Visibility',
+            'title' => 'Basic Report Visibility',
             'desc' => 'The Social Insight data reports will be visible to users who have this capability.',
             'type' => 'select',
             'std' => 'publish_posts',
             'choices' => array(
                 'manage_network' => 'Super Admins (Users who can manage the network)',
-                'update_core' => 'Admins (Users who can update the WP core)',
+                'manage_options' => 'Admins (Users who can manage options)',
+                'edit_others_posts' => 'Editors (Users who can edit others posts)',
+                'publish_posts' => 'Authors (Users who can publish posts)',
+                'edit_posts' => 'Contributors (Users who can edit their own posts)',
+                'read' => 'Subscribers (Users who can read)'
+            )
+        ),
+        array(
+            'id' => 'advanced_report_visibility',
+            'title' => 'Advanced Report Visibility',
+            'desc' => 'The advanced analysis reports will be visible to users who have this capability.',
+            'type' => 'select',
+            'std' => 'update_core',
+            'choices' => array(
+                'manage_network' => 'Super Admins (Users who can manage the network)',
+                'manage_options' => 'Admins (Users who can manage options)',
                 'edit_others_posts' => 'Editors (Users who can edit others posts)',
                 'publish_posts' => 'Authors (Users who can publish posts)',
                 'edit_posts' => 'Contributors (Users who can edit their own posts)',
@@ -69,8 +85,9 @@ $wpsf_settings[] = array(
             'title' => 'Default Sort Order',
             'desc' => 'Which column should be sorted by default?',
             'type' => 'select',
-            'std' => 'views',
+            'std' => 'aggregate',
             'choices' => array(
+                'aggregate' => 'Overall Aggregate Score',
                 'views' => 'Most Views',
                 'comments' => 'Most Comments',
                 'social' => 'Highest Social Score',
@@ -85,11 +102,53 @@ $wpsf_settings[] = array(
             'std' => '6',
             'choices' => array(
                 '1' => '1 Month',
+                '3' => '3 Months',
                 '6' => '6 Months',
                 '12' => '12 Months',
                 '0' => 'All Time'
             )
         )
+    )
+);
+
+$wpsf_settings[] = array(
+    'section_id' => 'inside',
+    'section_title' => 'Inside.Chapman.edu Link',
+    'section_description' => 'Synchronize posts and meta data to Inside.Chapman.edu for publication.',
+    'section_order' => 15,
+    'fields' => array(
+        array(
+            'id' => 'push_enabled',
+            'title' => 'Enable Sync',
+            'desc' => 'Send posts to Inside.Chapman.edu',
+            'type' => 'checkbox',
+            'std' => ''
+        ),
+        // array(
+        //     'id' => 'remote_url',
+        //     'title' => 'POST URL',
+        //     'desc' => 'URL to send notifications to. ',
+        //     'type' => 'text',
+        //     'std' => ''
+        // ),
+        array(
+            'id' => 'debug',
+            'title' => 'Email Notifications',
+            'desc' => 'Used for debugging. Recipient is hard-coded. ',
+            'type' => 'checkboxes',
+            'std' => array(),
+            'choices' => array(
+                'send_update_post_emails' => 'Send emails when posts are updated. (less frequent)',
+                'send_refresh_stats_emails' => 'Send emails when meta data is synchronized. (frequent)'
+            )
+        ),
+        // array(
+        //     'id' => 'emails',
+        //     'title' => 'Notification Emails',
+        //     'desc' => 'Seperate multiple emails with commas.',
+        //     'type' => 'text',
+        //     'std' => ''
+        // ),
     )
 );
 

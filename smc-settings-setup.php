@@ -25,7 +25,7 @@ class SMC_Settings {
         //$page_hook = add_menu_page( __( 'smc_settings', $this->l10n ), __( 'smc_settings', $this->l10n ), 'update_core', 'smc_settings', array(&$this, 'settings_page') );
         //add_submenu_page( 'smc_settings', __( 'Settings', $this->l10n ), __( 'Settings', $this->l10n ), 'update_core', 'smc_settings', array(&$this, 'settings_page') );
 
-        add_options_page( 'Social Insight Settings', 'Social Insight', 'manage_options', 'smc_settings', array(&$this, 'settings_page') );
+        add_options_page( 'CU Strategic Marketing Settings', 'Chapman Marketing', 'manage_options', 'smc_settings', array(&$this, 'settings_page') );
     }
     
     function settings_page()

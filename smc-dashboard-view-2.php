@@ -35,6 +35,8 @@ if(!class_exists('WP_List_Table')){
 }
 
 
+
+
 /************************** CREATE A PACKAGE CLASS *****************************
  *******************************************************************************
  * Create a new list table package that extends the core WP_List_Table class.
@@ -48,7 +50,7 @@ if(!class_exists('WP_List_Table')){
  * 
  * Our theme for this list table is going to be movies.
  */
-class TT_Example_List_Table extends WP_List_Table {
+class SMC_Admin_Table extends WP_List_Table {
     
    
     /** ************************************************************************
@@ -93,11 +95,24 @@ class TT_Example_List_Table extends WP_List_Table {
      **************************************************************************/
     function column_default($item, $column_name){
         switch($column_name){
+
+            // case 'aggregate':
+            //     return number_format($item['commentcount_total'],0,'.',',');
+            // case 'views':
+            //     return number_format($item['views'],0,'.',',');
+            // case 'comments':
+            //     return number_format($item['comment_count'],0,'.',',');
             case 'date':
                 $dateString = date("M j, Y",strtotime($item['post_date']));
+
+                $SECONDS_PER_DAY = 60*60*24;
+                $daysActive = (time() - strtotime($item['post_date'])) / $SECONDS_PER_DAY;
+
+                $dateString .= '<br> '.round($daysActive, 1) . ' days ago';
                 return $dateString;
             default:
                 return 'Not Set';
+                //return print_r($item,true); //Show the whole array for troubleshooting purposes
         }
     }
     
@@ -122,10 +137,9 @@ class TT_Example_List_Table extends WP_List_Table {
         
         //Build row actions
         $actions = array(
-            // 'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
+            'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
             'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-            'pubdate'   => 'Published on ' . date("M j, Y",strtotime($item['post_date'])),
-            //'update'    => sprintf('Stats updated %s',timeago($item['socialcount_LAST_UPDATED']))
+            'update'    => sprintf('Decay last calculated %s',timeago($item['social_aggregate_score_decayed_last_updated']))
         );
         
         //Return the title contents
@@ -135,53 +149,56 @@ class TT_Example_List_Table extends WP_List_Table {
 
     // Column for Social
 
-    function column_social($item) {
+    function column_aggregate($item) {
 
         //return print_r($item,true);
-        $total = max($item['socialcount_total'], 1);
+        // $total = max($item['social_aggregate_score'], 1);
+        $total = $item['social_aggregate_score'];
 
-        $facebook = $item['socialcount_facebook'];
-        $facebook_percent = floor($facebook / $total * 100);
+        $social_score = $item['social_aggregate_score_detail']['social_points'];
+        $social_score_percent = floor($social_score / $total * 100);
 
-        $twitter = $item['socialcount_twitter'];
-        $twitter_percent = floor($twitter / $total * 100);
+        $views = $item['social_aggregate_score_detail']['view_points'];
+        $views_percent = floor($views / $total * 100);
 
-        $other = $total - $facebook - $twitter;
-        $other_percent = floor($other / $total * 100);
+        $comments = $item['social_aggregate_score_detail']['comment_points'];
+        $comments_percent = floor($comments / $total * 100);
 
-        $bar_width = round($total / $this->data_max['socialcount_total'] * 100);
+        $bar_width = round($total / $this->data_max['social_aggregate_score'] * 100);
         if ($total == 0) $bar_width = 0;
 
         $bar_class = ($bar_width > 50) ? ' stats' : '';
 
         $output = '';
         $output .= '<div class="bar'.$bar_class.'" style="width:'.$bar_width.'%">';
-        $output .= '<span class="facebook" style="width:'.$facebook_percent.'%">'. $facebook_percent .'% Facebook</span>';
-        $output .= '<span class="twitter" style="width:'.$twitter_percent.'%">'. $twitter_percent .'% Twitter</span>';
-        $output .= '<span class="other" style="width:'.$other_percent.'%">'. $other_percent .'% Other</span>';
+        $output .= '<span class="social" style="width:'.$social_score_percent.'%">'. $social_score_percent .'% Shares</span>';
+        $output .= '<span class="views" style="width:'.$views_percent.'%">'. $views_percent .'% Views</span>';
+        $output .= '<span class="comments" style="width:'.$comments_percent.'%">'. $comments_percent .'% Comments</span>';
         $output .= '</div>';
-        $output .= '<div class="total">'.number_format($total,0,'.',',') . '</div>';
+        $output .= '<div class="total">'.number_format($total,2,'.',',') . '</div>';
 
         return $output;
 
     }
 
     // Column for views
-    function column_views($item) {
+    function column_decayed($item) {
         $output = '';
-        $output .= '<div class="bar" style="width:'.round($item['views'] / $this->data_max['views'] * 100).'%">';
-        $output .= '<div class="total">'.number_format($item['views'],0,'.',',') . '</div>';
+        $output .= '<div class="bar" style="width:'.round($item['social_aggregate_score_decayed'] / $this->data_max['social_aggregate_score_decayed'] * 100).'%">';
+        $output .= '<div class="total">'.number_format($item['social_aggregate_score_decayed'],2,'.',',') . '</div>';
         $output .= '</div>';
 
         return $output;
     }
 
     // Column for comments
-    function column_comments($item) {
+    function column_misc($item) {
         $output = '';
-        $output .= '<div class="bar" style="width:'.round($item['comment_count'] / $this->data_max['comment_count'] * 100).'%">';
-        $output .= '<div class="total">'.number_format($item['comment_count'],0,'.',',') . '</div>';
-        $output .= '</div>';
+        // $output .= '<div class="bar" style="width:'.round($item['comment_count'] / $this->data_max['comment_count'] * 100).'%">';
+        // $output .= '<div class="total">'.number_format($item['comment_count'],0,'.',',') . '</div>';
+        // $output .= '</div>';
+
+        $output .= 'S ('.$item['socialcount_TOTAL'].') V ('.$item['ga_pageviews'].') C ('.$item['comment_count'].')';
 
         return $output;
     }
@@ -220,18 +237,18 @@ class TT_Example_List_Table extends WP_List_Table {
     function get_columns(){
         global $smc_options;
 
-        // $columns['date'] = 'Date';
+        $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        if ($smc_options['socialinsight_options_enable_social']) {
-            $columns['social'] = 'Social Score';
-        }
-        if ($smc_options['socialinsight_options_enable_analytics']) {
-            $columns['views'] = 'Views';
-        }
-        if ($smc_options['socialinsight_options_enable_comments']) {
-            $columns['comments'] = 'Comments';
-        }
+        // if ($smc_options['socialinsight_options_enable_social']) {
+            $columns['aggregate'] = 'Aggregate Score';
+        // }
+        // if ($smc_options['socialinsight_options_enable_analytics']) {
+            $columns['decayed'] = 'Time Decayed Score';
+        // }
+        // if ($smc_options['socialinsight_options_enable_comments']) {
+            $columns['misc'] = 'Original Data';
+        // }
 
         return $columns;
     }
@@ -252,11 +269,11 @@ class TT_Example_List_Table extends WP_List_Table {
      **************************************************************************/
     function get_sortable_columns() {
         $sortable_columns = array(
-            // 'date'      => array('post_date',true),
+            'date'      => array('post_date',true),
             //'title'     => array('title',false), 
-            // 'views'    => array('views',true),
-            // 'social'  => array('social',true),
-            // 'comments'  => array('comments',true)
+            'decayed'    => array('decayed',true),
+            'aggregate'  => array('aggregate',true),
+            // 'misc'  => array('misc',true)
         );
         return $sortable_columns;
     }
@@ -376,70 +393,58 @@ class TT_Example_List_Table extends WP_List_Table {
         //     LIMIT 2");
 
 
-        $order = 'DESC';
-        $orderby = $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
-        
+        $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
+        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'decayed'; //If no sort, default
     
         // Get custom post types to display in our report. 		
 		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
         unset($post_types['page']);
 		unset($post_types['attachment']);
         
-        $limit = 6;
+        $limit = 30;
 
         function filter_where( $where = '' ) {
-			global $smc_options;
+			// global $smc_options;
 						
-			$range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
+			// $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
 			
-			if ($range <= 0) return $where;
+			// if ($range <= 0) return $where;
 			
-        	$range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
-        	$range_top = "' AND post_date <= '".date("Y-m-d")."'";
+        	// $range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
+        	// $range_top = "' AND post_date <= '".date("Y-m-d")."'";
 						
-            $where .= $range_bottom . $range_top;
+            // $where .= $range_bottom . $range_top;
             return $where;
         }
 
         add_filter( 'posts_where', 'filter_where' );
 
-        if ($orderby == 'views') {
+        if ($orderby == 'decayed') {
             $querydata = new WP_Query(array(
-                'order'=>$order,
-                'orderby'=>'meta_value_num',
-                'meta_key'=>'ga_pageviews',
+                'order'         =>$order,
+                'orderby'       =>'meta_value_num',
+                'meta_key'      =>'social_aggregate_score_decayed',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
                 'post_type'     => $post_types
             )); 
         }
 
-        if ($orderby == 'comments') {
-            $querydata = new WP_Query(array(
-                'order'=>$order,
-                'orderby'=>'comment_count',
-                'posts_per_page'=>$limit,
-                'post_status'   => 'publish',
-                'post_type'     => $post_types
-            )); 
-        }
-
-        if ($orderby == 'social') {
-            $querydata = new WP_Query(array(
-                'order'=>$order,
-                'orderby'=>'meta_value_num',
-                'meta_key'=>'socialcount_TOTAL',
-                'posts_per_page'=>$limit,
-                'post_status'   => 'publish',
-                'post_type'     => $post_types
-            )); 
-        }
+        // if ($orderby == 'comments') {
+        //     $querydata = new WP_Query(array(
+        //         'order'         =>$order,
+        //         'orderby'       =>'comment_count',
+        //         'posts_per_page'=>$limit,
+        //         'post_status'   => 'publish',
+        //         'post_type'     => $post_types
+        //     )); 
+        // }
 
         if ($orderby == 'aggregate') {
             $querydata = new WP_Query(array(
-                'order'=>$order,
-                'orderby'=>'meta_value_num',
-                'meta_key'=>'social_aggregate_score',
+                'order'         =>$order,
+                'orderby'       =>'meta_value_num',
+                'meta_key'      =>'social_aggregate_score',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
                 'post_type'     => $post_types
@@ -448,21 +453,25 @@ class TT_Example_List_Table extends WP_List_Table {
 
         if ($orderby == 'post_date') {
             $querydata = new WP_Query(array(
-                'order'=>$order,
-                'orderby'=>'post_date',
+                'order'         =>$order,
+                'orderby'       =>'post_date',
                 'posts_per_page'=>$limit,
                 'post_status'   => 'publish',
 				'post_type'     => $post_types
             )); 
         }
+		
+		//$querydata = new WP_Query("post_status=publish&orderby=meta_value_num&meta_key=social_aggregate_score");
+
+        //print_r($querydata->query_vars);
 
         // Remove our date filter
         remove_filter( 'posts_where', 'filter_where' );
 
         $data=array();
 
-        $this->data_max['socialcount_total'] = 1;
-        $this->data_max['views'] = 1;
+        $this->data_max['social_aggregate_score'] = 1;
+        $this->data_max['social_aggregate_score_decayed'] = 1;
         $this->data_max['comment_count'] = 1;
 
         // foreach ($querydata as $querydatum ) {
@@ -473,18 +482,25 @@ class TT_Example_List_Table extends WP_List_Table {
             $item['post_title'] = $post->post_title;
             $item['post_date'] = $post->post_date;
             $item['comment_count'] = $post->comment_count;
-            $item['socialcount_total'] = smc_get_socialcount($post->ID, false);
+            $item['ga_pageviews'] = get_post_meta($post->ID, "ga_pageviews", true);
+            $item['social_aggregate_score'] = get_post_meta($post->ID, "social_aggregate_score", true);
+            $item['social_aggregate_score_detail'] = get_post_meta($post->ID, "social_aggregate_score_detail", true);
+            $item['social_aggregate_score_decayed'] = get_post_meta($post->ID, "social_aggregate_score_decayed", true);
             $item['socialcount_twitter'] = get_post_meta($post->ID, "socialcount_twitter", true);
             $item['socialcount_facebook'] = get_post_meta($post->ID, "socialcount_facebook", true);
-			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
-            $item['views'] = smc_get_views($post->ID);
+            $item['socialcount_TOTAL'] = get_post_meta($post->ID, "socialcount_TOTAL", true);
+            $item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
+			$item['social_aggregate_score_decayed_last_updated'] = get_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", true);
             $item['permalink'] = get_permalink($post->ID);
 
-            $this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
+            $this->data_max['social_aggregate_score'] = max($this->data_max['social_aggregate_score'], $item['social_aggregate_score']);
+            // $this->data_max['social_aggregate_score']['average'] += $item['social_aggregate_score'];
 
-            $this->data_max['views'] = max($this->data_max['views'], $item['views']);
+            $this->data_max['social_aggregate_score_decayed'] = max($this->data_max['social_aggregate_score_decayed'], $item['social_aggregate_score_decayed']);
+            // $this->data_max['views']['average'] += $item['views'];
 
             $this->data_max['comment_count'] = max($this->data_max['comment_count'], $item['comment_count']);
+            // $this->data_max['comment_count']['average'] += $item['comment_count'];
 
            array_push($data, $item);
         endwhile;
@@ -492,7 +508,7 @@ class TT_Example_List_Table extends WP_List_Table {
 
         // Calculate the averages
         // $num_entries = count($querydatum);
-        // $this->data_max['socialcount_total']['average'] = $this->data_max['socialcount_total']['average'] / $num_entries;
+        // $this->data_max['social_aggregate_score']['average'] = $this->data_max['social_aggregate_score']['average'] / $num_entries;
         // $this->data_max['views']['average'] = $this->data_max['views']['average'] / $num_entries;
                 
         
@@ -574,16 +590,131 @@ class TT_Example_List_Table extends WP_List_Table {
     function extra_tablenav( $which ) {
         global $smc_options;
         if ( $which == "top" ){
+            //The code that goes before the table is here
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
+            ?>
+            <!-- <label for="range">Show only:</label>
+                    <select name="range">
+                        <option value="1"<?php if ($range == 1) echo 'selected="selected"'; ?>>Items published within 1 Month</option>
+                        <option value="3"<?php if ($range == 3) echo 'selected="selected"'; ?>>Items published within 3 Months</option>
+                        <option value="6"<?php if ($range == 6) echo 'selected="selected"'; ?>>Items published within 6 Months</option>
+                        <option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
+                        <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
+                    </select>
 
+                    <input type="submit" name="filter" id="submit_filter" class="button" value="Filter"> -->
+
+            <?php
+            if (current_user_can('manage_options')) {
+                $url = add_query_arg(array('smc_recalculate_all_ranks' => 1), 'admin.php?page=smc_social_insight_advanced');
+                echo "<a href='$url' class='button' onClick='return confirm(\"This will recalculate ranking info for all posts. Are you sure?\")'>Recalculate all ranks</a>";
+            }
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
-            echo '<p style="float:left;">Showing most popular posts published within '.$smc_options['socialinsight_options_default_date_range_months'].' months</p>';
-            echo '<a href="admin.php?page=smc-social-insight" style="float:right; margin:10px;" class="button-primary">More Social Insights &raquo;</a>';
-
         }
     }
     
+}
+
+
+
+
+
+/** ************************ REGISTER THE TEST PAGE ****************************
+ *******************************************************************************
+ * Now we just need to define an admin page. For this example, we'll add a top-level
+ * menu item to the bottom of the admin menus.
+ */
+// function tt_add_menu_items(){
+//     add_menu_page('Example Plugin List Table', 'List Table Example', 'activate_plugins', 'tt_list_test', 'smc_render_dashboard_view');
+// } add_action('admin_menu', 'tt_add_menu_items');
+
+
+/***************************** RENDER TEST PAGE ********************************
+ *******************************************************************************
+ * This function renders the admin page and the example list table. Although it's
+ * possible to call prepare_items() and display() from the constructor, there
+ * are often times where you may need to include logic here between those steps,
+ * so we've instead called those methods explicitly. It keeps things flexible, and
+ * it's the way the list tables are used in the WordPress core.
+ */
+function smc_render_dashboard_view(){
+    global $smc_options;
+
+    if(!is_array($smc_options)) {
+        printf( '<div class="error"> <p> %s </p> </div>', "An administrator must <a class='login' href='options-general.php?page=smc_settings'>update the plugin settings </a> in order to enable data tracking." );
+
+        die();
+    }
+
+    if (isset($_GET['smc_recalculate_all_ranks'])) {
+        printf( '<div class="updated"> <p> %s </p> </div>',  'Now updating all social relevancy ranks... Do not navigate away from this page until it is complete! <a href="admin.php?page=smc_social_insight_advanced">Return to report view</a>');
+
+        smc_recalculate_all_ranks();
+        die();
+    }
+    
+    //Create an instance of our package class...
+    $testListTable = new SMC_Admin_Table();
+    //Fetch, prepare, sort, and filter our data...
+    $testListTable->prepare_items();
+    
+    ?>
+    <div class="wrap">
+        
+        <div id="icon-users" class="icon32"><br/></div>
+        <h2>Advanced Relevancy Rank Dashboard</h2>
+
+        <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
+        <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
+            <!-- For plugins, we also need to ensure that the form posts back to our current page -->
+            <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
+           
+            <!-- Now we can render the completed list table -->
+            <?php $testListTable->display() ?>
+        </form>
+
+        <?php //smc_queue_length(); ?>
+
+<!--         <h2>Frequently Asked Questions</h2>
+        
+        <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
+            <h3>What is Social Score?</h3>
+            <p>This is the number of people who shared, liked, or tweeted a post across various social networks. This number includes Facebook, Twitter, Google+, LinkedIn, Reddit, Digg, Delicious, StumbleUpon, and Pinterest. </p>
+            <h3>How are Views calculated?</h3>
+            <p>Data is gathered from Google Analytics. A view is counted when someone loads a post in their browser or on a mobile device.</p>
+            <h3>When is the data updated?</h3>
+            <p>Data is delayed by up to a few hours. An algorithm dynamically adjusts the update frequency of each post based on its popularity. </p>
+        </div> -->
+        
+    </div>
+    <?php
+}
+
+function timeago($time)
+{
+   $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
+   $lengths = array("60","60","24","7","4.35","12","10");
+
+   $now = time();
+
+       $difference     = $now - $time;
+       $tense         = "ago";
+
+   for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
+       $difference /= $lengths[$j];
+   }
+
+   $difference = round($difference);
+
+   if($difference != 1) {
+       $periods[$j].= "s";
+   }
+
+   return "$difference $periods[$j] ago";
 }
 
 ?>

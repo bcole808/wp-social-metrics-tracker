@@ -443,6 +443,17 @@ class TT_Example_List_Table extends WP_List_Table {
             )); 
         }
 
+        if ($orderby == 'aggregate') {
+            $querydata = new WP_Query(array(
+                'order'=>$order,
+                'orderby'=>'meta_value_num',
+                'meta_key'=>'social_aggregate_score',
+                'posts_per_page'=>$limit,
+                'post_status'   => 'publish',
+                'post_type'     => $post_types
+            )); 
+        }
+
         if ($orderby == 'post_date') {
             $querydata = new WP_Query(array(
                 'order'=>$order,
@@ -584,6 +595,7 @@ class TT_Example_List_Table extends WP_List_Table {
             <label for="range">Show only:</label>
                     <select name="range">
                         <option value="1"<?php if ($range == 1) echo 'selected="selected"'; ?>>Items published within 1 Month</option>
+                        <option value="3"<?php if ($range == 3) echo 'selected="selected"'; ?>>Items published within 3 Months</option>
                         <option value="6"<?php if ($range == 6) echo 'selected="selected"'; ?>>Items published within 6 Months</option>
                         <option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
                         <option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
@@ -640,7 +652,18 @@ function smc_render_dashboard_view(){
         printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=smc-social-insight">Return to report view</a>');
         die();
     }
-    
+
+    $is_restricted = get_site_transient( 'inside_chapman_link_suspended' ); 
+    if ($is_restricted && current_user_can('manage_options')) {
+
+        if ($_REQUEST['reset_inside_smc_link']) {
+            delete_site_transient('inside_chapman_link_suspended');
+            delete_site_transient('inside_chapman_link_suspended_next_timeout');
+            printf( '<div class="updated"> <p> %s </p> </div>',  'The link to Inside.Chapman.edu has been enabled!');
+        } else {
+            printf( '<div class="error"> <p> %s </p> </div>', "Data syncing with Inside.Chapman.edu is currently paused due to a connectivity error. <a href=\"admin.php?page=smc-social-insight&reset_inside_smc_link=1\">Attempt to re-enable data syncing</a>" );
+        }
+    }    
     //Create an instance of our package class...
     $testListTable = new TT_Example_List_Table();
     //Fetch, prepare, sort, and filter our data...
@@ -651,10 +674,9 @@ function smc_render_dashboard_view(){
         
         <div id="icon-users" class="icon32"><br/></div>
         <h2>Social Insight Dashboard</h2>
-        <p style="font-weight:bold;">This plugin is in beta testing. Please report any issues to cole@chapman.edu</p>
-
 
         <?php
+
         // Verify the API authorization
         require_once ('smc-ga-query.php');
         if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {
