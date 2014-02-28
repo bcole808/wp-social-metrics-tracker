@@ -90,13 +90,21 @@ function smc_do_update($post_id) {
 	global $smc_options; 
 	$smc_options = get_option('socialinsight_settings');
 
-	$permalink = get_permalink($post_id);
+	// For now remove secure protocol from URL
+	$permalink = str_replace("https://", "http://", get_permalink($post_id));
 
 	// If social is being tracked, pull update
 	if ($smc_options['socialinsight_options_enable_social']) {
 
 		// Get JSON data from api.sharedcount.com
-		$json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
+		// $json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
+
+		$curl_handle=curl_init();
+		curl_setopt($curl_handle, CURLOPT_URL,"http://api.sharedcount.com/?url=" . rawurlencode($permalink));
+		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 3);
+		curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+		$json = curl_exec($curl_handle);
+		curl_close($curl_handle);
 
 		// Verify response
 		if ($json !== false) {
@@ -117,6 +125,10 @@ function smc_do_update($post_id) {
 			// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
 			$stats['socialcount_TOTAL'] = array_sum($stats);
 			update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
+
+			// if (get_current_blog_id() == 2) {
+			// 	wp_mail('cole@chapman.edu', time().' debug', 'DEBUG DATA: '.$json. ' AND '. print_r($stats, true) .' from: '. $permalink. 'and ID is: '.$post_id. ' and current blog is: '.get_current_blog_id());
+			// }
 
 			// Facebook
 			if ($stats['socialcount_facebook'] > 0) 

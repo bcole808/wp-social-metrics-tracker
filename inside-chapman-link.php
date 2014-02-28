@@ -144,7 +144,8 @@ if (!function_exists('smcNotificationPush')) {
 					'name'			=> get_bloginfo('name'),
 					'description'	=> get_bloginfo('description'),
 					'domain'		=> $domain_current_site,
-					'home_url'		=> home_url()
+					'home_url'		=> home_url(),
+					'slug'			=> substr(home_url(), strrpos(home_url(), '/')+1)
 				),
 				'post' => array (
 					'ID' 			=> $post_data->ID,
@@ -155,7 +156,7 @@ if (!function_exists('smcNotificationPush')) {
 						'last_name'		=> get_the_author_meta('user_lastname', $author_id),
 						'description'	=> get_the_author_meta('user_description', $author_id),
 						'twitter'		=> get_the_author_meta('twitter', $author_id),
-						'user_email'	=> get_the_author_meta('user_email', $author_id),
+						'user_email'	=> get_the_author_meta('user_email', $author_id)
 					),
 					'post_date'		=> $post_data->post_date,
 					'post_modified'	=> $post_data->post_modified,
