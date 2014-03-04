@@ -10,6 +10,13 @@ $wpsf_settings[] = array(
     'section_order' => 10,
     'fields' => array(
         array(
+            'id' => 'display_widget',
+            'title' => 'Dashboard Widget',
+            'desc' => 'Show a widget on the main Dashboard with social insight stats.',
+            'type' => 'checkbox',
+            'std' => 1
+        ),
+        array(
             'id' => 'report_visibility',
             'title' => 'Basic Report Visibility',
             'desc' => 'The Social Insight data reports will be visible to users who have this capability.',
@@ -108,47 +115,6 @@ $wpsf_settings[] = array(
                 '0' => 'All Time'
             )
         )
-    )
-);
-
-$wpsf_settings[] = array(
-    'section_id' => 'inside',
-    'section_title' => 'Inside.Chapman.edu Link',
-    'section_description' => 'Synchronize posts and meta data to Inside.Chapman.edu for publication.',
-    'section_order' => 15,
-    'fields' => array(
-        array(
-            'id' => 'push_enabled',
-            'title' => 'Enable Sync',
-            'desc' => 'Send posts to Inside.Chapman.edu',
-            'type' => 'checkbox',
-            'std' => ''
-        ),
-        // array(
-        //     'id' => 'remote_url',
-        //     'title' => 'POST URL',
-        //     'desc' => 'URL to send notifications to. ',
-        //     'type' => 'text',
-        //     'std' => ''
-        // ),
-        array(
-            'id' => 'debug',
-            'title' => 'Email Notifications',
-            'desc' => 'Used for debugging. Recipient is hard-coded. ',
-            'type' => 'checkboxes',
-            'std' => array(),
-            'choices' => array(
-                'send_update_post_emails' => 'Send emails when posts are updated. (less frequent)',
-                'send_refresh_stats_emails' => 'Send emails when meta data is synchronized. (frequent)'
-            )
-        ),
-        // array(
-        //     'id' => 'emails',
-        //     'title' => 'Notification Emails',
-        //     'desc' => 'Seperate multiple emails with commas.',
-        //     'type' => 'text',
-        //     'std' => ''
-        // ),
     )
 );
 

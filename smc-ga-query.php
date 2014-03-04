@@ -85,7 +85,7 @@ function smc_gapi_loginout() {
 			} catch (Google_AuthException $e) {
 				// The authentication failed!
 				// We delete the failed token and force the user to re-auth. 
-				mail("cole@chapman.edu","smc-social-insight Exception 1",print_r($e,true));
+				mail(get_bloginfo('admin_email'),"smc-social-insight Exception 1",print_r($e,true));
 
 				echo "Authentication error.";
 				delete_site_option('smc_ga_token');
@@ -180,7 +180,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 	$smc_ga_profile = unserialize(get_option('smc_ga_profile'));
 
 	if (strlen($smc_ga_profile['id']) <= 0) { 
-		mail('cole@chapman.edu','Missing profile ID', $full_url);
+		mail(get_bloginfo('admin_email'), 'Missing profile ID', $full_url);
 		return false;
 	}
 
@@ -213,7 +213,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			// The authentication failed!
 			// We delete the failed token and force the user to re-auth. 
 
-			mail("cole@chapman.edu","smc-social-insight Exception 2",print_r($e,true));
+			mail(get_bloginfo('admin_email'),"smc-social-insight Exception 2",print_r($e,true));
 
 			delete_site_option('smc_ga_token');
 
@@ -259,7 +259,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			return ($single_result);
 
 		} catch (Exception $e) {
-			mail("cole@chapman.edu","smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
+			mail(get_bloginfo('admin_email'),"smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
 
 			//delete_site_option('smc_ga_token');
 			echo $e->getMessage();

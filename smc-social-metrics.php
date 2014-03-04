@@ -1,20 +1,15 @@
 <?php
 /*
-Plugin Name: Chapman Strategic Marketing Tools
+Plugin Name: Social Insight Dashboard
 Plugin URI: 
-Description: Collect and display social metrics and view counts of posts. Send posts and statistics to Inside.Chapman.edu to be publicized. 
-Version: 0.1 beta
+Description: Collect and display social metrics and view counts of posts.  
+Version: 0.9 (Beta)
 Author: Ben Cole, Strategic Marketing & Communications, Chapman University
 Author URI: http://smc.chapman.edu
 */
 
-date_default_timezone_set('America/Los_Angeles');
-
 global $smc_options;
 $smc_options = get_option('socialinsight_settings');
-
-// Include the Inside.Chapman Notification Scripts
-include_once('inside-chapman-link.php'); // comment out to disable
 
 // Retrieve the number of views for a post
 function smc_get_views($post_id = 0) {
@@ -97,8 +92,6 @@ function smc_do_update($post_id) {
 	if ($smc_options['socialinsight_options_enable_social']) {
 
 		// Get JSON data from api.sharedcount.com
-		// $json = file_get_contents("http://api.sharedcount.com/?url=" . rawurlencode($permalink));
-
 		$curl_handle=curl_init();
 		curl_setopt($curl_handle, CURLOPT_URL,"http://api.sharedcount.com/?url=" . rawurlencode($permalink));
 		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 3);
@@ -125,10 +118,6 @@ function smc_do_update($post_id) {
 			// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
 			$stats['socialcount_TOTAL'] = array_sum($stats);
 			update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
-
-			// if (get_current_blog_id() == 2) {
-			// 	wp_mail('cole@chapman.edu', time().' debug', 'DEBUG DATA: '.$json. ' AND '. print_r($stats, true) .' from: '. $permalink. 'and ID is: '.$post_id. ' and current blog is: '.get_current_blog_id());
-			// }
 
 			// Facebook
 			if ($stats['socialcount_facebook'] > 0) 
@@ -204,9 +193,9 @@ function smc_do_update($post_id) {
 
 if (DOMAIN_CURRENT_SITE == 'blogs.chapman.edu') {
 	add_action( 'smc_update_single_post', 'smc_do_update', 10, 1 );
+
 	// Schedule an update on each individual page load
 	add_action("wp_head", "smc_schedule_update");
-
 
 	function smc_schedule_update($post_id) {
 		global $smc_options;
@@ -273,42 +262,12 @@ if ( is_admin() ){
 
 	add_action('admin_enqueue_scripts', 'admin_header_scripts');
 	function admin_header_scripts() {
-	    wp_register_style( 'smc_social_metrics_css', plugins_url( 'smc.css' , __FILE__ ), false, '11-15-13' );
+	    wp_register_style( 'smc_social_metrics_css', plugins_url( 'social_insight.css' , __FILE__ ), false, '11-15-13' );
 	    wp_enqueue_style( 'smc_social_metrics_css' );
 	}
 
 
-	// BEGIN DASHBOARD
-
-	function smc_social_insight_widget_setup() {
-		global $smc_options;
-		if (!current_user_can($smc_options['socialinsight_options_report_visibility'])) {
-			return false;
-		}
-
-	    //wp_add_dashboard_widget( 'social_chapman_widget_dashboard', __( 'Test My Dashboard' ), 'social_chapman_widget_dashboard' );
-	    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
-
-	}	
-
-	add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
-
-
-	function smc_social_insight_widget() {
-
-		add_action('admin_head', 'admin_header_scripts');
-
-		require('smc-widget-view.php');
-
-		//Create an instance of our package class...
-		$socialInsightTable = new TT_Example_List_Table();
-		//Fetch, prepare, sort, and filter our data...
-		$socialInsightTable->prepare_items();
-
-		$socialInsightTable->display();
-	}
-
-	// END DASHBOARD
+	include_once('smc-widget-view.php');
 
 	
 	function smc_social_insight_dashboard() {

@@ -48,7 +48,7 @@ if(!class_exists('WP_List_Table')){
  * 
  * Our theme for this list table is going to be movies.
  */
-class TT_Example_List_Table extends WP_List_Table {
+class SocialInsightDashboardWidget extends WP_List_Table {
     
    
     /** ************************************************************************
@@ -585,5 +585,32 @@ class TT_Example_List_Table extends WP_List_Table {
     }
     
 }
+
+
+// BEGIN DASHBOARD
+add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
+function smc_social_insight_widget_setup() {
+    global $smc_options;
+
+    if (!current_user_can($smc_options['socialinsight_options_report_visibility'])) {
+        return false;
+    }
+
+    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
+}   
+
+function smc_social_insight_widget() {
+
+    add_action('admin_head', 'admin_header_scripts');
+
+    //Create an instance of our package class...
+    $socialInsightTable = new SocialInsightDashboardWidget();
+    //Fetch, prepare, sort, and filter our data...
+    $socialInsightTable->prepare_items();
+
+    $socialInsightTable->display();
+}
+
+// END DASHBOARD
 
 ?>

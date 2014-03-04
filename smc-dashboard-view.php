@@ -16,15 +16,6 @@
 */
 
 
-
-/* == NOTICE ===================================================================
- * Please do not alter this file. Instead: make a copy of the entire plugin, 
- * rename it, and work inside the copy. If you modify this plugin directly and 
- * an update is released, your changes will be lost!
- * ========================================================================== */
-
-
-
 /*************************** LOAD THE BASE CLASS *******************************
  *******************************************************************************
  * The WP_List_Table class isn't automatically available to plugins, so we need
@@ -33,7 +24,6 @@
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-
 
 
 
@@ -50,7 +40,7 @@ if(!class_exists('WP_List_Table')){
  * 
  * Our theme for this list table is going to be movies.
  */
-class TT_Example_List_Table extends WP_List_Table {
+class SocialInsightDashboard extends WP_List_Table {
     
    
     /** ************************************************************************
@@ -463,10 +453,6 @@ class TT_Example_List_Table extends WP_List_Table {
 				'post_type'     => $post_types
             )); 
         }
-		
-		//$querydata = new WP_Query("post_status=publish&orderby=meta_value_num&meta_key=socialcount_TOTAL");
-
-        //print_r($querydata->query_vars);
 
         // Remove our date filter
         remove_filter( 'posts_where', 'filter_where' );
@@ -617,9 +603,6 @@ class TT_Example_List_Table extends WP_List_Table {
 }
 
 
-
-
-
 /** ************************ REGISTER THE TEST PAGE ****************************
  *******************************************************************************
  * Now we just need to define an admin page. For this example, we'll add a top-level
@@ -653,19 +636,8 @@ function smc_render_dashboard_view(){
         die();
     }
 
-    $is_restricted = get_site_transient( 'inside_chapman_link_suspended' ); 
-    if ($is_restricted && current_user_can('manage_options')) {
-
-        if ($_REQUEST['reset_inside_smc_link']) {
-            delete_site_transient('inside_chapman_link_suspended');
-            delete_site_transient('inside_chapman_link_suspended_next_timeout');
-            printf( '<div class="updated"> <p> %s </p> </div>',  'The link to Inside.Chapman.edu has been enabled!');
-        } else {
-            printf( '<div class="error"> <p> %s </p> </div>', "Data syncing with Inside.Chapman.edu is currently paused due to a connectivity error. <a href=\"admin.php?page=smc-social-insight&reset_inside_smc_link=1\">Attempt to re-enable data syncing</a>" );
-        }
-    }    
     //Create an instance of our package class...
-    $testListTable = new TT_Example_List_Table();
+    $testListTable = new SocialInsightDashboard();
     //Fetch, prepare, sort, and filter our data...
     $testListTable->prepare_items();
     
@@ -684,8 +656,6 @@ function smc_render_dashboard_view(){
         }
 
         ?>
-
-
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
         <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
@@ -698,17 +668,6 @@ function smc_render_dashboard_view(){
         </form>
 
         <?php smc_queue_length(); ?>
-
-        <h2>Frequently Asked Questions</h2>
-        
-        <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
-            <h3>What is Social Score?</h3>
-            <p>This is the number of people who shared, liked, or tweeted a post across various social networks. This number includes Facebook, Twitter, Google+, LinkedIn, Reddit, Digg, Delicious, StumbleUpon, and Pinterest. </p>
-            <h3>How are Views calculated?</h3>
-            <p>Data is gathered from Google Analytics. A view is counted when someone loads a post in their browser or on a mobile device.</p>
-            <h3>When is the data updated?</h3>
-            <p>Data is delayed by up to a few hours. An algorithm dynamically adjusts the update frequency of each post based on its popularity. </p>
-        </div>
         
     </div>
     <?php
