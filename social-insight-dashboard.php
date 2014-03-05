@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Insight Dashboard
 Plugin URI: https://github.com/ChapmanU/WP-Social-Insight-Dashboard
-Description: Collect and display social metrics and view counts of posts.  
+Description: Collect and display social network shares, likes, tweets, and view counts of posts.  
 Version: 0.9 (Beta)
 Author: Ben Cole
 Author URI: http://www.bencole.net
@@ -155,7 +155,7 @@ function smc_do_update($post_id) {
 		$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
 
 		if (strlen($smc_ga_token) > 1) {
-			require_once ('smc-ga-query.php');
+			require_once ('google-analytics.php');
 
 			// Execute GA API query
 			$stats['ga_pageviews'] = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
@@ -258,7 +258,7 @@ if ( is_admin() ){
 	
 	add_action('admin_menu', 'smc_setup_menus');
 	
-	include_once('smc-settings-setup.php');
+	include_once('settings-setup.php');
 
 	add_action('admin_enqueue_scripts', 'admin_header_scripts');
 	function admin_header_scripts() {
@@ -267,7 +267,7 @@ if ( is_admin() ){
 	}
 
 
-	include_once('smc-widget-view.php');
+	include_once('dashboard-widget.php');
 
 	
 	function smc_social_insight_dashboard() {

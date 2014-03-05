@@ -15,7 +15,7 @@ class SMC_Settings {
         
         // Include and create a new WordPressSettingsFramework
         require_once( $this->plugin_path .'lib/wp-settings-framework.php' );
-        $this->smc_settings = new WordPressSettingsFramework( $this->plugin_path .'smc-settings.php' );
+        $this->smc_settings = new WordPressSettingsFramework( $this->plugin_path .'settings.php' );
 
         // Add an optional settings validation filter (recommended)
         add_filter( $this->smc_settings->get_option_group() .'_settings_validate', array(&$this, 'validate_settings') );
