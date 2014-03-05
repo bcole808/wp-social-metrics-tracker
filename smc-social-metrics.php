@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Social Insight Dashboard
-Plugin URI: 
+Plugin URI: https://github.com/ChapmanU/WP-Social-Insight-Dashboard
 Description: Collect and display social metrics and view counts of posts.  
 Version: 0.9 (Beta)
-Author: Ben Cole, Strategic Marketing & Communications, Chapman University
-Author URI: http://smc.chapman.edu
+Author: Ben Cole
+Author URI: http://www.bencole.net
 */
 
 global $smc_options;
