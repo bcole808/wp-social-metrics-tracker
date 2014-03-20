@@ -4,8 +4,8 @@ global $smc_options;
 define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
 define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);
 define('GAPI_DEVELOPER_KEY', $smc_options['socialinsight_ga_developer_key']);
-define('GAPI_REDIRECT_URI', admin_URL('/admin.php?page=smc-social-insight'));
-define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
+define('GAPI_REDIRECT_URI', admin_URL('/options-general.php?page=social-insight-settings'));
+define('GAPI_APPLICATION_NAME', get_bloginfo('name') . ' Social Insight Dashboard');
 
 require_once 'lib/google-api-php-client/Google_Client.php';
 require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';
@@ -24,9 +24,7 @@ function smc_gapi_loginout() {
 	$service = new Google_AnalyticsService($client);
 
 
-
 	// If we are logging out
-
 	if (isset($_GET['logout'])) {
 	    delete_site_option('smc_ga_token');
 	    delete_option('smc_ga_profile');
@@ -47,7 +45,7 @@ function smc_gapi_loginout() {
 
 	// If the API details have not been entered
 	if (strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
-		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=smc_settings'>add your Google API account detailes.</a>" );
+		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=social-insight-settings'>add your Google API account detailes.</a>" );
 		return false;
 	}
 
@@ -85,7 +83,7 @@ function smc_gapi_loginout() {
 			} catch (Google_AuthException $e) {
 				// The authentication failed!
 				// We delete the failed token and force the user to re-auth. 
-				mail(get_bloginfo('admin_email'),"smc-social-insight Exception 1",print_r($e,true));
+				// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 1",print_r($e,true));
 
 				echo "Authentication error.";
 				delete_site_option('smc_ga_token');
@@ -96,7 +94,7 @@ function smc_gapi_loginout() {
 			$message = "<h3>Select the profile associated with this Wordpress blog:</h3>";
 			$profiles = getProfilesArray($service);
 			foreach ($profiles as $profile) {
-				$message .= $profile['parent'].': <a href="admin.php?page=smc-social-insight&profile_id='.$profile['id'].'&profile_name='.urlencode($profile['name']).'">'.$profile['name'] . ' ('.$profile['id'].')</a><br>';
+				$message .= $profile['parent'].': <a href="options-general.php?page=social-insight-settings&profile_id='.$profile['id'].'&profile_name='.urlencode($profile['name']).'">'.$profile['name'] . ' ('.$profile['id'].')</a><br>';
 			}
 			printf( '<div class="error"> <p> %s </p> </div>', $message );
 			return false;
@@ -107,11 +105,8 @@ function smc_gapi_loginout() {
 	// Token found
 	if (strlen($smc_ga_token) > 1 && current_user_can('manage_options')) {
 
-	    //$url_parts = parse_url(home_url());
-	    //$url_path = $url_parts['path'] . '/';
-
-	    $logout_url = add_query_arg(array('logout'=>1), 'admin.php?page=smc-social-insight');
-	    echo '<br>Google API is connected to '.$smc_ga_profile['name'].'('.$smc_ga_profile['id'].') <a href="'.$logout_url.'">Disconnect Google Analytics</a>';
+	    $logout_url = add_query_arg(array('logout'=>1), 'options-general.php?page=social-insight-settings');
+	    echo '<div class="updated fade"><p>Google Analytics is connected to the account '.$smc_ga_profile['name'].' ('.$smc_ga_profile['id'].') <a href="'.$logout_url.'">Disconnect Google Analytics</a></p></div>';
 
 	} 
 
@@ -147,28 +142,6 @@ function getProfilesArray($analytics) {
 	}
 
 	return $return;
-}
-
-function smc_queue_length() {
-
-	$queue = array();
-	$cron = _get_cron_array();
-	foreach ( $cron as $timestamp => $cronhooks ) {
-		foreach ( (array) $cronhooks as $hook => $events ) {
-			foreach ( (array) $events as $key => $event ) {
-				if ($hook == 'smc_update_single_post') {
-					array_push($queue, $cron[$timestamp][$hook][$key]['args'][0]);
-				}
-			}
-		}
-	}
-
-	$count = count($queue);
-	if ($count >= 1) {
-		$label = ($count >=2) ? ' items' : ' item';
-		printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
-	}
-
 }
 
 
@@ -213,10 +186,8 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			// The authentication failed!
 			// We delete the failed token and force the user to re-auth. 
 
-			mail(get_bloginfo('admin_email'),"smc-social-insight Exception 2",print_r($e,true));
-
+			// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 2",print_r($e,true));
 			delete_site_option('smc_ga_token');
-
 			echo $e->getMessage();
 		}
 	} else {
@@ -225,10 +196,6 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 
 	if ($client->getAccessToken()) {
 		try {
-
-			//echo "token: ".print_r($client->getAccessToken());
-
-			//echo '<hr>';
 
 			$options = array(
 				'dimensions'	=> 'ga:pagePath',
@@ -245,22 +212,16 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 				$options
 			); 
 
-			//print_r($result->getRows());
-			//echo '<hr><hr>';
 			$single_result = 0;
 			$single_result = $result->getRows();
 			$single_result = $single_result[0][1];
 
 			if (!$single_result) $single_result = 0;
 
-			
-			//echo "Database token updated.";
-
 			return ($single_result);
 
 		} catch (Exception $e) {
-			mail(get_bloginfo('admin_email'),"smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
-
+			// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
 			//delete_site_option('smc_ga_token');
 			echo $e->getMessage();
 		}
@@ -271,5 +232,4 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 	}
 }
 
-// echo smc_ga_getPageviewsByURL('/happenings/');
 ?>

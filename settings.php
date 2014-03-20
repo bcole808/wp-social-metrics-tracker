@@ -121,7 +121,17 @@ $wpsf_settings[] = array(
 $wpsf_settings[] = array(
     'section_id' => 'ga',
     'section_title' => 'Google Analytics API Settings',
-    'section_description' => 'Enter your Google Analytics API Developer Info. You can sign up and create an API account here: <a href="https://code.google.com/apis/console/">https://code.google.com/apis/console/</a> IMPORTANT NOTE: On a Wordpress multi-site network the Google Analytics account authorization info will persist across all sites! Different profiles can be selected per site but the same login must be used.',
+    'section_description' => 'Enter your Google Analytics API Developer Info. 
+        <ol>
+        <li>Sign up and create an API account here: <a href="https://code.google.com/apis/console/" target="_blank">https://code.google.com/apis/console/</a></li>
+        <li>Create an OAuth Client ID for a Web Application</li>
+        <li>When asked for a Redirect URI, enter this: <b>'.get_admin_url(get_current_blog_id(), 'options-general.php?page=social-insight-settings').'</b></li>
+        <li>Enter the information you receive below.</li>
+
+        <li>Make sure to configure the product name on the "Consent Screen" for the Google Analytics API</li>
+        <li>Save the settings, then click "Sign in to Google Analytics" (it will apppear at the top of this page)</li>
+        </ol>
+        ',
     'section_order' => 20,
     'fields' => array(
         array(
@@ -132,26 +142,19 @@ $wpsf_settings[] = array(
             'std' => ''
         ),
         array(
+            'id' => 'developer_key',
+            'title' => 'Google API Developer Key / "Email Address"',
+            'desc' => 'Obtained from Google after creating a developer account.',
+            'type' => 'text',
+            'std' => ''
+        ),
+        array(
             'id' => 'client_secret',
             'title' => 'Google API Client Secret',
             'desc' => 'Obtained from Google after creating a developer account.',
             'type' => 'text',
             'std' => ''
-        ),
-        array(
-            'id' => 'developer_key',
-            'title' => 'Google API Developer Key',
-            'desc' => 'Obtained from Google after creating a developer account.',
-            'type' => 'text',
-            'std' => ''
-        ),
-        array(
-            'id' => 'client_id',
-            'title' => 'Google API Client ID',
-            'desc' => 'Obtained from Google after creating a developer account.',
-            'type' => 'text',
-            'std' => ''
-        ),
+        )
     )
 );
 
