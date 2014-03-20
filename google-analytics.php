@@ -5,7 +5,7 @@ define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
 define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);
 define('GAPI_DEVELOPER_KEY', $smc_options['socialinsight_ga_developer_key']);
 define('GAPI_REDIRECT_URI', admin_URL('/options-general.php?page=social-insight-settings'));
-define('GAPI_APPLICATION_NAME', get_bloginfo('name'));
+define('GAPI_APPLICATION_NAME', get_bloginfo('name') . ' Social Insight Dashboard');
 
 require_once 'lib/google-api-php-client/Google_Client.php';
 require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';

@@ -22,7 +22,7 @@ $apiConfig = array(
     'use_objects' => true,
   
     // The application_name is included in the User-Agent HTTP header.
-    'application_name' => 'blogs.chapman.edu',
+    'application_name' => DOMAIN_CURRENT_SITE,
 
     // OAuth2 Settings, you can get these keys at https://code.google.com/apis/console
     'oauth2_client_id' => '',
