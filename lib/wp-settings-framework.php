@@ -276,7 +276,7 @@ if( !class_exists('WordPressSettingsFramework') ){
     		do_action('wpsf_after_settings');
         }
     
-    }   
+    }
 }
 
 if( !function_exists('wpsf_get_option_group') ){
