@@ -16,7 +16,7 @@ if(!class_exists('WP_List_Table')){
     require_once( 'lib/class-wp-list-table.php' );
 }
 
-class SMC_Admin_Table extends WP_List_Table {
+class SocialInsightDebug extends WP_List_Table {
     
     function __construct(){
         global $status, $page, $data_max, $smc_options;
@@ -359,7 +359,7 @@ function smc_render_dashboard_2_view(){
     global $smc_options;
 
     //Create an instance of our package class...
-    $testListTable = new SMC_Admin_Table();
+    $testListTable = new SocialInsightDebug();
     //Fetch, prepare, sort, and filter our data...
     $testListTable->prepare_items();
     

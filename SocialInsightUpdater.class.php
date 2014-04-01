@@ -9,6 +9,11 @@
 *
 * Updates are triggered by page views, so if no one views a page then no new data is fetched (but that is okay, because if no one views the page then that means the data has not changed). 
 ***************************************************/
+
+// Data source adapters
+require('data-sources/sharedcount.com.php');
+// require('data-sources/googleanalytics.php'); // Not working in this version
+
 class SocialInsightUpdater {
 
 	private $options;
@@ -16,20 +21,25 @@ class SocialInsightUpdater {
 	public function __construct($options = false) {
 
 		// Set options
-		if (!$options) {
-			$this->options = get_option('socialinsight_settings');
-		} else {
-			$this->options = $options;
+		$this->options = ($options) ? $options : get_option('socialinsight_settings');
+
+		// Import adapters for 3rd party services
+		if (class_exists('SharedCountUpdater') && $this->options['socialinsight_options_enable_social']) {
+			$SharedCountUpdater = new SharedCountUpdater();
 		}
 
+		// If analytics are being tracked, pull update
+		if (class_exists('GoogleAnalyticsUpdater') && $this->options['socialinsight_options_enable_analytics']) {
+			$GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
+		}
+
+		// Check post on each page load
+		add_action( 'wp_head', array($this, 'checkThisPost'));
 
 		// Set up event hooks
+		add_action( 'social_insight_schedule_full_update', 'smc_do_full_update', 10 );
 		add_action( 'social_insight_full_update', array( $this, 'scheduleFullDataSync' ) );
 		add_action( 'social_insight_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
-		add_action( 'social_insight_schedule_full_update', 'smc_do_full_update', 10 );
-
-		// Check on each page load if we should run an update
-		add_action("wp_head", array($this, 'checkThisPost'));
 
 	} // end constructor
 
@@ -148,82 +158,8 @@ class SocialInsightUpdater {
 		// Remove secure protocol from URL
 		$permalink = str_replace("https://", "http://", get_permalink($post_id));
 
-		// If social is being tracked, pull update
-		if ($this->options['socialinsight_options_enable_social']) {
-
-			// Get JSON data from api.sharedcount.com
-			$curl_handle=curl_init();
-			curl_setopt($curl_handle, CURLOPT_URL,"http://api.sharedcount.com/?url=" . rawurlencode($permalink));
-			curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 3);
-			curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-			$json = curl_exec($curl_handle);
-			curl_close($curl_handle);
-
-			// Verify response
-			if ($json !== false) {
-				$shared_count_service_data = json_decode($json, true);
-
-				// Load data into stats array
-				$stats = array();
-				$stats['socialcount_facebook'] 		= $shared_count_service_data['Facebook']['total_count'];
-				$stats['socialcount_twitter'] 		= $shared_count_service_data['Twitter'];
-				$stats['socialcount_googleplus'] 	= $shared_count_service_data['GooglePlusOne'];
-				$stats['socialcount_linkedin'] 		= $shared_count_service_data['LinkedIn'];
-				$stats['socialcount_pinterest'] 	= $shared_count_service_data['Pinterest'];
-				$stats['socialcount_diggs'] 		= $shared_count_service_data['Diggs'];
-				$stats['socialcount_delicious'] 	= $shared_count_service_data['Delicious'];
-				$stats['socialcount_reddit']		= $shared_count_service_data['Reddit'];
-				$stats['socialcount_stumbleupon'] 	= $shared_count_service_data['StumbleUpon'];
-
-				// There is nothing else in the $stats array YET but we will add more later. We can use the sum for now. 
-				$stats['socialcount_TOTAL'] = array_sum($stats);
-				update_post_meta($post_id, "socialcount_TOTAL", $stats['socialcount_TOTAL']);
-
-				// Facebook
-				if ($stats['socialcount_facebook'] > 0) 
-					update_post_meta($post_id, "socialcount_facebook", $stats['socialcount_facebook']);
-				// Twitter
-				if ($stats['socialcount_twitter'] > 0) 
-					update_post_meta($post_id, "socialcount_twitter", $stats['socialcount_twitter']);
-				// Google+
-				if ($stats['socialcount_googleplus'] > 0) 
-					update_post_meta($post_id, "socialcount_googleplus", $stats['socialcount_googleplus']);
-				// LinkedIn
-				if ($stats['socialcount_linkedin'] > 0) 
-					update_post_meta($post_id, "socialcount_linkedin", $stats['socialcount_linkedin']);
-				// Pinterest
-				if ($stats['socialcount_pinterest'] > 0) 
-					update_post_meta($post_id, "socialcount_pinterest", $stats['socialcount_pinterest']);
-				// Diggs
-				if ($stats['socialcount_diggs'] > 0) 
-					update_post_meta($post_id, "socialcount_diggs", $stats['socialcount_diggs']);
-				// Delicious
-				if ($stats['socialcount_delicious'] > 0) 
-					update_post_meta($post_id, "socialcount_delicious", $stats['socialcount_delicious']);
-				// Reddit
-				if ($stats['socialcount_reddit'] > 0) 
-					update_post_meta($post_id, "socialcount_reddit", $stats['socialcount_reddit']);
-				// StumbleUpon
-				if ($stats['socialcount_stumbleupon'] > 0) 
-					update_post_meta($post_id, "socialcount_stumbleupon", $stats['socialcount_stumbleupon']);
-
-			} // end if $json !== false
-		}
-
-		// If analytics are being tracked, pull update
-		if ($this->options['socialinsight_options_enable_analytics']) {
-			$smc_ga_token = unserialize(get_site_option('smc_ga_token'));
-
-			if (strlen($smc_ga_token) > 1) {
-				require_once ('google-analytics.php');
-
-				// Execute GA API query
-				$stats['ga_pageviews'] = smc_ga_getPageviewsByURL($permalink, $smc_ga_token);
-				if ($stats['ga_pageviews'] > 0) {
-					update_post_meta($post_id, "ga_pageviews", $stats['ga_pageviews']);
-				}
-			}
-		}
+		// Retrieve 3rd party data updates
+		do_action('social_insight_data_sync', $post_id, $permalink);
 
 		// Last updated time
 		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
@@ -233,6 +169,7 @@ class SocialInsightUpdater {
 
 		// Calculate aggregate score. 
 		$social_aggregate_score_detail = $this->calculateScoreAggregate($stats['socialcount_TOTAL'], $stats['ga_pageviews'], $post->comment_count);
+
 		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
 		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
 
@@ -240,13 +177,15 @@ class SocialInsightUpdater {
 
 		// Calculate decayed score.
 		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
+
 		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
 		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
 
 		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
 		// Custom action hook allows us to extend this function. 
-		do_action('smc_social_insight_sync', $post_id, $stats);
+		do_action('smc_social_insight_sync', $post_id, $stats); // remove this after updating other references
+		do_action('social_insight_data_sync_complete', $post_id, $stats);
 
 		return $stats['socialcount_TOTAL'];
 	} // end updatePostStats()

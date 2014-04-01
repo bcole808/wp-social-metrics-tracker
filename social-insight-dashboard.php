@@ -75,7 +75,7 @@ class SocialInsightDashboard {
 	}
 
 	public function adminHeaderScripts() {
-		wp_register_style( 'smc_social_metrics_css', plugins_url( 'social_insight.css' , __FILE__ ), false, '11-15-13' );
+		wp_register_style( 'smc_social_metrics_css', plugins_url( 'css/social_insight.css' , __FILE__ ), false, '11-15-13' );
 		wp_enqueue_style( 'smc_social_metrics_css' );
 	} // end adminHeaderScripts()
 

@@ -117,7 +117,7 @@ $wpsf_settings[] = array(
         )
     )
 );
-
+/*
 $wpsf_settings[] = array(
     'section_id' => 'ga',
     'section_title' => 'Google Analytics API Settings',
@@ -158,6 +158,7 @@ $wpsf_settings[] = array(
     )
 );
 
+*/
 /*
 // General Settings section
 $wpsf_settings[] = array(
