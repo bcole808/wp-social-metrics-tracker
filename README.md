@@ -8,12 +8,9 @@ This Wordpress plugin collects and display an analysis of social media interacti
 
 # Setup
 
-1. Install the wordpress plugin.
-2. Create a Google Analytics API account here: https://code.google.com/apis/console/
-3. Enter your Google Analytics API credentials into Wordpress at Settings > Social Insight
-4. Go to the Social Insight dashboard page and select the correct Google Analytics site profile
-
-You must save the plugin settings page before this plugin will work. 
+1. Install and activate the wordpress plugin.
+2. Data will automaticall begin syncing. This will take some time. 
+3. Review the plugin settings under *Settings > Social Insight*
 
 # FAQ
 
@@ -24,3 +21,7 @@ A: Share counts and interactions are gathered from the http://www.sharedcount.co
 ### Q: What social networks are measured?
 
 A: SharedCount.com checks the following social networks: Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+
+### Q: What about page views?
+
+A: Page views will be added in a future iteration of the plugin. 

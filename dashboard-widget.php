@@ -14,9 +14,14 @@ class SocialInsightDashboardWidget extends WP_List_Table {
     
    
     function __construct(){
-        global $status, $page, $data_max, $smc_options;
+        global $status, $page;
 
-        $data_max = array();
+        $this->options = get_option('socialinsight_settings');
+
+        // Do not run if current user not allowed to see this
+        if (!current_user_can($this->options['socialinsight_options_report_visibility'])) return false;
+
+        add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
                 
         //Set parent defaults
         parent::__construct( array(
@@ -24,7 +29,20 @@ class SocialInsightDashboardWidget extends WP_List_Table {
             'plural'    => 'posts',    //plural name of the listed records
             'ajax'      => false        //does this table support ajax?
         ) );
-        
+
+    }
+
+    function dashboard_setup() {
+        add_meta_box( 'smc-social-insight', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
+
+    }
+
+    function render_widget() {
+
+        // add_action('admin_head', 'admin_header_scripts');
+
+        $this->prepare_items();
+        $this->display();
     }
     
     function column_default($item, $column_name){
@@ -106,18 +124,17 @@ class SocialInsightDashboardWidget extends WP_List_Table {
     }
     
     function get_columns(){
-        global $smc_options;
 
         // $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        if ($smc_options['socialinsight_options_enable_social']) {
+        if ($this->options['socialinsight_options_enable_social']) {
             $columns['social'] = 'Social Score';
         }
-        if ($smc_options['socialinsight_options_enable_analytics']) {
+        if ($this->options['socialinsight_options_enable_analytics']) {
             $columns['views'] = 'Views';
         }
-        if ($smc_options['socialinsight_options_enable_comments']) {
+        if ($this->options['socialinsight_options_enable_comments']) {
             $columns['comments'] = 'Comments';
         }
 
@@ -146,11 +163,24 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         
         
     }
+
+    function date_range_filter( $where = '' ) {
+                    
+        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+        
+        if ($range <= 0) return $where;
+        
+        $range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
+        $range_top = "' AND post_date <= '".date("Y-m-d")."'";
+                    
+        $where .= $range_bottom . $range_top;
+        return $where;
+    }
     
     
     function prepare_items() {
         global $wpdb; //This is used only if making any database queries
-        global $smc_options;
+        
 
         /**
          * First, lets decide how many records per page to show
@@ -168,7 +198,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         
 
         $order = 'DESC';
-        $orderby = $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
+        $orderby = $this->options['socialinsight_options_default_sort_column']; //If no sort, default
         
     
         // Get custom post types to display in our report. 		
@@ -178,21 +208,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         
         $limit = 6;
 
-        function filter_where( $where = '' ) {
-			global $smc_options;
-						
-			$range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
-			
-			if ($range <= 0) return $where;
-			
-        	$range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
-        	$range_top = "' AND post_date <= '".date("Y-m-d")."'";
-						
-            $where .= $range_bottom . $range_top;
-            return $where;
-        }
-
-        add_filter( 'posts_where', 'filter_where' );
+        add_filter( 'posts_where', array($this, 'date_range_filter') );
 
         if ($orderby == 'views') {
             $querydata = new WP_Query(array(
@@ -248,7 +264,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         }
 
         // Remove our date filter
-        remove_filter( 'posts_where', 'filter_where' );
+        remove_filter( 'posts_where', array($this, 'date_range_filter') );
 
         $data=array();
 
@@ -302,15 +318,15 @@ class SocialInsightDashboardWidget extends WP_List_Table {
      * @param string $which, helps you decide if you add the markup after (bottom) or before (top) the list
      */
     function extra_tablenav( $which ) {
-        global $smc_options;
+        
         if ( $which == "top" ){
 
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
-            $period = ($smc_options['socialinsight_options_default_date_range_months'] > 1) ? 'months' : 'month';
+            $period = ($this->options['socialinsight_options_default_date_range_months'] > 1) ? 'months' : 'month';
 
-            echo '<p style="float:left;">Showing most popular posts published within '.$smc_options['socialinsight_options_default_date_range_months'].' '.$period.'.</p>';
+            echo '<p style="float:left;">Showing most popular posts published within '.$this->options['socialinsight_options_default_date_range_months'].' '.$period.'.</p>';
             echo '<a href="admin.php?page=smc-social-insight" style="float:right; margin:10px;" class="button-primary">More Social Insights &raquo;</a>';
 
         }
@@ -318,31 +334,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
     
 }
 
+$socialInsightTable = new SocialInsightDashboardWidget();
 
-// BEGIN DASHBOARD
-add_action('wp_dashboard_setup', 'smc_social_insight_widget_setup');
-function smc_social_insight_widget_setup() {
-    global $smc_options;
-
-    if (!current_user_can($smc_options['socialinsight_options_report_visibility'])) {
-        return false;
-    }
-
-    add_meta_box( 'smc-social-insight', 'Popular stories', 'smc_social_insight_widget', 'dashboard', 'normal', 'high' );
-}   
-
-function smc_social_insight_widget() {
-
-    add_action('admin_head', 'admin_header_scripts');
-
-    //Create an instance of our package class...
-    $socialInsightTable = new SocialInsightDashboardWidget();
-    //Fetch, prepare, sort, and filter our data...
-    $socialInsightTable->prepare_items();
-
-    $socialInsightTable->display();
-}
-
-// END DASHBOARD
 
 ?>
