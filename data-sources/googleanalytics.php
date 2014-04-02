@@ -1,4 +1,9 @@
 <?php
+/***************************************************
+* THIS CODE IS NOT CURRENTLY WORKING
+*
+* The Google Analytics data source is not ready for use yet; the code is still under development and does not work!
+***************************************************/
 require_once ('analytics_lib/my_google_analytics.php');
 
 class GoogleAnalyticsUpdater {
@@ -19,8 +24,6 @@ class GoogleAnalyticsUpdater {
 
 	} // end constructor
 
-
 } // END CLASS
-
 
 ?>
