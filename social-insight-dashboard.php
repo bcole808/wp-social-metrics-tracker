@@ -35,8 +35,7 @@ class SocialInsightDashboard {
 
 		// Set up options
 		$this->options = get_option('socialinsight_settings');
-		$this->updater = new SocialInsightUpdater($this->options);
-		
+
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
@@ -45,33 +44,50 @@ class SocialInsightDashboard {
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
-			add_action('admin_notices', array($this, 'adminNotices'));
-		}		
+		}
+
+		// Check if we can enable data syncing
+		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+			add_action('admin_notices', array($this, 'developmentServerNotice'));
+
+		} else if (!is_array($this->options)) {
+			add_action('admin_notices', array($this, 'optionsNotice'));
+			
+		} else {
+			$this->updater = new SocialInsightUpdater($this->options);
+		}
 
 	} // end constructor
 
-	public function adminNotices() {
-		
-		// WP_ENV is defined and we are not on production
-		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production') {
+	public function developmentServerNotice() {
+		if (!current_user_can('manage_options')) return false;
 
-			add_action( 'admin_notices', 'social_insight_sync_disabled_message'); // Shows a notice after a post is moved. 
+		$screen = get_current_screen();
 
-			function social_insight_sync_disabled_message() {
-				if (current_user_can('manage_options')) {
-			        printf( '<div class="error"> <p> %s </p> </div>', "Social Insight Dashboard data syncing is disabled because you are on a development server. The PHP constant <b>WP_ENV</b> must be set to <b>production</b>. Your WP_ENV is currently set to: ".WP_ENV );
-				}
-			}
-		} else {
-			// OKAY TO RUN UPDATER
-			if(!is_array($this->options)) {
-
-				$screen = get_current_screen();
-
-				if ($screen->base != 'toplevel_page_social-insight' && $screen->base != 'social-insight_page_social-insight-advanced')
-			    	printf( '<div class="error"> <p> %s </p> </div>', "Social Insight Dashboard data syncing is disabled. An administrator must <a class='login' href='options-general.php?page=social-insight-settings'>update the Social Insight Dashboard settings</a>." );
-			}
+		if (!in_array($screen->base, array('settings_page_social-insight-settings', 'toplevel_page_social-insight', 'social-insight_page_social-insight-advanced'))) {
+			return false;
 		}
+
+		$message = '<h3 style="margin-top:0;">Social Insight Dashboard data syncing is disabled</h3> You are on a development server; Social Network share data cannot be retrieved for private development URLs. <ul>';
+
+		if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+			$message .= "<li>The server IP address appears to be set to 127.0.0.1 which is a local address. </li>";
+		}
+
+		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production') {
+			$message .= "<li>The PHP constant <b>WP_ENV</b> must be set to <b>production</b> or be undefined. WP_ENV is currently set to: <b>".WP_ENV."</b>. </li>";
+		}
+
+		$message .= '</ul>';
+
+		printf( '<div class="error"> <p> %s </p> </div>', $message);
+		
+	}
+
+	public function optionsNotice() {
+		if (!current_user_can('manage_options')) return false;
+
+		printf( '<div class="error"> <p> %s </p> </div>', "Social Insight Dashboard data syncing is disabled. An administrator must <a class='login' href='options-general.php?page=social-insight-settings'>update the Social Insight Dashboard settings</a>." );
 	}
 
 	public function adminHeaderScripts() {
