@@ -1,5 +1,5 @@
 <?php
-global $smc_options;
+$smc_options = get_option('socialinsight_settings');
 
 define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
 define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);

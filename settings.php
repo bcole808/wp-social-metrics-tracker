@@ -53,13 +53,13 @@ $wpsf_settings[] = array(
             'type' => 'checkbox',
             'std' => 1
         ),
-        array(
-            'id' => 'enable_analytics',
-            'title' => 'Track Views',
-            'desc' => 'Keep Google Analytics page views in sync. (Requires Google API account settings)',
-            'type' => 'checkbox',
-            'std' => 1
-        ),
+        // array(
+        //     'id' => 'enable_analytics',
+        //     'title' => 'Track Views',
+        //     'desc' => 'Keep Google Analytics page views in sync. (Requires Google API account settings)',
+        //     'type' => 'checkbox',
+        //     'std' => 1
+        // ),
         array(
             'id' => 'enable_comments',
             'title' => 'Track Comments',
@@ -106,7 +106,7 @@ $wpsf_settings[] = array(
             'title' => 'Default Date Range',
             'desc' => 'Reports should display posts published within this date range. ',
             'type' => 'select',
-            'std' => '6',
+            'std' => '0',
             'choices' => array(
                 '1' => '1 Month',
                 '3' => '3 Months',
@@ -114,7 +114,14 @@ $wpsf_settings[] = array(
                 '12' => '12 Months',
                 '0' => 'All Time'
             )
-        )
+        ),
+        array(
+            'id' => 'debug_mode',
+            'title' => 'Enable Debug Mode',
+            'desc' => 'Display additional debug information.',
+            'type' => 'checkbox',
+            'std' => 0
+        ),
     )
 );
 /*

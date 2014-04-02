@@ -19,9 +19,9 @@ if(!class_exists('WP_List_Table')){
 class SocialInsightDebug extends WP_List_Table {
     
     function __construct(){
-        global $status, $page, $data_max, $smc_options;
+        global $status, $page;
 
-        $data_max = array();
+        $this->options = get_option('socialinsight_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -78,15 +78,15 @@ class SocialInsightDebug extends WP_List_Table {
         $total = floatval($item['social_aggregate_score']);
 
         $social_score = $item['social_aggregate_score_detail']['social_points'];
-        $social_score_percent = floor($social_score / max($total * 100, 1));
+        $social_score_percent = floor($social_score / max($total, 1)  * 100);
 
         $views = $item['social_aggregate_score_detail']['view_points'];
-        $views_percent = floor($views / max($total * 100, 1));
+        $views_percent = floor($views / max($total, 1)  * 100);
 
         $comments = $item['social_aggregate_score_detail']['comment_points'];
-        $comments_percent = floor($comments / max($total * 100, 1));
+        $comments_percent = floor($comments / max($total, 1) * 100);
 
-        $bar_width = round($total / max($this->data_max['social_aggregate_score'] * 100, 1));
+        $bar_width = round($total / max($this->data_max['social_aggregate_score'], 1) * 100);
         if ($total == 0) $bar_width = 0;
 
         $bar_class = ($bar_width > 50) ? ' stats' : '';
@@ -126,18 +126,18 @@ class SocialInsightDebug extends WP_List_Table {
     }
 
     function get_columns(){
-        global $smc_options;
+        
 
         $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        // if ($smc_options['socialinsight_options_enable_social']) {
+        // if ($this->options['socialinsight_options_enable_social']) {
             $columns['aggregate'] = 'Aggregate Score';
         // }
-        // if ($smc_options['socialinsight_options_enable_analytics']) {
+        // if ($this->options['socialinsight_options_enable_analytics']) {
             $columns['decayed'] = 'Time Decayed Score';
         // }
-        // if ($smc_options['socialinsight_options_enable_comments']) {
+        // if ($this->options['socialinsight_options_enable_comments']) {
             $columns['misc'] = 'Original Data';
         // }
 
@@ -170,7 +170,7 @@ class SocialInsightDebug extends WP_List_Table {
     
     function prepare_items() {
         global $wpdb; //This is used only if making any database queries
-        global $smc_options;
+        
 
         /**
          * First, lets decide how many records per page to show
@@ -314,10 +314,10 @@ class SocialInsightDebug extends WP_List_Table {
      * @param string $which, helps you decide if you add the markup after (bottom) or before (top) the list
      */
     function extra_tablenav( $which ) {
-        global $smc_options;
+        
         if ( $which == "top" ){
             //The code that goes before the table is here
-            $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
             ?>
 
             <?php
@@ -342,9 +342,6 @@ class SocialInsightDebug extends WP_List_Table {
  * Now we just need to define an admin page. For this example, we'll add a top-level
  * menu item to the bottom of the admin menus.
  */
-// function tt_add_menu_items(){
-//     add_menu_page('Example Plugin List Table', 'List Table Example', 'activate_plugins', 'tt_list_test', 'smc_render_dashboard_2_view');
-// } add_action('admin_menu', 'tt_add_menu_items');
 
 
 /***************************** RENDER TEST PAGE ********************************
@@ -355,8 +352,8 @@ class SocialInsightDebug extends WP_List_Table {
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function smc_render_dashboard_2_view(){
-    global $smc_options;
+function smc_render_dashboard_2_view($options){
+    
 
     //Create an instance of our package class...
     $testListTable = new SocialInsightDebug();
@@ -370,7 +367,7 @@ function smc_render_dashboard_2_view(){
         <h2>Advanced Relevancy Rank Dashboard</h2>
 
         <?php
-        if(!is_array($smc_options)) {
+        if(!is_array($options)) {
             printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-insight-settings'>configure the Social Insight Dashboard</a>." );
             die();
         }
@@ -388,7 +385,7 @@ function smc_render_dashboard_2_view(){
         <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['socialinsight_options_default_sort_column']; ?>" />
             <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
            
             <!-- Now we can render the completed list table -->

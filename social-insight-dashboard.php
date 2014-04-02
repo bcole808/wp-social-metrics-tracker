@@ -36,22 +36,22 @@ class SocialInsightDashboard {
 		// Set up options
 		$this->options = get_option('socialinsight_settings');
 		$this->updater = new SocialInsightUpdater($this->options);
-
+		
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
 		register_uninstall_hook( __FILE__, array($this, 'uninstall') );
 
-
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('admin_notices', array($this, 'adminNotices'));
-		}
+		}		
 
 	} // end constructor
 
 	public function adminNotices() {
+		
 		// WP_ENV is defined and we are not on production
 		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production') {
 
@@ -89,30 +89,29 @@ class SocialInsightDashboard {
 		add_menu_page( 'Social Insight Dashboard', 'Social Insight', $this->options['socialinsight_options_report_visibility'] ?: 'manage_options', 'social-insight', array($this, 'render_view_Dashboard'), $icon, 30 );
 
 		// Add advanced stats menu
-		add_submenu_page('social-insight', 'Relevancy Rank', 'Advanced Stats', $this->options['socialinsight_options_advanced_report_visibility'] ?: 'manage_options', 'social-insight-advanced',  array($this, 'render_view_AdvancedDashboard'));
+		if ($this->options['socialinsight_options_debug_mode']) {
+			add_submenu_page('social-insight', 'Relevancy Rank', 'Debug Info', $this->options['socialinsight_options_advanced_report_visibility'] ?: 'manage_options', 'social-insight-advanced',  array($this, 'render_view_AdvancedDashboard'));
+		}
 
 		include_once('settings-setup.php');
 		include_once('dashboard-widget.php');
 		
 	} // end adminMenuSetup()
 
-
-
 	public function render_view_Dashboard() {
 		require('smc-dashboard-view.php');
-		smc_render_dashboard_view();
+		smc_render_dashboard_view($this->options);
 	} // end render_view_Dashboard()
 
 	public function render_view_AdvancedDashboard() {
 		require('smc-dashboard-view-2.php');
-		smc_render_dashboard_2_view();
+		smc_render_dashboard_2_view($this->options);
 	} // end render_view_AdvancedDashboard()
 
 	public function render_view_Settings() {
 		require('smc-settings-view.php');
 		smc_render_settings_view();
 	} // end render_view_Settings()
-
 
 	public static function timeago($time) {
 		$periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
@@ -137,33 +136,49 @@ class SocialInsightDashboard {
 	}
 
 	public function activate() {
+		// Add default settings
 
+		if (get_option('socialinsight_settings') === false) {
+
+			require('settings.php');
+
+			global $wpsf_settings;
+
+			// $defaults = array("hello" => "test");
+
+			foreach ($wpsf_settings[0]['fields'] as $setting) {
+				$defaults['socialinsight_options_'.$setting['id']] = $setting['std'];
+			}
+
+			add_option('socialinsight_settings', $defaults);
+		}
+
+		// Sync all data
+		$this->updater->scheduleFullDataSync();
+		
 	}
 
 	public function deactivate() {
+
+		// Remove Queued Updates
 		$this->updater->removeAllQueuedUpdates();
+
 	}
 
 	public function uninstall() {
 
-		$this->updater->removeAllQueuedUpdates();
+		// Delete options
+		delete_option('socialinsight_settings');
 
+		// Google Auth Tokens
 		delete_site_option('smc_ga_token');
 		delete_option('smc_ga_token');
-		delete_option('socialinsight_settings');
 
 	}
 
-} // END CLASS
+} // END SocialInsightDashboard
 
 // Run plugin
 $SocialInsightDashboard = new SocialInsightDashboard();
-
-
-global $smc_options;
-$smc_options = get_option('socialinsight_settings');
-
-
-
 
 ?>

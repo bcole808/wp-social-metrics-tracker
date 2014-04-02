@@ -66,14 +66,64 @@ class SocialInsightUpdater {
 		$ttl = $this->options['socialinsight_options_ttl_hours'] * 3600;
 
 		// If no timeout
-		if ($last_updated < time() - $ttl) {
+		$ttl = 0;
+		$temp = time() - $ttl;
+		if ($last_updated < $temp) {
 
 			// Schedule an update
 			wp_schedule_single_event( time(), 'social_insight_update_single_post', array( $post_id ) );
+		} else {
+
 		}
 
 		return; 
 	} // end checkThisPost()
+
+	/**
+	* Fetch new stats from remote services and update post social score. 
+	*
+	* @param  int    $post_id  The ID of the post to update
+	* @return 
+	*/ 
+	public function updatePostStats($post_id) {
+
+		// Data validation
+		if ($post_id <= 0) return false;
+
+		// Remove secure protocol from URL
+		$permalink = str_replace("https://", "http://", get_permalink($post_id));
+
+		// Retrieve 3rd party data updates
+		do_action('social_insight_data_sync', $post_id, $permalink);
+
+		// Last updated time
+		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
+
+		// Get comment count from DB
+		$post = get_post($post_id);
+
+		// Calculate aggregate score. 
+		$social_aggregate_score_detail = $this->calculateScoreAggregate($stats['socialcount_TOTAL'], $stats['ga_pageviews'], $post->comment_count);
+
+		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
+		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
+
+		$stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
+
+		// Calculate decayed score.
+		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
+
+		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
+		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
+
+		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
+
+		// Custom action hook allows us to extend this function. 
+		do_action('smc_social_insight_sync', $post_id, $stats); // remove this after updating other references
+		do_action('social_insight_data_sync_complete', $post_id, $stats);
+
+		return $stats['socialcount_TOTAL'];
+	} // end updatePostStats()
 
 	/**
 	* Combine Social, Views, and Comments into one aggregate value
@@ -142,53 +192,6 @@ class SocialInsightUpdater {
 
 		return  $new_score;
 	} // end calculateScoreDecay()
-
-
-	/**
-	* Fetch new stats from remote services and update post social score. 
-	*
-	* @param  int    $post_id  The ID of the post to update
-	* @return 
-	*/ 
-	public function updatePostStats($post_id) {
-
-		// Data validation
-		if ($post_id <= 0) return false;
-
-		// Remove secure protocol from URL
-		$permalink = str_replace("https://", "http://", get_permalink($post_id));
-
-		// Retrieve 3rd party data updates
-		do_action('social_insight_data_sync', $post_id, $permalink);
-
-		// Last updated time
-		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
-
-		// Get comment count from DB
-		$post = get_post($post_id);
-
-		// Calculate aggregate score. 
-		$social_aggregate_score_detail = $this->calculateScoreAggregate($stats['socialcount_TOTAL'], $stats['ga_pageviews'], $post->comment_count);
-
-		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
-		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
-
-		$stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
-
-		// Calculate decayed score.
-		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
-
-		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
-
-		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
-
-		// Custom action hook allows us to extend this function. 
-		do_action('smc_social_insight_sync', $post_id, $stats); // remove this after updating other references
-		do_action('social_insight_data_sync_complete', $post_id, $stats);
-
-		return $stats['socialcount_TOTAL'];
-	} // end updatePostStats()
 
 
 	/**
@@ -292,7 +295,7 @@ class SocialInsightUpdater {
 		));
 
 		foreach ($querydata as $querydatum ) {
-		    wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
+		    wp_schedule_single_event( $nextTime, 'social_insight_update_single_post', array( $querydatum->ID ) );
 		    $nextTime = $nextTime + $interval;
 		}
 
@@ -312,7 +315,7 @@ class SocialInsightUpdater {
 		));
 
 		foreach ($querydata as $querydatum ) {
-			wp_schedule_single_event( $nextTime, 'smc_update_single_post', array( $querydatum->ID ) );
+			wp_schedule_single_event( $nextTime, 'social_insight_update_single_post', array( $querydatum->ID ) );
 			$nextTime = $nextTime + ($interval * 2);
 		}
 

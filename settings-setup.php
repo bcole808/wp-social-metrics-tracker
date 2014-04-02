@@ -31,12 +31,6 @@ class socialInsightSettings {
 			<div id="icon-options-general" class="icon32"></div>
 			<h2>Social Insight Settings</h2>
 			<?php 
-
-            // Verify the API authorization
-            // require_once ('google-analytics.php');
-            // if (current_user_can('manage_options') && $smc_options['socialinsight_options_enable_analytics']) {
-            //     smc_gapi_loginout();
-            // }
             
 			// Output your settings form
 			$this->socialInsightSettings->settings(); 

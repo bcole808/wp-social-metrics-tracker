@@ -14,9 +14,9 @@ if(!class_exists('WP_List_Table')){
 class SocialInsightTable extends WP_List_Table {
     
     function __construct(){
-        global $status, $page, $data_max, $smc_options;
+        global $status, $page;
 
-        $data_max = array();
+        $this->options = get_option('socialinsight_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -67,15 +67,15 @@ class SocialInsightTable extends WP_List_Table {
         $total = floatval($item['socialcount_total']);
 
         $facebook = $item['socialcount_facebook'];
-        $facebook_percent = floor($facebook / max($total * 100, 1));
+        $facebook_percent = floor($facebook / max($total, 1) * 100);
 
         $twitter = $item['socialcount_twitter'];
-        $twitter_percent = floor($twitter / max($total * 100, 1));
+        $twitter_percent = floor($twitter / max($total, 1)  * 100);
 
         $other = $total - $facebook - $twitter;
-        $other_percent = floor($other / max($total * 100, 1));
+        $other_percent = floor($other / max($total, 1)  * 100);
 
-        $bar_width = round($total / max($this->data_max['socialcount_total'] * 100, 1));
+        $bar_width = round($total / max($this->data_max['socialcount_total'], 1)  * 100);
         if ($total == 0) $bar_width = 0;
 
         $bar_class = ($bar_width > 50) ? ' stats' : '';
@@ -113,18 +113,17 @@ class SocialInsightTable extends WP_List_Table {
     }
     
     function get_columns(){
-        global $smc_options;
 
         $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        if ($smc_options['socialinsight_options_enable_social']) {
+        if ($this->options['socialinsight_options_enable_social']) {
             $columns['social'] = 'Social Score';
         }
-        if ($smc_options['socialinsight_options_enable_analytics']) {
+        if ($this->options['socialinsight_options_enable_analytics']) {
             $columns['views'] = 'Views';
         }
-        if ($smc_options['socialinsight_options_enable_comments']) {
+        if ($this->options['socialinsight_options_enable_comments']) {
             $columns['comments'] = 'Comments';
         }
 
@@ -155,11 +154,23 @@ class SocialInsightTable extends WP_List_Table {
      
         
     }
+
+    function date_range_filter( $where = '' ) {
+                    
+        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+        
+        if ($range <= 0) return $where;
+        
+        $range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
+        $range_top = "' AND post_date <= '".date("Y-m-d")."'";
+                    
+        $where .= $range_bottom . $range_top;
+        return $where;
+    }
     
     
     function prepare_items() {
         global $wpdb; //This is used only if making any database queries
-        global $smc_options;
 
         $per_page = 10;
         
@@ -175,7 +186,7 @@ class SocialInsightTable extends WP_List_Table {
         
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; //If no sort, default
+        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['socialinsight_options_default_sort_column']; //If no sort, default
     
         // Get custom post types to display in our report. 		
 		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
@@ -184,21 +195,9 @@ class SocialInsightTable extends WP_List_Table {
         
         $limit = 30;
 
-        function filter_where( $where = '' ) {
-			global $smc_options;
-						
-			$range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
-			
-			if ($range <= 0) return $where;
-			
-        	$range_bottom = " AND post_date >= '".date("Y-m-d", strtotime('-'.$range.' month') );
-        	$range_top = "' AND post_date <= '".date("Y-m-d")."'";
-						
-            $where .= $range_bottom . $range_top;
-            return $where;
-        }
+        
 
-        add_filter( 'posts_where', 'filter_where' );
+        add_filter( 'posts_where', array($this, 'date_range_filter') );
 
         if ($orderby == 'views') {
             $querydata = new WP_Query(array(
@@ -254,7 +253,7 @@ class SocialInsightTable extends WP_List_Table {
         }
 
         // Remove our date filter
-        remove_filter( 'posts_where', 'filter_where' );
+        remove_filter( 'posts_where', array($this, 'date_range_filter') );
 
         $data=array();
 
@@ -319,10 +318,9 @@ class SocialInsightTable extends WP_List_Table {
      * @param string $which, helps you decide if you add the markup after (bottom) or before (top) the list
      */
     function extra_tablenav( $which ) {
-        global $smc_options;
         if ( $which == "top" ){
             //The code that goes before the table is here
-            $range = (isset($_GET['range'])) ? $_GET['range'] : $smc_options['socialinsight_options_default_date_range_months'];
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
             ?>
             <label for="range">Show only:</label>
                     <select name="range">
@@ -356,15 +354,12 @@ class SocialInsightTable extends WP_List_Table {
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function smc_render_dashboard_view(){
-    global $smc_options;
-
+function smc_render_dashboard_view($options){
     ?>
     <div class="wrap">
-        
         <h2>Social Insight Dashboard</h2>
         <?php
-        if(!is_array($smc_options)) {
+        if(!is_array($options)) {
             printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-insight-settings'>configure the Social Insight Dashboard</a>." );
             die();
         }
@@ -379,7 +374,7 @@ function smc_render_dashboard_view(){
         <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smc_options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['socialinsight_options_default_sort_column']; ?>" />
             <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
            
             <?php
@@ -388,7 +383,8 @@ function smc_render_dashboard_view(){
 
             //Fetch, prepare, sort, and filter our data...
             $SocialInsightTable->prepare_items();
-            $SocialInsightTable->display()
+            $SocialInsightTable->display();
+            
             ?>
         </form>
 
