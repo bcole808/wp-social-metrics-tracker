@@ -12,14 +12,14 @@ $wpsf_settings[] = array(
         array(
             'id' => 'display_widget',
             'title' => 'Dashboard Widget',
-            'desc' => 'Show a widget on the main Dashboard with social insight stats.',
+            'desc' => 'Show a widget on the main Dashboard with social metrics.',
             'type' => 'checkbox',
             'std' => 1
         ),
         array(
             'id' => 'report_visibility',
             'title' => 'Basic Report Visibility',
-            'desc' => 'The Social Insight data reports will be visible to users who have this capability.',
+            'desc' => 'The Social Metrics Tracker reports will be visible to users who have this capability.',
             'type' => 'select',
             'std' => 'publish_posts',
             'choices' => array(
@@ -132,7 +132,7 @@ $wpsf_settings[] = array(
         <ol>
         <li>Sign up and create an API account here: <a href="https://code.google.com/apis/console/" target="_blank">https://code.google.com/apis/console/</a></li>
         <li>Create an OAuth Client ID for a Web Application</li>
-        <li>When asked for a Redirect URI, enter this: <b>'.get_admin_url(get_current_blog_id(), 'options-general.php?page=social-insight-settings').'</b></li>
+        <li>When asked for a Redirect URI, enter this: <b>'.get_admin_url(get_current_blog_id(), 'options-general.php?page=social-metrics-tracker-settings').'</b></li>
         <li>Enter the information you receive below.</li>
 
         <li>Make sure to configure the product name on the "Consent Screen" for the Google Analytics API</li>

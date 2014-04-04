@@ -16,12 +16,12 @@ if(!class_exists('WP_List_Table')){
     require_once( 'lib/class-wp-list-table.php' );
 }
 
-class SocialInsightDebug extends WP_List_Table {
+class SocialMetricsDebugTable extends WP_List_Table {
     
     function __construct(){
         global $status, $page;
 
-        $this->options = get_option('socialinsight_settings');
+        $this->options = get_option('smt_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -61,7 +61,7 @@ class SocialInsightDebug extends WP_List_Table {
         $actions = array(
             'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
             'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-            'update'    => sprintf('Decay last calculated %s',SocialInsightDashboard::timeago($item['social_aggregate_score_decayed_last_updated']))
+            'update'    => sprintf('Decay last calculated %s',SocialMetricsTracker::timeago($item['social_aggregate_score_decayed_last_updated']))
         );
         
         //Return the title contents
@@ -131,13 +131,13 @@ class SocialInsightDebug extends WP_List_Table {
         $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        // if ($this->options['socialinsight_options_enable_social']) {
+        // if ($this->options['smt_options_enable_social']) {
             $columns['aggregate'] = 'Aggregate Score';
         // }
-        // if ($this->options['socialinsight_options_enable_analytics']) {
+        // if ($this->options['smt_options_enable_analytics']) {
             $columns['decayed'] = 'Time Decayed Score';
         // }
-        // if ($this->options['socialinsight_options_enable_comments']) {
+        // if ($this->options['smt_options_enable_comments']) {
             $columns['misc'] = 'Original Data';
         // }
 
@@ -317,12 +317,12 @@ class SocialInsightDebug extends WP_List_Table {
         
         if ( $which == "top" ){
             //The code that goes before the table is here
-            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
             ?>
 
             <?php
             if (current_user_can('manage_options')) {
-                $url = add_query_arg(array('smc_recalculate_all_ranks' => 1), 'admin.php?page=smc_social_insight_advanced');
+                $url = add_query_arg(array('smc_recalculate_all_ranks' => 1), 'admin.php?page=social-metrics-tracker-debug');
                 echo "<a href='$url' class='button' onClick='return confirm(\"This will recalculate ranking info for all posts. Are you sure?\")'>Recalculate all ranks</a>";
             }
         }
@@ -352,11 +352,11 @@ class SocialInsightDebug extends WP_List_Table {
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function smc_render_dashboard_2_view($options){
+function smt_render_dashboard_debug_view($options){
     
 
     //Create an instance of our package class...
-    $testListTable = new SocialInsightDebug();
+    $testListTable = new SocialMetricsDebugTable();
     //Fetch, prepare, sort, and filter our data...
     $testListTable->prepare_items();
     
@@ -368,24 +368,24 @@ function smc_render_dashboard_2_view($options){
 
         <?php
         if(!is_array($options)) {
-            printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-insight-settings'>configure the Social Insight Dashboard</a>." );
+            printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-metrics-tracker-settings'>configure the Social Metrics Tracker</a>." );
             die();
         }
 
         if (isset($_GET['smc_recalculate_all_ranks'])) {
-            printf( '<div class="updated"> <p> %s </p> </div>',  'Now updating all social relevancy ranks... Do not navigate away from this page until it is complete! <a href="admin.php?page=smc_social_insight_advanced">Return to report view</a>');
+            printf( '<div class="updated"> <p> %s </p> </div>',  'Now updating all social relevancy ranks... Do not navigate away from this page until it is complete! <a href="admin.php?page=social-metrics-tracker-debug">Return to report view</a>');
 
-            $data_updater = new SocialInsightUpdater();
+            $data_updater = new MetricsUpdater();
             $data_updater->recalculateAllScores(true);
             die();
         }
         ?>
 
         <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-        <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
+        <form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker-debug">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['smt_options_default_sort_column']; ?>" />
             <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
            
             <!-- Now we can render the completed list table -->
