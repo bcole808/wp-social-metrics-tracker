@@ -1,11 +1,11 @@
 <?php
-$smc_options = get_option('socialinsight_settings');
+$smc_options = get_option('smt_settings');
 
 define('GAPI_CLIENT_ID', $smc_options['socialinsight_ga_client_id']);
 define('GAPI_CLIENT_SECRET', $smc_options['socialinsight_ga_client_secret']);
 define('GAPI_DEVELOPER_KEY', $smc_options['socialinsight_ga_developer_key']);
-define('GAPI_REDIRECT_URI', admin_URL('/options-general.php?page=social-insight-settings'));
-define('GAPI_APPLICATION_NAME', get_bloginfo('name') . ' Social Insight Dashboard');
+define('GAPI_REDIRECT_URI', admin_URL('/options-general.php?page=social-metrics-tracker-settings'));
+define('GAPI_APPLICATION_NAME', get_bloginfo('name') . ' Social Metrics Tracker');
 
 require_once 'lib/google-api-php-client/Google_Client.php';
 require_once 'lib/google-api-php-client/contrib/Google_AnalyticsService.php';
@@ -45,7 +45,7 @@ function smc_gapi_loginout() {
 
 	// If the API details have not been entered
 	if (strlen(GAPI_CLIENT_ID) <= 0 || strlen(GAPI_CLIENT_SECRET) <= 0 || strlen(GAPI_DEVELOPER_KEY) <= 0) {
-		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=social-insight-settings'>add your Google API account detailes.</a>" );
+		printf( '<div class="error"> <p> %s </p> </div>', "Please <a class='login' href='options-general.php?page=social-metrics-tracker-settings'>add your Google API account detailes.</a>" );
 		return false;
 	}
 
@@ -83,7 +83,7 @@ function smc_gapi_loginout() {
 			} catch (Google_AuthException $e) {
 				// The authentication failed!
 				// We delete the failed token and force the user to re-auth. 
-				// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 1",print_r($e,true));
+				// mail(get_bloginfo('admin_email'),"social-metrics-tracker Exception 1",print_r($e,true));
 
 				echo "Authentication error.";
 				delete_site_option('smc_ga_token');
@@ -94,7 +94,7 @@ function smc_gapi_loginout() {
 			$message = "<h3>Select the profile associated with this Wordpress blog:</h3>";
 			$profiles = getProfilesArray($service);
 			foreach ($profiles as $profile) {
-				$message .= $profile['parent'].': <a href="options-general.php?page=social-insight-settings&profile_id='.$profile['id'].'&profile_name='.urlencode($profile['name']).'">'.$profile['name'] . ' ('.$profile['id'].')</a><br>';
+				$message .= $profile['parent'].': <a href="options-general.php?page=social-metrics-tracker-settings&profile_id='.$profile['id'].'&profile_name='.urlencode($profile['name']).'">'.$profile['name'] . ' ('.$profile['id'].')</a><br>';
 			}
 			printf( '<div class="error"> <p> %s </p> </div>', $message );
 			return false;
@@ -105,7 +105,7 @@ function smc_gapi_loginout() {
 	// Token found
 	if (strlen($smc_ga_token) > 1 && current_user_can('manage_options')) {
 
-	    $logout_url = add_query_arg(array('logout'=>1), 'options-general.php?page=social-insight-settings');
+	    $logout_url = add_query_arg(array('logout'=>1), 'options-general.php?page=social-metrics-tracker-settings');
 	    echo '<div class="updated fade"><p>Google Analytics is connected to the account '.$smc_ga_profile['name'].' ('.$smc_ga_profile['id'].') <a href="'.$logout_url.'">Disconnect Google Analytics</a></p></div>';
 
 	} 
@@ -186,7 +186,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			// The authentication failed!
 			// We delete the failed token and force the user to re-auth. 
 
-			// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 2",print_r($e,true));
+			// mail(get_bloginfo('admin_email'),"social-metrics-tracker Exception 2",print_r($e,true));
 			delete_site_option('smc_ga_token');
 			echo $e->getMessage();
 		}
@@ -221,7 +221,7 @@ function smc_ga_getPageviewsByURL($full_url, $ga_token = '') {
 			return ($single_result);
 
 		} catch (Exception $e) {
-			// mail(get_bloginfo('admin_email'),"smc-social-insight Exception 3 (session data not deleted)", print_r($e,true));
+			// mail(get_bloginfo('admin_email'),"social-metrics-tracker Exception 3 (session data not deleted)", print_r($e,true));
 			//delete_site_option('smc_ga_token');
 			echo $e->getMessage();
 		}

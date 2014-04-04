@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Social Insight Dashboard
-Plugin URI: https://github.com/ChapmanU/WP-Social-Insight-Dashboard
+Plugin Name: Social Metrics Tracker
+Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.  
 Version: 0.9 (Beta)
-Author: Ben Cole
+Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
 */
@@ -24,9 +24,9 @@ License: GPLv2+
 
 
 // Class Dependancies
-include('SocialInsightUpdater.class.php');
+include('MetricsUpdater.class.php');
 
-class SocialInsightDashboard {
+class SocialMetricsTracker {
 
 	private $updater;
 	private $options;
@@ -34,7 +34,7 @@ class SocialInsightDashboard {
 	public function __construct() {
 
 		// Set up options
-		$this->options = get_option('socialinsight_settings');
+		$this->options = get_option('smt_settings');
 
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
@@ -50,11 +50,8 @@ class SocialInsightDashboard {
 		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
 			add_action('admin_notices', array($this, 'developmentServerNotice'));
 
-		} else if (!is_array($this->options)) {
-			add_action('admin_notices', array($this, 'optionsNotice'));
-			
-		} else {
-			$this->updater = new SocialInsightUpdater($this->options);
+		} else if (is_array($this->options)) {
+			$this->updater = new MetricsUpdater($this->options);
 		}
 
 	} // end constructor
@@ -64,11 +61,11 @@ class SocialInsightDashboard {
 
 		$screen = get_current_screen();
 
-		if (!in_array($screen->base, array('settings_page_social-insight-settings', 'toplevel_page_social-insight', 'social-insight_page_social-insight-advanced'))) {
+		if (!in_array($screen->base, array('settings_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
 			return false;
 		}
 
-		$message = '<h3 style="margin-top:0;">Social Insight Dashboard data syncing is disabled</h3> You are on a development server; Social Network share data cannot be retrieved for private development URLs. <ul>';
+		$message = '<h3 style="margin-top:0;">Social Metrics data syncing is disabled</h3> You are on a development server; Social Network share data cannot be retrieved for private development URLs. <ul>';
 
 		if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
 			$message .= "<li>The server IP address appears to be set to 127.0.0.1 which is a local address. </li>";
@@ -84,44 +81,34 @@ class SocialInsightDashboard {
 		
 	}
 
-	public function optionsNotice() {
-		if (!current_user_can('manage_options')) return false;
-
-		printf( '<div class="error"> <p> %s </p> </div>', "Social Insight Dashboard data syncing is disabled. An administrator must <a class='login' href='options-general.php?page=social-insight-settings'>update the Social Insight Dashboard settings</a>." );
-	}
-
 	public function adminHeaderScripts() {
-		wp_register_style( 'smc_social_metrics_css', plugins_url( 'css/social_insight.css' , __FILE__ ), false, '11-15-13' );
+		wp_register_style( 'smc_social_metrics_css', plugins_url( 'css/social_metrics.css' , __FILE__ ), false, '11-15-13' );
 		wp_enqueue_style( 'smc_social_metrics_css' );
 	} // end adminHeaderScripts()
 
 	public function adminMenuSetup() {
 
-		// Do not run unless options have been added!
-
-		$icon = get_option('siteurl') . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/img/smc-social-metrics-icon.png';
-
-		// Add Social Insight Dashboard menu
-		add_menu_page( 'Social Insight Dashboard', 'Social Insight', $this->options['socialinsight_options_report_visibility'] ?: 'manage_options', 'social-insight', array($this, 'render_view_Dashboard'), $icon, 30 );
+		// Add Social Metrics Tracker menu
+		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $this->options['smt_options_report_visibility'] ?: 'manage_options', 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', 30 );
 
 		// Add advanced stats menu
-		if ($this->options['socialinsight_options_debug_mode']) {
-			add_submenu_page('social-insight', 'Relevancy Rank', 'Debug Info', $this->options['socialinsight_options_advanced_report_visibility'] ?: 'manage_options', 'social-insight-advanced',  array($this, 'render_view_AdvancedDashboard'));
+		if ($this->options['smt_options_debug_mode']) {
+			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $this->options['smt_options_advanced_report_visibility'] ?: 'manage_options', 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
-		include_once('settings-setup.php');
-		include_once('dashboard-widget.php');
+		include_once('smt-settings-setup.php');
+		include_once('smt-dashboard-widget.php');
 		
 	} // end adminMenuSetup()
 
 	public function render_view_Dashboard() {
-		require('smc-dashboard-view.php');
-		smc_render_dashboard_view($this->options);
+		require('smt-dashboard.php');
+		smt_render_dashboard_view($this->options);
 	} // end render_view_Dashboard()
 
 	public function render_view_AdvancedDashboard() {
-		require('smc-dashboard-view-2.php');
-		smc_render_dashboard_2_view($this->options);
+		require('smt-dashboard-debug.php');
+		smt_render_dashboard_debug_view($this->options);
 	} // end render_view_AdvancedDashboard()
 
 	public function render_view_Settings() {
@@ -154,37 +141,44 @@ class SocialInsightDashboard {
 	public function activate() {
 		// Add default settings
 
-		if (get_option('socialinsight_settings') === false) {
+		if (get_option('smt_settings') === false) {
 
-			require('settings.php');
+			require('smt-settings.php');
 
 			global $wpsf_settings;
 
 			// $defaults = array("hello" => "test");
 
 			foreach ($wpsf_settings[0]['fields'] as $setting) {
-				$defaults['socialinsight_options_'.$setting['id']] = $setting['std'];
+				$defaults['smt_options_'.$setting['id']] = $setting['std'];
 			}
 
-			add_option('socialinsight_settings', $defaults);
+			add_option('smt_settings', $defaults);
 		}
 
-		// Sync all data
-		$this->updater->scheduleFullDataSync();
+		
+		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+			// Do not schedule update
+		} else {
+			// Sync all data
+			MetricsUpdater::scheduleFullDataSync();
+		}
 		
 	}
 
 	public function deactivate() {
 
 		// Remove Queued Updates
-		$this->updater->removeAllQueuedUpdates();
+		MetricsUpdater::removeAllQueuedUpdates();
+
+		delete_option('smt_settings');
 
 	}
 
 	public function uninstall() {
 
 		// Delete options
-		delete_option('socialinsight_settings');
+		delete_option('smt_settings');
 
 		// Google Auth Tokens
 		delete_site_option('smc_ga_token');
@@ -192,9 +186,9 @@ class SocialInsightDashboard {
 
 	}
 
-} // END SocialInsightDashboard
+} // END SocialMetricsTracker
 
 // Run plugin
-$SocialInsightDashboard = new SocialInsightDashboard();
+$SocialMetricsTracker = new SocialMetricsTracker();
 
 ?>

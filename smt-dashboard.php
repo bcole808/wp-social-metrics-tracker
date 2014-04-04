@@ -11,12 +11,12 @@ if(!class_exists('WP_List_Table')){
     require_once( 'lib/class-wp-list-table.php' );
 }
 
-class SocialInsightTable extends WP_List_Table {
+class SocialMetricsTable extends WP_List_Table {
     
     function __construct(){
         global $status, $page;
 
-        $this->options = get_option('socialinsight_settings');
+        $this->options = get_option('smt_settings');
                 
         //Set parent defaults
         parent::__construct( array(
@@ -51,7 +51,7 @@ class SocialInsightTable extends WP_List_Table {
         $actions = array(
             'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
             'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-            'update'    => sprintf('Updated %s',SocialInsightDashboard::timeago($item['socialcount_LAST_UPDATED']))
+            'update'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
         );
         
         //Return the title contents
@@ -117,13 +117,13 @@ class SocialInsightTable extends WP_List_Table {
         $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        if ($this->options['socialinsight_options_enable_social']) {
+        if ($this->options['smt_options_enable_social']) {
             $columns['social'] = 'Social Score';
         }
-        if ($this->options['socialinsight_options_enable_analytics']) {
+        if ($this->options['smt_options_enable_analytics']) {
             $columns['views'] = 'Views';
         }
-        if ($this->options['socialinsight_options_enable_comments']) {
+        if ($this->options['smt_options_enable_comments']) {
             $columns['comments'] = 'Comments';
         }
 
@@ -157,7 +157,7 @@ class SocialInsightTable extends WP_List_Table {
 
     function date_range_filter( $where = '' ) {
                     
-        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
         
         if ($range <= 0) return $where;
         
@@ -186,7 +186,7 @@ class SocialInsightTable extends WP_List_Table {
         
 
         $order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['socialinsight_options_default_sort_column']; //If no sort, default
+        $orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['smt_options_default_sort_column']; //If no sort, default
     
         // Get custom post types to display in our report. 		
 		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
@@ -320,7 +320,7 @@ class SocialInsightTable extends WP_List_Table {
     function extra_tablenav( $which ) {
         if ( $which == "top" ){
             //The code that goes before the table is here
-            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+            $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
             ?>
             <label for="range">Show only:</label>
                     <select name="range">
@@ -335,7 +335,7 @@ class SocialInsightTable extends WP_List_Table {
 
             <?php
             if (current_user_can('manage_options')) {
-                $url = add_query_arg(array('full_data_sync' => 1), 'admin.php?page=smc-social-insight');
+                $url = add_query_arg(array('full_data_sync' => 1), 'admin.php?page=social-metrics-tracker');
                 echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all items for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync or after installing the plugin. Are you sure?\")'>Synchronize all data</a>";
             }
         }
@@ -354,41 +354,41 @@ class SocialInsightTable extends WP_List_Table {
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function smc_render_dashboard_view($options){
+function smt_render_dashboard_view($options){
     ?>
     <div class="wrap">
-        <h2>Social Insight Dashboard</h2>
+        <h2>Social Metrics Tracker</h2>
         <?php
         if(!is_array($options)) {
-            printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-insight-settings'>configure the Social Insight Dashboard</a>." );
+            printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-metrics-tracker-settings'>configure the Social Metrics Tracker</a>." );
             die();
         }
 
         if (isset($_GET['full_data_sync'])) {
-            wp_schedule_single_event( time(), 'social_insight_schedule_full_update' );
-            printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=smc-social-insight">Return to report view</a>');
+            wp_schedule_single_event( time(), 'social_metrics_schedule_full_update' );
+            printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=social-metrics-tracker">Return to report view</a>');
             die();
         }
         ?>
 
-        <form id="smc-social-insight" method="get" action="admin.php?page=smc-social-insight">
+        <form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker">
             <!-- For plugins, we also need to ensure that the form posts back to our current page -->
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['socialinsight_options_default_sort_column']; ?>" />
+            <input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['smt_options_default_sort_column']; ?>" />
             <input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
            
             <?php
             //Create an instance of our package class...
-            $SocialInsightTable = new SocialInsightTable();
+            $SocialMetricsTable = new SocialMetricsTable();
 
             //Fetch, prepare, sort, and filter our data...
-            $SocialInsightTable->prepare_items();
-            $SocialInsightTable->display();
+            $SocialMetricsTable->prepare_items();
+            $SocialMetricsTable->display();
             
             ?>
         </form>
 
-        <?php SocialInsightUpdater::printQueueLength(); ?>
+        <?php MetricsUpdater::printQueueLength(); ?>
         
     </div>
     <?php

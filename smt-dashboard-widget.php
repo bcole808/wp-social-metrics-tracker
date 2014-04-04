@@ -10,16 +10,16 @@ if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
-class SocialInsightDashboardWidget extends WP_List_Table {
+class SocialMetricsTrackerWidget extends WP_List_Table {
     
    
     function __construct(){
         global $status, $page;
 
-        $this->options = get_option('socialinsight_settings');
+        $this->options = get_option('smt_settings');
 
         // Do not run if current user not allowed to see this
-        if (!current_user_can($this->options['socialinsight_options_report_visibility'])) return false;
+        if (!current_user_can($this->options['smt_options_report_visibility'])) return false;
 
         add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
                 
@@ -33,7 +33,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
     }
 
     function dashboard_setup() {
-        add_meta_box( 'smc-social-insight', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
+        add_meta_box( 'social-metrics-tracker', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
 
     }
 
@@ -62,7 +62,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
             // 'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
             'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
             'pubdate'   => 'Published on ' . date("M j, Y",strtotime($item['post_date'])),
-            //'update'    => sprintf('Stats updated %s',SocialInsightDashboard::timeago($item['socialcount_LAST_UPDATED']))
+            //'update'    => sprintf('Stats updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
         );
         
         //Return the title contents
@@ -128,13 +128,13 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         // $columns['date'] = 'Date';
         $columns['title'] = 'Title';
 
-        if ($this->options['socialinsight_options_enable_social']) {
+        if ($this->options['smt_options_enable_social']) {
             $columns['social'] = 'Social Score';
         }
-        if ($this->options['socialinsight_options_enable_analytics']) {
+        if ($this->options['smt_options_enable_analytics']) {
             $columns['views'] = 'Views';
         }
-        if ($this->options['socialinsight_options_enable_comments']) {
+        if ($this->options['smt_options_enable_comments']) {
             $columns['comments'] = 'Comments';
         }
 
@@ -166,7 +166,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
 
     function date_range_filter( $where = '' ) {
                     
-        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['socialinsight_options_default_date_range_months'];
+        $range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
         
         if ($range <= 0) return $where;
         
@@ -198,7 +198,7 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         
 
         $order = 'DESC';
-        $orderby = $this->options['socialinsight_options_default_sort_column']; //If no sort, default
+        $orderby = $this->options['smt_options_default_sort_column']; //If no sort, default
         
     
         // Get custom post types to display in our report. 		
@@ -324,17 +324,17 @@ class SocialInsightDashboardWidget extends WP_List_Table {
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
-            $period = ($this->options['socialinsight_options_default_date_range_months'] > 1) ? 'months' : 'month';
+            $period = ($this->options['smt_options_default_date_range_months'] > 1) ? 'months' : 'month';
 
-            echo '<p style="float:left;">Showing most popular posts published within '.$this->options['socialinsight_options_default_date_range_months'].' '.$period.'.</p>';
-            echo '<a href="admin.php?page=smc-social-insight" style="float:right; margin:10px;" class="button-primary">More Social Insights &raquo;</a>';
+            echo '<p style="float:left;">Showing most popular posts published within '.$this->options['smt_options_default_date_range_months'].' '.$period.'.</p>';
+            echo '<a href="admin.php?page=social-metrics-tracker" style="float:right; margin:10px;" class="button-primary">More Social Metrics &raquo;</a>';
 
         }
     }
     
 }
 
-$socialInsightTable = new SocialInsightDashboardWidget();
+$socialMetricsTrackerWidget = new SocialMetricsTrackerWidget();
 
 
 ?>

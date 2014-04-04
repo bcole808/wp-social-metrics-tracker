@@ -1,5 +1,4 @@
 <?php
-
 /***************************************************
 * This class manages the updates of data from social networks and Google Analytics. 
 * 
@@ -14,22 +13,22 @@
 require('data-sources/sharedcount.com.php');
 // require('data-sources/googleanalytics.php'); // Not working in this version
 
-class SocialInsightUpdater {
+class MetricsUpdater {
 
 	private $options;
 
 	public function __construct($options = false) {
 
 		// Set options
-		$this->options = ($options) ? $options : get_option('socialinsight_settings');
+		$this->options = ($options) ? $options : get_option('smt_settings');
 
 		// Import adapters for 3rd party services
-		if (class_exists('SharedCountUpdater') && $this->options['socialinsight_options_enable_social']) {
+		if (class_exists('SharedCountUpdater') && $this->options['smt_options_enable_social']) {
 			$SharedCountUpdater = new SharedCountUpdater();
 		}
 
 		// If analytics are being tracked, pull update
-		if (class_exists('GoogleAnalyticsUpdater') && $this->options['socialinsight_options_enable_analytics']) {
+		if (class_exists('GoogleAnalyticsUpdater') && $this->options['smt_options_enable_analytics']) {
 			$GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
@@ -37,9 +36,9 @@ class SocialInsightUpdater {
 		add_action( 'wp_head', array($this, 'checkThisPost'));
 
 		// Set up event hooks
-		add_action( 'social_insight_schedule_full_update', 'smc_do_full_update', 10 );
-		add_action( 'social_insight_full_update', array( $this, 'scheduleFullDataSync' ) );
-		add_action( 'social_insight_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
+		add_action( 'social_metrics_schedule_full_update', 'smc_do_full_update', 10 );
+		add_action( 'social_metrics_full_update', array( $this, 'scheduleFullDataSync' ) );
+		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
 
 	} // end constructor
 
@@ -63,7 +62,7 @@ class SocialInsightUpdater {
 
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
-		$ttl = $this->options['socialinsight_options_ttl_hours'] * 3600;
+		$ttl = $this->options['smt_options_ttl_hours'] * 3600;
 
 		// If no timeout
 		$ttl = 0;
@@ -71,7 +70,7 @@ class SocialInsightUpdater {
 		if ($last_updated < $temp) {
 
 			// Schedule an update
-			wp_schedule_single_event( time(), 'social_insight_update_single_post', array( $post_id ) );
+			wp_schedule_single_event( time(), 'social_metrics_update_single_post', array( $post_id ) );
 		} else {
 
 		}
@@ -94,7 +93,7 @@ class SocialInsightUpdater {
 		$permalink = str_replace("https://", "http://", get_permalink($post_id));
 
 		// Retrieve 3rd party data updates
-		do_action('social_insight_data_sync', $post_id, $permalink);
+		do_action('social_metrics_data_sync', $post_id, $permalink);
 
 		// Last updated time
 		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
@@ -119,8 +118,8 @@ class SocialInsightUpdater {
 		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
 		// Custom action hook allows us to extend this function. 
-		do_action('smc_social_insight_sync', $post_id, $stats); // remove this after updating other references
-		do_action('social_insight_data_sync_complete', $post_id, $stats);
+		do_action('social_metrics_sync', $post_id, $stats); // remove this after updating other references
+		do_action('social_metrics_data_sync_complete', $post_id, $stats);
 
 		return $stats['socialcount_TOTAL'];
 	} // end updatePostStats()
@@ -272,7 +271,7 @@ class SocialInsightUpdater {
 	* This should only be run when the plugin is first installed, or if data syncing was interrupted.
 	*
 	*/ 
-	public function scheduleFullDataSync() {
+	public static function scheduleFullDataSync() {
 
 		// We are going to stagger the updates so we do not overload the Wordpress cron.
 		$nextTime = time();
@@ -295,7 +294,7 @@ class SocialInsightUpdater {
 		));
 
 		foreach ($querydata as $querydatum ) {
-		    wp_schedule_single_event( $nextTime, 'social_insight_update_single_post', array( $querydatum->ID ) );
+		    wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
 		    $nextTime = $nextTime + $interval;
 		}
 
@@ -315,7 +314,7 @@ class SocialInsightUpdater {
 		));
 
 		foreach ($querydata as $querydatum ) {
-			wp_schedule_single_event( $nextTime, 'social_insight_update_single_post', array( $querydatum->ID ) );
+			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
 			$nextTime = $nextTime + ($interval * 2);
 		}
 
@@ -323,18 +322,18 @@ class SocialInsightUpdater {
 	} // end scheduleFullDataSync()
 
 	// Remove all queued updates from cron. 
-	public function removeAllQueuedUpdates() {
+	public static function removeAllQueuedUpdates() {
 	    $crons = _get_cron_array();
 	    if ( !empty( $crons ) ) {
 		    foreach( $crons as $timestamp => $cron ) {
 		    	// Remove single post updates
-		        if ( ! empty( $cron['social_insight_update_single_post'] ) )  {
-		            unset( $crons[$timestamp]['social_insight_update_single_post'] );
+		        if ( ! empty( $cron['social_metrics_update_single_post'] ) )  {
+		            unset( $crons[$timestamp]['social_metrics_update_single_post'] );
 		        }
 
 		        // Remove full post updates
-		        if ( ! empty( $cron['social_insight_full_update'] ) )  {
-		            unset( $crons[$timestamp]['social_insight_full_update'] );
+		        if ( ! empty( $cron['social_metrics_full_update'] ) )  {
+		            unset( $crons[$timestamp]['social_metrics_full_update'] );
 		        }
 		    }
 		    _set_cron_array( $crons );
@@ -349,7 +348,7 @@ class SocialInsightUpdater {
 		foreach ( $cron as $timestamp => $cronhooks ) {
 			foreach ( (array) $cronhooks as $hook => $events ) {
 				foreach ( (array) $events as $key => $event ) {
-					if ($hook == 'social_insight_update_single_post') {
+					if ($hook == 'social_metrics_update_single_post') {
 						array_push($queue, $cron[$timestamp][$hook][$key]['args'][0]);
 					}
 				}

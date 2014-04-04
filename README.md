@@ -6,7 +6,7 @@ This Wordpress plugin collects and display an analysis of social media interacti
 
 1. Install and activate the wordpress plugin.
 2. Data will automaticall begin syncing. This will take some time. 
-3. Review the plugin settings under *Settings > Social Insight*
+3. Review the plugin settings under *Settings > Social Metrics*
 
  
 # Developers Guide

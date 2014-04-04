@@ -1,10 +1,10 @@
 <?php
-class socialInsightSettings {
+class socialMetricsSettings {
 
     private $plugin_path;
     private $plugin_url;
     private $l10n;
-    private $socialInsightSettings;
+    private $socialMetricsSettings;
 
     function __construct() {	
         $this->plugin_path = plugin_dir_path( __FILE__ );
@@ -14,14 +14,14 @@ class socialInsightSettings {
         
         // Include and create a new WordPressSettingsFramework
         require_once( $this->plugin_path .'lib/wp-settings-framework.php' );
-        $this->socialInsightSettings = new WordPressSettingsFramework( $this->plugin_path .'settings.php', 'socialinsight' );
+        $this->socialMetricsSettings = new WordPressSettingsFramework( $this->plugin_path .'smt-settings.php', 'smt' );
 
         // Add an optional settings validation filter (recommended)
-        add_filter( $this->socialInsightSettings->get_option_group() .'_settings_validate', array(&$this, 'validate_settings') );
+        add_filter( $this->socialMetricsSettings->get_option_group() .'_settings_validate', array(&$this, 'validate_settings') );
     }
     
     function admin_menu() {
-        add_options_page( 'Social Insight Settings', 'Social Insight', 'manage_options', 'social-insight-settings', array(&$this, 'settings_page') );
+        add_options_page( 'Social Metrics Tracker Settings', 'Social Metrics', 'manage_options', 'social-metrics-tracker-settings', array(&$this, 'settings_page') );
     }
     
     function settings_page() {
@@ -29,11 +29,11 @@ class socialInsightSettings {
 	    ?>
 		<div class="wrap">
 			<div id="icon-options-general" class="icon32"></div>
-			<h2>Social Insight Settings</h2>
+			<h2>Social Metrics Tracker Configuration</h2>
 			<?php 
             
 			// Output your settings form
-			$this->socialInsightSettings->settings(); 
+			$this->socialMetricsSettings->settings(); 
 			?>
 		</div>
 		<?php
@@ -47,6 +47,6 @@ class socialInsightSettings {
 	}
 
 }
-new socialInsightSettings();
+new socialMetricsSettings();
 
 ?>

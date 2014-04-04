@@ -8,7 +8,7 @@ class SharedCountUpdater {
 	public function __construct() {
 
 		// Hook this in to the post updater
-		add_action( 'social_insight_data_sync', array($this, 'syncSharedCountData'), 10, 2);
+		add_action( 'social_metrics_data_sync', array($this, 'syncSharedCountData'), 10, 2);
 
 	}
 
