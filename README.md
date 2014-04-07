@@ -1,25 +1,31 @@
-# About
+# [Social Metrics Tracker](https://github.com/chapmanu/wp-social-metrics-tracker)
 
-This Wordpress plugin collects and display an analysis of social media interactions and view counts of posts. This project is ready for testing. Code is still being cleaned up and optimized, but please try out the plugin and report any issues you find. 
+**Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, [SharedCount](http://www.sharedcount.com/) tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, Google, Pinterest, LinkedIn, and StumbleUpon. There is no setup required; it just works.
 
-# Setup
+## Quick Start
 
-1. Install and activate the wordpress plugin.
-2. Data will automaticall begin syncing. This will take some time. 
-3. Review the plugin settings under *Settings > Social Metrics*
+1. Download the [development release](https://github.com/chapmanu/wp-social-metrics-tracker/archive/development.zip).
+2. From your [Dashboard Screen](http://codex.wordpress.org/Dashboard_Screen), add and activate the plugin.
 
- 
-# Developers Guide
+![uploading the plugin](http://i.imgur.com/kWl0iIq.png)
 
-This plugin stores social metrics in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as **custom post meta fields** on each individual post. 
+That’s it.
 
-### Accessing the metrics
+![using the plugin](http://i.imgur.com/qey5upD.png)
+
+ ... profit!
+
+## Developer Guide
+
+![Good news, everyone!](http://3.bp.blogspot.com/_J2l4ETMVCDo/TQEuvsblAFI/AAAAAAAAA3A/Olb2qTHKEZ8/s400/11111111.jpg)
+
+**Social Metrics Tracker** stores social metrics in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as **custom post meta fields** on each individual post.
 
 To display the total number of social interactions, get the post meta:
 
-~~~php
+```php
 <?php echo get_post_meta(get_the_ID(), 'socialcount_TOTAL', true); ?>
-~~~
+```
 
 Here is a listing of all of the available data fields which you can access in that way:
 
@@ -39,30 +45,49 @@ Last Updated Timestamp | socialcount_LAST_UPDATED
 
 ### Extending the plugin
 
-There are some Wordpress action hooks which can be used to extend the functionality of this plugin. 
+There are some Wordpress action hooks which can be used to extend the functionality of this plugin.
 
 **social_metrics_post_sync** is called when an individual post is being updated, before new data is downloaded.
-**social_metrics_post_sync_complete** is called when an individual post is done being updated. 
-
+**social_metrics_post_sync_complete** is called when an individual post is done being updated.
 
 # FAQ
 
 ### Q: Where is social network data gathered from?
 
-A: Share counts and interactions are gathered from the http://www.sharedcount.com/ API
+A: Share counts and interactions are gathered from [SharedCount](http://www.sharedcount.com/).
 
 ### Q: What social networks are measured?
 
-A: SharedCount.com checks the following social networks: Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+A: Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+.
 
 ### Q: When is the data updated?
 
-A: When activating the plugin, all posts are queued for an update; this takes some time to complete. After that, the data is updated every few hours using the Wordpress Cron system. When a post is visited, if no update has happened recently then that post is placed in queue for an update. When the Wordpress Cron runs, all posts in the queue will be updated.  You can configure the TTL (the amount of time to wait between updates) on the options page for the plugin. This method of updating ensures that site visitors do not experience any additional load time due to these data updates. 
+A: When activating the plugin, all posts are queued for an update; this takes some time to complete. After that, the data is updated every few hours using the Wordpress Cron system. When a post is visited, if no update has happened recently then that post is placed in queue for an update. When the Wordpress Cron runs, all posts in the queue will be updated.  You can configure the TTL (the amount of time to wait between updates) on the options page for the plugin. This method of updating ensures that site visitors do not experience any additional load time due to these data updates.
 
-### Q: What about page views?
+### Q: Umm, what about page views?
 
-A: Page views will be added in a future iteration of the plugin. 
+A: Page views are on the way, okay? You saw that this was a development branch, right?
 
-### Q: Who created this?
+### Q. Was this made with magic?
 
-A: This plugin was created by Ben Cole for the Chapman University web marketing team. The purpose was to track posts on social networks to see which stories students, alumni, and faculty were most inerested in sharing. 
+A: Yes, we used the tears of a baby unicorn forlock. Also, PHP.
+
+### Q: A whole University created this? Who did you pay?
+
+A: Please direct your praise and admonishment to [Ben Cole](https://github.com/bcole808), a Chapman University graduate turned staff and web marketing ninja / rockstar / whatever hipster phrase they are throwing around these days.
+
+### Q: Graduate turned staff?
+
+![Ben Cole](http://i.imgur.com/5sjt6KP.png)
+
+### Q: Why was this done?
+
+We wanted to track posts on social networks to see which stories students, alumni, and faculty were most interested in sharing. However, the application is far from limited to higher education. So, we thought, we should share this.
+
+### Q: But why? I mean, really, why?
+
+[42](https://www.google.com/#q=the+answer+to+life+the+universe+and+everything).
+
+## Contributing
+
+Anyone and everyone is welcome to [contribute](https://github.com/chapmanu/wp-social-metrics-tracker/issues).
