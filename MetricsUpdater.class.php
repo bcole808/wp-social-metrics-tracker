@@ -36,7 +36,6 @@ class MetricsUpdater {
 		add_action( 'wp_head', array($this, 'checkThisPost'));
 
 		// Set up event hooks
-		add_action( 'social_metrics_schedule_full_update', 'smc_do_full_update', 10 );
 		add_action( 'social_metrics_full_update', array( $this, 'scheduleFullDataSync' ) );
 		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
 

@@ -109,7 +109,7 @@ $wpsf_settings[] = array(
         ),
         array(
             'id' => 'debug_report_visibility',
-            'title' => 'Advanced Report Visibility',
+            'title' => 'Debug Report Visibility',
             'desc' => 'The debug panel will be visible to users who have this capability.',
             'type' => 'select',
             'std' => 'manage_options',

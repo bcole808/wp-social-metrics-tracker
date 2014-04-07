@@ -171,18 +171,12 @@ class SocialMetricsTracker {
 		// Remove Queued Updates
 		MetricsUpdater::removeAllQueuedUpdates();
 
-		delete_option('smt_settings');
-
 	}
 
 	public function uninstall() {
 
 		// Delete options
 		delete_option('smt_settings');
-
-		// Google Auth Tokens
-		delete_site_option('smc_ga_token');
-		delete_option('smc_ga_token');
 
 	}
 

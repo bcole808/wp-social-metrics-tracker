@@ -334,10 +334,7 @@ class SocialMetricsTable extends WP_List_Table {
                     <input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
             <?php
-            if (current_user_can('manage_options')) {
-                $url = add_query_arg(array('full_data_sync' => 1), 'admin.php?page=social-metrics-tracker');
-                echo "<a href='$url' class='button' onClick='return confirm(\"This will queue all items for an update. This may take a long time depending on the number of posts and should only be done if data becomes out of sync or after installing the plugin. Are you sure?\")'>Synchronize all data</a>";
-            }
+
         }
         if ( $which == "bottom" ){
             //The code that goes after the table is there
@@ -364,11 +361,6 @@ function smt_render_dashboard_view($options){
             die();
         }
 
-        if (isset($_GET['full_data_sync'])) {
-            wp_schedule_single_event( time(), 'social_metrics_schedule_full_update' );
-            printf( '<div class="updated"> <p> %s </p> </div>',  'A full data update has been scheduled. This may take some time. <a href="admin.php?page=social-metrics-tracker">Return to report view</a>');
-            die();
-        }
         ?>
 
         <form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker">
