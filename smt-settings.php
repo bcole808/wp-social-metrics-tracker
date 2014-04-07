@@ -18,7 +18,7 @@ $wpsf_settings[] = array(
         ),
         array(
             'id' => 'report_visibility',
-            'title' => 'Basic Report Visibility',
+            'title' => 'Report Visibility',
             'desc' => 'The Social Metrics Tracker reports will be visible to users who have this capability.',
             'type' => 'select',
             'std' => 'publish_posts',
@@ -32,24 +32,9 @@ $wpsf_settings[] = array(
             )
         ),
         array(
-            'id' => 'advanced_report_visibility',
-            'title' => 'Advanced Report Visibility',
-            'desc' => 'The advanced analysis reports will be visible to users who have this capability.',
-            'type' => 'select',
-            'std' => 'update_core',
-            'choices' => array(
-                'manage_network' => 'Super Admins (Users who can manage the network)',
-                'manage_options' => 'Admins (Users who can manage options)',
-                'edit_others_posts' => 'Editors (Users who can edit others posts)',
-                'publish_posts' => 'Authors (Users who can publish posts)',
-                'edit_posts' => 'Contributors (Users who can edit their own posts)',
-                'read' => 'Subscribers (Users who can read)'
-            )
-        ),
-        array(
             'id' => 'enable_social',
             'title' => 'Track Social',
-            'desc' => 'Keep social data in sync.',
+            'desc' => 'Track and display social data',
             'type' => 'checkbox',
             'std' => 1
         ),
@@ -70,7 +55,7 @@ $wpsf_settings[] = array(
         array(
             'id' => 'ttl_hours',
             'title' => 'Data TTL',
-            'desc' => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts. This will affect your quota for Google APIs.',
+            'desc' => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts. ',
             'type' => 'select',
             'std' => '12',
             'choices' => array(
@@ -95,7 +80,7 @@ $wpsf_settings[] = array(
             'std' => 'social',
             'choices' => array(
                 'aggregate' => 'Overall Aggregate Score',
-                'views' => 'Most Views',
+                // 'views' => 'Most Views',
                 'comments' => 'Most Comments',
                 'social' => 'Highest Social Score',
                 'post_date' => 'Post Publish Date'
@@ -122,6 +107,21 @@ $wpsf_settings[] = array(
             'type' => 'checkbox',
             'std' => 0
         ),
+        array(
+            'id' => 'debug_report_visibility',
+            'title' => 'Advanced Report Visibility',
+            'desc' => 'The debug panel will be visible to users who have this capability.',
+            'type' => 'select',
+            'std' => 'manage_options',
+            'choices' => array(
+                'manage_network' => 'Super Admins (Users who can manage the network)',
+                'manage_options' => 'Admins (Users who can manage options)',
+                'edit_others_posts' => 'Editors (Users who can edit others posts)',
+                'publish_posts' => 'Authors (Users who can publish posts)',
+                'edit_posts' => 'Contributors (Users who can edit their own posts)',
+                'read' => 'Subscribers (Users who can read)'
+            )
+        )
     )
 );
 /*

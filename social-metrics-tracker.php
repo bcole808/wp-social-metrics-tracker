@@ -93,7 +93,7 @@ class SocialMetricsTracker {
 
 		// Add advanced stats menu
 		if ($this->options['smt_options_debug_mode']) {
-			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $this->options['smt_options_advanced_report_visibility'] ?: 'manage_options', 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
+			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $this->options['smt_options_debug_report_visibility'] ?: 'manage_options', 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
 		include_once('smt-settings-setup.php');
