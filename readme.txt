@@ -35,15 +35,15 @@ Data is collected from the following social networks: Facebook, Twitter, Reddit,
 
 = What information is sent from my blog to other services? =
 
-Only a permalink to each of your posts is sent to other web services. The permalink to the post is the only piece of information required to retrieve the number of shares for that link. 
+Only a permalink to each of your posts is sent to other web services. The permalink to the post is the only piece of information required to retrieve the number of shares for that link.
 
 = When is the data updated? =
 
-When activating the plugin, all posts are queued for an update; this takes some time to complete. After that, the data is updated every few hours using the WordPress Cron system. When a post is visited, if no update has happened recently then that post is placed in queue for an update. When the WordPress Cron runs, all posts in the queue will be updated.  You can configure the TTL (the amount of time to wait between updates) on the options page for the plugin. This method of updating ensures that site visitors do not experience any additional load time due to these data updates. 
+When activating the plugin, all posts are queued for an update; this takes some time to complete. After that, the data is updated every few hours using the WordPress Cron system. When a post is visited, if no update has happened recently then that post is placed in queue for an update. When the WordPress Cron runs, all posts in the queue will be updated.  You can configure the TTL (the amount of time to wait between updates) on the options page for the plugin. This method of updating ensures that site visitors do not experience any additional load time due to these data updates.
 
 = What about pageviews? =
 
-Page views will be added in a future iteration of the plugin. 
+Page views will be added in a future iteration of the plugin.
 
 = Who created this? =
 
@@ -52,7 +52,7 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Screenshots ==
 
-1. The Social Metrics Tracker report view. 
+1. The Social Metrics Tracker report view.
 
 == Changelog ==
 
@@ -60,7 +60,7 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Developers Guide ==
 
-This plugin stores social metrics in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as **custom post meta fields** on each individual post. 
+This plugin stores social metrics in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as **custom post meta fields** on each individual post.
 
 **Accessing the metrics**
 
@@ -74,10 +74,10 @@ socialcount_TOTAL, socialcount_facebook, socialcount_twitter, socialcount_google
 
 **Extending the plugin**
 
-There are some WordPress action hooks which can be used to extend the functionality of this plugin. 
+There are some WordPress action hooks which can be used to extend the functionality of this plugin.
 
 **social_metrics_post_sync** is called when an individual post is being updated, before new data is downloaded.
-**social_metrics_post_sync_complete** is called when an individual post is done being updated. 
+**social_metrics_post_sync_complete** is called when an individual post is done being updated.
 
 **Contributing to the project**
 We have a Git repository for the project which you can access here: https://github.com/chapmanu/wp-social-metrics-tracker

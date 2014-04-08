@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
-Description: Collect and display social network shares, likes, tweets, and view counts of posts.  
+Description: Collect and display social network shares, likes, tweets, and view counts of posts.
 Version: 0.9 (Beta)
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
@@ -78,7 +78,7 @@ class SocialMetricsTracker {
 		$message .= '</ul>';
 
 		printf( '<div class="error"> <p> %s </p> </div>', $message);
-		
+
 	}
 
 	public function adminHeaderScripts() {
@@ -98,7 +98,7 @@ class SocialMetricsTracker {
 
 		include_once('smt-settings-setup.php');
 		include_once('smt-dashboard-widget.php');
-		
+
 	} // end adminMenuSetup()
 
 	public function render_view_Dashboard() {
@@ -122,17 +122,17 @@ class SocialMetricsTracker {
 
 		$now = time();
 
-		    $difference     = $now - $time;
-		    $tense         = "ago";
+			$difference     = $now - $time;
+			$tense         = "ago";
 
 		for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-		    $difference /= $lengths[$j];
+			$difference /= $lengths[$j];
 		}
 
 		$difference = round($difference);
 
 		if($difference != 1) {
-		    $periods[$j].= "s";
+			$periods[$j].= "s";
 		}
 
 		return "$difference $periods[$j] ago";
@@ -156,14 +156,14 @@ class SocialMetricsTracker {
 			add_option('smt_settings', $defaults);
 		}
 
-		
+
 		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
 			// Do not schedule update
 		} else {
 			// Sync all data
 			MetricsUpdater::scheduleFullDataSync();
 		}
-		
+
 	}
 
 	public function deactivate() {
@@ -184,5 +184,3 @@ class SocialMetricsTracker {
 
 // Run plugin
 $SocialMetricsTracker = new SocialMetricsTracker();
-
-?>
