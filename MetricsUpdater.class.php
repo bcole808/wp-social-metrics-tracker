@@ -1,12 +1,12 @@
 <?php
 /***************************************************
-* This class manages the updates of data from social networks and Google Analytics. 
-* 
-* Updates are done using the Wordpress Cron so that page views are not slowed down while waiting for data to be returned from outside servers. 
-* 
-* A TTL is set so that new data is only fetched when the numbers are stale. 
+* This class manages the updates of data from social networks and Google Analytics.
 *
-* Updates are triggered by page views, so if no one views a page then no new data is fetched (but that is okay, because if no one views the page then that means the data has not changed). 
+* Updates are done using the Wordpress Cron so that page views are not slowed down while waiting for data to be returned from outside servers.
+*
+* A TTL is set so that new data is only fetched when the numbers are stale.
+*
+* Updates are triggered by page views, so if no one views a page then no new data is fetched (but that is okay, because if no one views the page then that means the data has not changed).
 ***************************************************/
 
 // Data source adapters
@@ -42,11 +42,11 @@ class MetricsUpdater {
 	} // end constructor
 
 	/**
-	* Check to see if this post requires an update, and if so schedule it. 
+	* Check to see if this post requires an update, and if so schedule it.
 	*
-	* @param int $post_id the post id to check. Defaults to current ID. 
-	* @return 
-	*/ 
+	* @param int $post_id the post id to check. Defaults to current ID.
+	* @return
+	*/
 	public function checkThisPost($post_id = 0) {
 
 		global $post;
@@ -74,15 +74,15 @@ class MetricsUpdater {
 
 		}
 
-		return; 
+		return;
 	} // end checkThisPost()
 
 	/**
-	* Fetch new stats from remote services and update post social score. 
+	* Fetch new stats from remote services and update post social score.
 	*
 	* @param  int    $post_id  The ID of the post to update
-	* @return 
-	*/ 
+	* @return
+	*/
 	public function updatePostStats($post_id) {
 
 		// Data validation
@@ -100,7 +100,7 @@ class MetricsUpdater {
 		// Get comment count from DB
 		$post = get_post($post_id);
 
-		// Calculate aggregate score. 
+		// Calculate aggregate score.
 		$social_aggregate_score_detail = $this->calculateScoreAggregate($stats['socialcount_TOTAL'], $stats['ga_pageviews'], $post->comment_count);
 
 		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
@@ -116,7 +116,7 @@ class MetricsUpdater {
 
 		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
-		// Custom action hook allows us to extend this function. 
+		// Custom action hook allows us to extend this function.
 		do_action('social_metrics_sync', $post_id, $stats); // remove this after updating other references
 		do_action('social_metrics_data_sync_complete', $post_id, $stats);
 
@@ -128,7 +128,7 @@ class MetricsUpdater {
 	*
 	* @param The input values for social, views, and comments
 	* @return An array representing the weighted score of all three input values
-	*/ 
+	*/
 	public function calculateScoreAggregate($social_num = 0, $views_num = 0, $comment_num = 0) {
 
 		// Configuration
@@ -153,14 +153,14 @@ class MetricsUpdater {
 
 
 	/**
-	* Reduces a number over time based on how much time has elapsed since inception. 
+	* Reduces a number over time based on how much time has elapsed since inception.
 	*
-	* Purpose: To lower the score of posts over time so that older posts do not display on top. 
+	* Purpose: To lower the score of posts over time so that older posts do not display on top.
 	*
 	* @param  int  		$score  The original number
 	* @param  string  	$datePublished The date string of when the content was published; parsed with strtotime();
 	* @return float The decayed score
-	*/ 
+	*/
 	public function calculateScoreDecay($score, $datePublished) {
 
 		// Config
@@ -171,19 +171,19 @@ class MetricsUpdater {
 		// Data validation
 		if (!$score) return false;
 		if (!$datePublished) return false;
-		if (($timestamp = strtotime($datePublished)) === false) return false; 
+		if (($timestamp = strtotime($datePublished)) === false) return false;
 		if (!$timestamp) return false;
 		if ($score < 0 || $timestamp <= 0) return false;
 
 		$daysActive = (time() - $timestamp) / $SECONDS_PER_DAY;
 
-		// If newer than 5 days, boost. 
+		// If newer than 5 days, boost.
 		if ($daysActive < 5) {
 
 			$k = $score / ($BOOST_PERIOD*$BOOST_PERIOD);
 			$new_score = $k*($daysActive - $BOOST_PERIOD)*($daysActive - $BOOST_PERIOD) + $score;
 
-		// If older than 5 days, decay. 
+		// If older than 5 days, decay.
 		} else {
 			$new_score = $score / (1.0 + pow(M_E,($daysActive - $GRACE_PERIOD)));
 		}
@@ -193,28 +193,28 @@ class MetricsUpdater {
 
 
 	/**
-	* Recalculate the score aggregate and decay values. 
+	* Recalculate the score aggregate and decay values.
 	*
-	* Purpose: This only needs to be run when the parameters are changed for how to calculate scores. No new data is fetched and it is only used to recalculate based on the data in the DB. 
+	* Purpose: This only needs to be run when the parameters are changed for how to calculate scores. No new data is fetched and it is only used to recalculate based on the data in the DB.
 	*
-	* @param bool $print_output - If true, progress will be echoed while this function runs. 
-	* @return int the number of posts updated. 
-	*/ 
+	* @param bool $print_output - If true, progress will be echoed while this function runs.
+	* @return int the number of posts updated.
+	*/
 	public function recalculateAllScores($print_output = false) {
 
 		// Get all posts which have social data
 		$querydata = query_posts(array(
-		    'order'=>'DESC',
-		    'orderby'=>'post_date',
-		    'posts_per_page'=>-1,
-		    'post_status'   => 'publish',
-		    'meta_query' => array(
-		        array(
-		         'key' => 'socialcount_LAST_UPDATED',
-		         'compare' => '>=', // works!
-		         'value' => '0' // This is ignored, but is necessary...
-		        )
-		    )
+			'order'=>'DESC',
+			'orderby'=>'post_date',
+			'posts_per_page'=>-1,
+			'post_status'   => 'publish',
+			'meta_query' => array(
+				array(
+				 'key' => 'socialcount_LAST_UPDATED',
+				 'compare' => '>=', // works!
+				 'value' => '0' // This is ignored, but is necessary...
+				)
+			)
 		));
 
 		$total = array(
@@ -229,25 +229,25 @@ class MetricsUpdater {
 			$socialcount_TOTAL = get_post_meta( $post->ID, 'socialcount_TOTAL', true );
 			$ga_pageviews = get_post_meta( $post->ID, 'ga_pageviews', true );
 
-		    // Update aggregate score. 
-		    $social_aggregate_score_detail = $this->calculateScoreAggregate($socialcount_TOTAL, $ga_pageviews, $post->comment_count);
-		    update_post_meta($post->ID, "social_aggregate_score", $social_aggregate_score_detail['total']);
-		    update_post_meta($post->ID, "social_aggregate_score_detail", $social_aggregate_score_detail);
+			// Update aggregate score.
+			$social_aggregate_score_detail = $this->calculateScoreAggregate($socialcount_TOTAL, $ga_pageviews, $post->comment_count);
+			update_post_meta($post->ID, "social_aggregate_score", $social_aggregate_score_detail['total']);
+			update_post_meta($post->ID, "social_aggregate_score_detail", $social_aggregate_score_detail);
 
-		    // Update decayed score.
-		    $social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
-		    update_post_meta($post->ID, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-		    update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", time());
-		    
-		    if ($print_output) {
-		    	echo "Updated ".$post->post_title.", total: <b>".$social_aggregate_score_detail['total'] . "</b> decayed: ".$social_aggregate_score_decayed."<br>";
-		    	flush();
+			// Update decayed score.
+			$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
+			update_post_meta($post->ID, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
+			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", time());
+
+			if ($print_output) {
+				echo "Updated ".$post->post_title.", total: <b>".$social_aggregate_score_detail['total'] . "</b> decayed: ".$social_aggregate_score_decayed."<br>";
+				flush();
 			}
 
-		    $total['count']++;
-		    $total['socialscore'] += $socialcount_TOTAL;
-		    $total['views'] += $ga_pageviews;
-		    $total['comments'] += $post->comment_count;
+			$total['count']++;
+			$total['socialscore'] += $socialcount_TOTAL;
+			$total['views'] += $ga_pageviews;
+			$total['comments'] += $post->comment_count;
 
 		}
 
@@ -265,51 +265,51 @@ class MetricsUpdater {
 
 
 	/**
-	* Run a complete sync of all data. Download new stats for every single post in the DB. 
+	* Run a complete sync of all data. Download new stats for every single post in the DB.
 	*
 	* This should only be run when the plugin is first installed, or if data syncing was interrupted.
 	*
-	*/ 
+	*/
 	public static function scheduleFullDataSync() {
 
 		// We are going to stagger the updates so we do not overload the Wordpress cron.
 		$nextTime = time();
 		$interval = 5; // in seconds
-		
-		// Get posts that have not ever been updated. 
-		// In case the function does not finish, we want to start with posts that have NO data yet. 
+
+		// Get posts that have not ever been updated.
+		// In case the function does not finish, we want to start with posts that have NO data yet.
 		$querydata = query_posts(array(
-		    'order'			=>'DESC',
-		    'orderby'		=>'post_date',
-		    'posts_per_page'=>-1,
-		    'post_status'   => 'publish',
-		    'meta_query' 	=> array(
-		        array(
-		        	'key' 		=> 'socialcount_LAST_UPDATED',
-		        	'compare' 	=> 'NOT EXISTS', // works!
-		        	'value' 	=> '' // This is ignored, but is necessary...
-		        )
-		    )
+			'order'			=>'DESC',
+			'orderby'		=>'post_date',
+			'posts_per_page'=>-1,
+			'post_status'   => 'publish',
+			'meta_query' 	=> array(
+				array(
+					'key' 		=> 'socialcount_LAST_UPDATED',
+					'compare' 	=> 'NOT EXISTS', // works!
+					'value' 	=> '' // This is ignored, but is necessary...
+				)
+			)
 		));
 
 		foreach ($querydata as $querydatum ) {
-		    wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
-		    $nextTime = $nextTime + $interval;
+			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
+			$nextTime = $nextTime + $interval;
 		}
 
 		// Get posts which HAVE been updated
 		$querydata = query_posts(array(
-		    'order'			=>'DESC',
-		    'orderby'		=>'post_date',
-		    'posts_per_page'=>-1,
-		    'post_status'   => 'publish',
-		    'meta_query' 	=> array(
-		        array(
-		        	'key' 		=> 'socialcount_LAST_UPDATED',
-		        	'compare' 	=> '>=', // works!
-		        	'value' 	=> '0' // This is ignored, but is necessary...
-		        )
-		    )
+			'order'			=>'DESC',
+			'orderby'		=>'post_date',
+			'posts_per_page'=>-1,
+			'post_status'   => 'publish',
+			'meta_query' 	=> array(
+				array(
+					'key' 		=> 'socialcount_LAST_UPDATED',
+					'compare' 	=> '>=', // works!
+					'value' 	=> '0' // This is ignored, but is necessary...
+				)
+			)
 		));
 
 		foreach ($querydata as $querydatum ) {
@@ -320,22 +320,22 @@ class MetricsUpdater {
 		return;
 	} // end scheduleFullDataSync()
 
-	// Remove all queued updates from cron. 
+	// Remove all queued updates from cron.
 	public static function removeAllQueuedUpdates() {
-	    $crons = _get_cron_array();
-	    if ( !empty( $crons ) ) {
-		    foreach( $crons as $timestamp => $cron ) {
-		    	// Remove single post updates
-		        if ( ! empty( $cron['social_metrics_update_single_post'] ) )  {
-		            unset( $crons[$timestamp]['social_metrics_update_single_post'] );
-		        }
+		$crons = _get_cron_array();
+		if ( !empty( $crons ) ) {
+			foreach( $crons as $timestamp => $cron ) {
+				// Remove single post updates
+				if ( ! empty( $cron['social_metrics_update_single_post'] ) )  {
+					unset( $crons[$timestamp]['social_metrics_update_single_post'] );
+				}
 
-		        // Remove full post updates
-		        if ( ! empty( $cron['social_metrics_full_update'] ) )  {
-		            unset( $crons[$timestamp]['social_metrics_full_update'] );
-		        }
-		    }
-		    _set_cron_array( $crons );
+				// Remove full post updates
+				if ( ! empty( $cron['social_metrics_full_update'] ) )  {
+					unset( $crons[$timestamp]['social_metrics_full_update'] );
+				}
+			}
+			_set_cron_array( $crons );
 		}
 
 		return;
@@ -362,4 +362,3 @@ class MetricsUpdater {
 	} // end printQueueLength()
 
 } // END CLASS
-?>

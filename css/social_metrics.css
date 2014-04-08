@@ -1,7 +1,7 @@
 /* Admin CSS
    ========================================================================== */
 
-#social-metrics-tracker .wp-list-table #views,  
+#social-metrics-tracker .wp-list-table #views,
 #social-metrics-tracker .wp-list-table #comments {
 	width: 15%;
 }
@@ -15,17 +15,17 @@
 /* Align thead lables
    ========================================================================== */
 
-#social-metrics-tracker .wp-list-table #views a, 
-#social-metrics-tracker .wp-list-table #social a, 
+#social-metrics-tracker .wp-list-table #views a,
+#social-metrics-tracker .wp-list-table #social a,
 #social-metrics-tracker .wp-list-table #comments a {
 	width: 90%;
 }
 
-#social-metrics-tracker .wp-list-table thead .column-views a span, 
-#social-metrics-tracker .wp-list-table thead .column-social a span, 
+#social-metrics-tracker .wp-list-table thead .column-views a span,
+#social-metrics-tracker .wp-list-table thead .column-social a span,
 #social-metrics-tracker .wp-list-table thead .column-comments a span,
-#social-metrics-tracker .wp-list-table tfoot .column-views a span, 
-#social-metrics-tracker .wp-list-table tfoot .column-social a span, 
+#social-metrics-tracker .wp-list-table tfoot .column-views a span,
+#social-metrics-tracker .wp-list-table tfoot .column-social a span,
 #social-metrics-tracker .wp-list-table tfoot .column-comments a span {
 	float: right;
 }
@@ -36,8 +36,8 @@
 	padding-right: 17px;
 }
 
-#social-metrics-tracker .wp-list-table #views .sorting-indicator, 
-#social-metrics-tracker .wp-list-table #social .sorting-indicator, 
+#social-metrics-tracker .wp-list-table #views .sorting-indicator,
+#social-metrics-tracker .wp-list-table #social .sorting-indicator,
 #social-metrics-tracker .wp-list-table #comments .sorting-indicator {
 	margin: 7px;
 }
