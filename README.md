@@ -1,5 +1,7 @@
 # [Social Metrics Tracker](https://github.com/chapmanu/wp-social-metrics-tracker)
 
+![screenshot](http://i.imgur.com/JdOEBV7.png)
+
 **Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, [SharedCount](http://www.sharedcount.com/) tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, Google, Pinterest, LinkedIn, and StumbleUpon. There is no setup required; it just works.
 
 ## Quick Start
