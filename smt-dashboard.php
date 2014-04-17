@@ -18,6 +18,18 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$this->options = get_option('smt_settings');
 
+		$this->services = array(
+			'facebook'   => 'Facebook', 
+			'twitter'    => 'Twitter', 
+			'googleplus' => 'Google Plus', 
+			'linkedin'   => 'LinkedIn', 
+			'pinterest'  => 'Pinterest', 
+			'diggs'      => 'Digg.com', 
+			'delicious'	 => 'Delicious', 
+			'reddit'	 => 'Reddit', 
+			'stumbleupon'=> 'Stumble Upon'
+		);
+
 		//Set parent defaults
 		parent::__construct( array(
 			'singular'  => 'post',     //singular name of the listed records
@@ -63,33 +75,19 @@ class SocialMetricsTable extends WP_List_Table {
 
 	function column_social($item) {
 
-		//return print_r($item,true);
 		$total = floatval($item['socialcount_total']);
+		$bar_width = ($total == 0) ? 0 : round($total / max($this->data_max['socialcount_total'], 1)  * 100);
 
-		$facebook = $item['socialcount_facebook'];
-		$facebook_percent = floor($facebook / max($total, 1) * 100);
+		$output = '<div class="bar" style="width:'.$bar_width.'%;">';
 
-		$twitter = $item['socialcount_twitter'];
-		$twitter_percent = floor($twitter / max($total, 1)  * 100);
+		foreach ($this->services as $slug => $name) {
+			$percent = floor($item['socialcount_'.$slug] / max($total, 1) * 100);
+			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item['socialcount_'.$slug].' ('.$percent.'% of total)">'.$name.'</span>';
+		}
 
-		$other = $total - $facebook - $twitter;
-		$other_percent = floor($other / max($total, 1)  * 100);
-
-		$bar_width = round($total / max($this->data_max['socialcount_total'], 1)  * 100);
-		if ($total == 0) $bar_width = 0;
-
-		$bar_class = ($bar_width > 50) ? ' stats' : '';
-
-		$output = '';
-		$output .= '<div class="bar'.$bar_class.'" style="width:'.$bar_width.'%">';
-		$output .= '<span class="facebook" style="width:'.$facebook_percent.'%">'. $facebook_percent .'% Facebook</span>';
-		$output .= '<span class="twitter" style="width:'.$twitter_percent.'%">'. $twitter_percent .'% Twitter</span>';
-		$output .= '<span class="other" style="width:'.$other_percent.'%">'. $other_percent .'% Other</span>';
-		$output .= '</div>';
-		$output .= '<div class="total">'.number_format($total,0,'.',',') . '</div>';
+		$output .= '</div><div class="total">'.number_format($total,0,'.',',') . '</div>';
 
 		return $output;
-
 	}
 
 	// Column for views
@@ -178,12 +176,9 @@ class SocialMetricsTable extends WP_List_Table {
 		$hidden = array();
 		$sortable = $this->get_sortable_columns();
 
-
 		$this->_column_headers = array($columns, $hidden, $sortable);
 
-
 		$this->process_bulk_action();
-
 
 		$order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
 		$orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['smt_options_default_sort_column']; //If no sort, default
@@ -194,8 +189,6 @@ class SocialMetricsTable extends WP_List_Table {
 		unset($post_types['attachment']);
 
 		$limit = 30;
-
-
 
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
 
@@ -270,30 +263,21 @@ class SocialMetricsTable extends WP_List_Table {
 			$item['post_date'] = $post->post_date;
 			$item['comment_count'] = $post->comment_count;
 			$item['socialcount_total'] = get_post_meta($post->ID, "socialcount_TOTAL", true) ?: 0;
-			$item['socialcount_twitter'] = get_post_meta($post->ID, "socialcount_twitter", true);
-			$item['socialcount_facebook'] = get_post_meta($post->ID, "socialcount_facebook", true);
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
 			$item['views'] = get_post_meta($post->ID, "ga_pageviews", true) ?: 0;
 			$item['permalink'] = get_permalink($post->ID);
 
+			foreach ($this->services as $slug => $name) {
+				$item['socialcount_'.$slug] = get_post_meta($post->ID, "socialcount_$slug", true);
+			}
+
 			$this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
-			// $this->data_max['socialcount_total']['average'] += $item['socialcount_total'];
-
 			$this->data_max['views'] = max($this->data_max['views'], $item['views']);
-			// $this->data_max['views']['average'] += $item['views'];
-
 			$this->data_max['comment_count'] = max($this->data_max['comment_count'], $item['comment_count']);
-			// $this->data_max['comment_count']['average'] += $item['comment_count'];
 
 		   array_push($data, $item);
 		endwhile;
 		endif;
-
-		// Calculate the averages
-		// $num_entries = count($querydatum);
-		// $this->data_max['socialcount_total']['average'] = $this->data_max['socialcount_total']['average'] / $num_entries;
-		// $this->data_max['views']['average'] = $this->data_max['views']['average'] / $num_entries;
-
 
 		/**
 		 * REQUIRED for pagination.
@@ -385,3 +369,4 @@ function smt_render_dashboard_view($options){
 	</div>
 	<?php
 }
+?>
