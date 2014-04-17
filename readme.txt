@@ -3,7 +3,7 @@ Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
 Tested up to: 3.9
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,15 +12,30 @@ Collects social data and shows you which of your posts are most popular based on
 
 == Description ==
 
+See which of your posts are most popular on social media!
+
 This WordPress plugin collects and displays an analysis of social media interactions and view counts of posts. A new dashboard panel is created called "Social Metrics" which shows how many times each post has been shared on various social networks.
 
-This plugin collects and stores social metrics data in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as custom post meta fields on each individual post.
+= Get stats from 9 social networks: =
+
+Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+
+= Focus your writing topics: =
+
+Understand what posts your readers are sharing on social networks so that you can write more of what works well. 
+
+= Do more with the data: =
+
+For web developers, this plugin collects and stores social metrics data in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as custom post meta fields on each individual post. This is an advanced feature which requires writing custom code. 
+
 
 == Installation ==
 
 1. Install and activate the WordPress plugin.
 2. Data will automatically begin syncing. This will take some time.
 3. Review the plugin settings under Settings > Social Metrics
+
+If you do not see any statistics on the Social Metrics dashboard, make sure that you have some posts published and that wp-cron.php is working correctly. This plugin relies on the WordPress Cron system to fetch data updates. This plugin will not work on local or development servers where URLs are not publicly accessible. 
 
 
 == Frequently Asked Questions ==
@@ -41,6 +56,10 @@ Only a permalink to each of your posts is sent to other web services. The permal
 
 When activating the plugin, all posts are queued for an update; this takes some time to complete. After that, the data is updated every few hours using the WordPress Cron system. When a post is visited, if no update has happened recently then that post is placed in queue for an update. When the WordPress Cron runs, all posts in the queue will be updated.  You can configure the TTL (the amount of time to wait between updates) on the options page for the plugin. This method of updating ensures that site visitors do not experience any additional load time due to these data updates.
 
+= Will this work with WordPress Multisite? =
+
+Absolutely! This plugin was created with large-scale Multisite blog networks in mind. 
+
 = What about pageviews? =
 
 Page views will be added in a future iteration of the plugin.
@@ -54,8 +73,21 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 1. The Social Metrics Tracker report view.
 
+
 == Changelog ==
 
+= 1.0.1 =
+* Added colors and labels to the graph for each of the nine social networks.
+* Bar graph expands on hover to show detail of the breakdown. 
+
+= 1.0 =
+* Plugin created, wohoo! 
+
+
+== Upgrade Notice ==
+
+= 1.0.1 =
+Added colors and labels for all nine social networks. 
 
 
 == Developers Guide ==
