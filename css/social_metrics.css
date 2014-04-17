@@ -80,27 +80,31 @@
 
 #social-metrics-tracker .wp-list-table td.social .bar {
 	overflow: hidden;
+  -webkit-transition: all 0.3s ease-out;
+     -moz-transition: all 0.3s ease-out;
+       -o-transition: all 0.3s ease-out;
+          transition: all 0.3s ease-out;
 }
 
-#social-metrics-tracker .wp-list-table td.social .bar .facebook {
-	display: inline-block;
-	background-color: #3B5998;
-	color: #CCC;
+#social-metrics-tracker .wp-list-table td.social .bar span { display: inline-block; }
+
+#social-metrics-tracker .wp-list-table td.social .bar .facebook 	{ background-color: #3b5998; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .twitter 		{ background-color: #00aced; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .googleplus 	{ background-color: #dd4b39; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .linkedin 	{ background-color: #4875B4; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .pinterest 	{ background-color: #cb2027; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .diggs 		{ background-color: #444444; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .delicious 	{ background-color: #222222; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .reddit 		{ background-color: #CEE3F8; color: #111; }
+#social-metrics-tracker .wp-list-table td.social .bar .stumbleupon 	{ background-color: #EA4B24; color: #EEE; }
+#social-metrics-tracker .wp-list-table td.social .bar .other 		{ background-color: #666666; color: #EEE; }
+
+#social-metrics-tracker .wp-list-table tr:hover td.social .bar {
+	min-width: 80%;
+	opacity: 0.9;
 }
 
-#social-metrics-tracker .wp-list-table td.social .bar .twitter {
-	display: inline-block;
-	background-color: #9AE4E8;
-	color: #EEE;
-}
-
-#social-metrics-tracker .wp-list-table td.social .bar .other {
-	display: inline-block;
-	background-color: #666;
-	color: #CCC;
-}
-
-#social-metrics-tracker .wp-list-table tr:hover td.social .bar.stats span {
+#social-metrics-tracker .wp-list-table tr:hover td.social .bar span {
 	text-indent: 0;
 }
 
