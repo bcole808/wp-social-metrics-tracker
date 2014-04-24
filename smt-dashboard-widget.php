@@ -280,11 +280,11 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 			$item['post_title'] = $post->post_title;
 			$item['post_date'] = $post->post_date;
 			$item['comment_count'] = $post->comment_count;
-			$item['socialcount_total'] = get_post_meta($post->ID, "socialcount_TOTAL", true) ?: 0;
+			$item['socialcount_total'] = (get_post_meta($post->ID, "socialcount_TOTAL", true)) ? get_post_meta($post->ID, "socialcount_TOTAL", true) : 0;
 			$item['socialcount_twitter'] = get_post_meta($post->ID, "socialcount_twitter", true);
 			$item['socialcount_facebook'] = get_post_meta($post->ID, "socialcount_facebook", true);
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
-			$item['views'] = get_post_meta($post->ID, "ga_pageviews", true) ?: 0;
+			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
 
 			$this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
