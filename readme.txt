@@ -3,7 +3,7 @@ Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
 Tested up to: 3.9
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,9 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
+= 1.0.2 =
+* Compatibility fix for servers with PHP below version 5.3
+
 = 1.0.1 =
 * Added colors and labels to the graph for each of the nine social networks.
 * Bar graph expands on hover to show detail of the breakdown. 
@@ -85,6 +88,9 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Compatibility fix for servers with PHP below version 5.3
 
 = 1.0.1 =
 Added colors and labels for all nine social networks. 

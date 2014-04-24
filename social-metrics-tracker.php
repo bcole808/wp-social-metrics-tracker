@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.0.1
+Version: 1.0.2
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
@@ -89,11 +89,13 @@ class SocialMetricsTracker {
 	public function adminMenuSetup() {
 
 		// Add Social Metrics Tracker menu
-		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $this->options['smt_options_report_visibility'] ?: 'manage_options', 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', 30 );
+		$visibility = ($this->options['smt_options_report_visibility']) ? $this->options['smt_options_report_visibility'] : 'manage_options'
+		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $visibility, 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', 30 );
 
 		// Add advanced stats menu
 		if ($this->options['smt_options_debug_mode']) {
-			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $this->options['smt_options_debug_report_visibility'] ?: 'manage_options', 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
+			$debug_visibility = ($this->options['smt_options_debug_report_visibility']) ? $this->options['smt_options_debug_report_visibility'] : 'manage_options'
+			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
 		include_once('smt-settings-setup.php');
