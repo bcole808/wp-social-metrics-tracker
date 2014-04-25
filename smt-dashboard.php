@@ -270,7 +270,7 @@ class SocialMetricsTable extends WP_List_Table {
 					<?php 
 					
 					// ADDED BY RACHEL
-					do_action( 'wpsf_restrict_manage_social_metrics' );
+					do_action( 'wpsf_restrict_manage_social_metrics_dashboard' );
 					
 					?>
 
