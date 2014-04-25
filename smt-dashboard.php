@@ -180,9 +180,6 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$this->process_bulk_action();
 
-		$order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; //If no order, default
-		$orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $this->options['smt_options_default_sort_column']; //If no sort, default
-
 		// Get custom post types to display in our report.
 		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
 		unset($post_types['page']);
@@ -191,59 +188,14 @@ class SocialMetricsTable extends WP_List_Table {
 		$limit = 30;
 
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
-
-		if ($orderby == 'views') {
-			$querydata = new WP_Query(array(
-				'order'=>$order,
-				'orderby'=>'meta_value_num',
-				'meta_key'=>'ga_pageviews',
-				'posts_per_page'=>$limit,
-				'post_status'   => 'publish',
-				'post_type'     => $post_types
+		
+		// CLEANED UP BY RACHEL
+		$querydata = new WP_Query(array(
+			'smt_query'		=> true, // is important for filtering/sorting
+			'posts_per_page'=> $limit,
+			'post_status'	=> 'publish',
+			'post_type'		=> $post_types
 			));
-		}
-
-		if ($orderby == 'comments') {
-			$querydata = new WP_Query(array(
-				'order'=>$order,
-				'orderby'=>'comment_count',
-				'posts_per_page'=>$limit,
-				'post_status'   => 'publish',
-				'post_type'     => $post_types
-			));
-		}
-
-		if ($orderby == 'social') {
-			$querydata = new WP_Query(array(
-				'order'=>$order,
-				'orderby'=>'meta_value_num',
-				'meta_key'=>'socialcount_TOTAL',
-				'posts_per_page'=>$limit,
-				'post_status'   => 'publish',
-				'post_type'     => $post_types
-			));
-		}
-
-		if ($orderby == 'aggregate') {
-			$querydata = new WP_Query(array(
-				'order'=>$order,
-				'orderby'=>'meta_value_num',
-				'meta_key'=>'social_aggregate_score',
-				'posts_per_page'=>$limit,
-				'post_status'   => 'publish',
-				'post_type'     => $post_types
-			));
-		}
-
-		if ($orderby == 'post_date') {
-			$querydata = new WP_Query(array(
-				'order'=>$order,
-				'orderby'=>'post_date',
-				'posts_per_page'=>$limit,
-				'post_status'   => 'publish',
-				'post_type'     => $post_types
-			));
-		}
 
 		// Remove our date filter
 		remove_filter( 'posts_where', array($this, 'date_range_filter') );
@@ -314,6 +266,13 @@ class SocialMetricsTable extends WP_List_Table {
 						<option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
 						<option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
 					</select>
+					
+					<?php 
+					
+					// ADDED BY RACHEL
+					do_action( 'smt_restrict_manage_social_metrics_dashboard' );
+					
+					?>
 
 					<input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
@@ -369,4 +328,69 @@ function smt_render_dashboard_view($options){
 	</div>
 	<?php
 }
+
+/**
+ * ADDED BY RACHEL
+ *
+ * This action tweaks the query to handle sorting in the dashboard.
+ */
+add_filter( 'pre_get_posts', 'smt_handle_dashboard_sorting' );
+function smt_handle_dashboard_sorting( $query ) {
+	
+	// Only filter on SMT queries
+	if ( $query->get( 'smt_query' ) === true ) {
+	
+		// get SMT options
+		$smt_options = get_option( 'smt_settings' );
+		
+		// get order
+		// this should be taken care of by default but something is interfering
+		// If no order, default is DESC
+		$query->set( 'order', ! empty( $_REQUEST[ 'order' ] ) ? $_REQUEST[ 'order' ] : 'DESC' );
+		
+		// get orderby
+		// If no sort, then get default option
+		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $smt_options[ 'smt_options_default_sort_column' ];
+				
+		// tweak query based on orderby
+		switch( $orderby ) {
+		
+			case 'aggregate':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'social_aggregate_score' );
+				break;
+				
+			case 'comments':
+			
+				$query->set( 'orderby', 'comment_count' );				
+				break;
+				
+			case 'post_date':
+			
+				$query->set( 'orderby', 'post_date' );			
+				break;
+				
+			case 'social':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'socialcount_TOTAL' );				
+				break;
+				
+			case 'views':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'ga_pageviews' );
+				
+				break;
+		
+		}
+		
+		// filter SMT query because my custom query vars aren't being picked up
+		$query = apply_filters( 'smt_dashboard_query', $query );
+		
+	}
+
+}
+
 ?>
