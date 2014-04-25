@@ -314,6 +314,8 @@ class SocialMetricsTable extends WP_List_Table {
 						<option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
 						<option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
 					</select>
+					
+					<?php do_action( 'wpsf_restrict_manage_social_metrics' ); ?>
 
 					<input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
