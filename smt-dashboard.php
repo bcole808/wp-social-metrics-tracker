@@ -386,6 +386,9 @@ function smt_handle_dashboard_sorting( $query ) {
 		
 		}
 		
+		// filter SMT query because my custom query vars aren't being picked up
+		$query = apply_filters( 'smt_dashboard_query', $query );
+		
 	}
 
 }
