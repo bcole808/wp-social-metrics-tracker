@@ -191,7 +191,7 @@ class SocialMetricsTable extends WP_List_Table {
 		
 		// CLEANED UP BY RACHEL
 		$querydata = new WP_Query(array(
-			'smt_query'		=> true,
+			'smt_query'		=> true, // is important for filtering/sorting
 			'posts_per_page'=> $limit,
 			'post_status'	=> 'publish',
 			'post_type'		=> $post_types
