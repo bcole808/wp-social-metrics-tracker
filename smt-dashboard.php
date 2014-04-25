@@ -193,8 +193,8 @@ class SocialMetricsTable extends WP_List_Table {
 		$querydata = new WP_Query(array(
 			'smt_query'		=> true,
 			'posts_per_page'=> $limit,
-			'post_status'   => 'publish',
-			'post_type'     => $post_types
+			'post_status'	=> 'publish',
+			'post_type'		=> $post_types
 			));
 
 		// Remove our date filter
