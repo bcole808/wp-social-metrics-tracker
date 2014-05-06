@@ -90,7 +90,7 @@ class SocialMetricsTracker {
 
 		// Add Social Metrics Tracker menu
 		$visibility = ($this->options['smt_options_report_visibility']) ? $this->options['smt_options_report_visibility'] : 'manage_options';
-		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $visibility, 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', 30 );
+		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $visibility, 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', '30.597831' );
 
 		// Add advanced stats menu
 		if ($this->options['smt_options_debug_mode']) {
