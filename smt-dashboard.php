@@ -166,6 +166,58 @@ class SocialMetricsTable extends WP_List_Table {
 		return $where;
 	}
 
+	/*
+	 * This action tweaks the query to handle sorting in the dashboard.
+	 */
+	function handle_dashboard_sorting($query) {
+		
+		// get order
+		// this should be taken care of by default but something is interfering
+		// If no order, default is DESC
+		$query->set( 'order', ! empty( $_REQUEST[ 'order' ] ) ? $_REQUEST[ 'order' ] : 'DESC' );
+		
+		// get orderby
+		// If no sort, then get default option
+		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $this->options[ 'smt_options_default_sort_column' ];
+				
+		// tweak query based on orderby
+		switch( $orderby ) {
+		
+			case 'aggregate':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'social_aggregate_score' );
+				break;
+				
+			case 'comments':
+			
+				$query->set( 'orderby', 'comment_count' );				
+				break;
+				
+			case 'post_date':
+			
+				$query->set( 'orderby', 'post_date' );			
+				break;
+				
+			case 'social':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'socialcount_TOTAL' );				
+				break;
+				
+			case 'views':
+			
+				$query->set( 'orderby', 'meta_value_num' );
+				$query->set( 'meta_key', 'ga_pageviews' );
+				
+				break;
+		
+		}
+
+		$query = apply_filters( 'smt_dashboard_query', $query ); // Allows developers to add additional query params
+
+	}
+
 
 	function prepare_items() {
 		global $wpdb; //This is used only if making any database queries
@@ -187,18 +239,19 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$limit = 30;
 
+		// Filter our query results
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
-		
-		// CLEANED UP BY RACHEL
+		add_filter( 'pre_get_posts', array($this, 'handle_dashboard_sorting') ); 
+
 		$querydata = new WP_Query(array(
-			'smt_query'		=> true, // is important for filtering/sorting
 			'posts_per_page'=> $limit,
 			'post_status'	=> 'publish',
 			'post_type'		=> $post_types
-			));
+		));
 
-		// Remove our date filter
+		// Remove our filters
 		remove_filter( 'posts_where', array($this, 'date_range_filter') );
+		remove_filter( 'pre_get_posts', array($this, 'handle_dashboard_sorting') );
 
 		$data=array();
 
@@ -267,12 +320,7 @@ class SocialMetricsTable extends WP_List_Table {
 						<option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
 					</select>
 					
-					<?php 
-					
-					// ADDED BY RACHEL
-					do_action( 'smt_restrict_manage_social_metrics_dashboard' );
-					
-					?>
+					<?php do_action( 'smt_dashboard_query_options' ); // Allows developers to add additional sort options ?>
 
 					<input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
@@ -327,70 +375,6 @@ function smt_render_dashboard_view($options){
 
 	</div>
 	<?php
-}
-
-/**
- * ADDED BY RACHEL
- *
- * This action tweaks the query to handle sorting in the dashboard.
- */
-add_filter( 'pre_get_posts', 'smt_handle_dashboard_sorting' );
-function smt_handle_dashboard_sorting( $query ) {
-	
-	// Only filter on SMT queries
-	if ( $query->get( 'smt_query' ) === true ) {
-	
-		// get SMT options
-		$smt_options = get_option( 'smt_settings' );
-		
-		// get order
-		// this should be taken care of by default but something is interfering
-		// If no order, default is DESC
-		$query->set( 'order', ! empty( $_REQUEST[ 'order' ] ) ? $_REQUEST[ 'order' ] : 'DESC' );
-		
-		// get orderby
-		// If no sort, then get default option
-		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $smt_options[ 'smt_options_default_sort_column' ];
-				
-		// tweak query based on orderby
-		switch( $orderby ) {
-		
-			case 'aggregate':
-			
-				$query->set( 'orderby', 'meta_value_num' );
-				$query->set( 'meta_key', 'social_aggregate_score' );
-				break;
-				
-			case 'comments':
-			
-				$query->set( 'orderby', 'comment_count' );				
-				break;
-				
-			case 'post_date':
-			
-				$query->set( 'orderby', 'post_date' );			
-				break;
-				
-			case 'social':
-			
-				$query->set( 'orderby', 'meta_value_num' );
-				$query->set( 'meta_key', 'socialcount_TOTAL' );				
-				break;
-				
-			case 'views':
-			
-				$query->set( 'orderby', 'meta_value_num' );
-				$query->set( 'meta_key', 'ga_pageviews' );
-				
-				break;
-		
-		}
-		
-		// filter SMT query because my custom query vars aren't being picked up
-		$query = apply_filters( 'smt_dashboard_query', $query );
-		
-	}
-
 }
 
 ?>
