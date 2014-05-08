@@ -54,6 +54,12 @@ class SocialMetricsTracker {
 			$this->updater = new MetricsUpdater($this->options);
 		}
 
+		// Manual data update for a post
+		if (is_admin() && $this->updater && $_REQUEST['smt_sync_now']) {
+			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
+			header("Location: ".remove_query_arg('smt_sync_now'));
+		}
+
 	} // end constructor
 
 	public function developmentServerNotice() {

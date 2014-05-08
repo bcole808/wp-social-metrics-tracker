@@ -61,9 +61,9 @@ class SocialMetricsTable extends WP_List_Table {
 
 		//Build row actions
 		$actions = array(
-			'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
-			'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-			'update'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
+			'edit'    => sprintf('<a href="post.php?post=%s&action=edit">Edit Post</a>',$item['ID']),
+			'update'  => '<a href="'.add_query_arg( 'smt_sync_now', $item['ID']).'">Update Stats</a>',
+			'info'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
 		);
 
 		//Return the title contents

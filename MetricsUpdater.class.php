@@ -51,6 +51,8 @@ class MetricsUpdater {
 
 		global $post;
 
+		if (is_admin()) return;
+
 		// If no post ID specified, use current page
 		if ($post_id <= 0) $post_id = $post->ID;
 
@@ -117,7 +119,6 @@ class MetricsUpdater {
 		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
 		// Custom action hook allows us to extend this function.
-		do_action('social_metrics_sync', $post_id, $stats); // remove this after updating other references
 		do_action('social_metrics_data_sync_complete', $post_id, $stats);
 
 		return $stats['socialcount_TOTAL'];
