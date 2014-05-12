@@ -33,20 +33,6 @@ $wpsf_settings[] = array(
 			)
 		),
 		array(
-			'id'    => 'enable_social',
-			'title' => 'Track Social',
-			'desc'  => 'Track and display social data',
-			'type'  => 'checkbox',
-			'std'   => 1
-		),
-		array(
-			'id'    => 'enable_comments',
-			'title' => 'Track Comments',
-			'desc'  => 'Display the number of comments on each item.',
-			'type'  => 'checkbox',
-			'std'   => 1
-		),
-		array(
 			'id'    => 'ttl_hours',
 			'title' => 'Data TTL',
 			'desc'  => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts.',

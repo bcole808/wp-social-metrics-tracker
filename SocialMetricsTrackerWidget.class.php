@@ -5,7 +5,6 @@
 *
 * http://wordpress.org/plugins/custom-list-table-example/
 ***************************************************/
-
 if(!class_exists('WP_List_Table')){
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
@@ -127,16 +126,11 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 		// $columns['date'] = 'Date';
 		$columns['title'] = 'Title';
-
-		if ($this->options['smt_options_enable_social']) {
-			$columns['social'] = 'Social Score';
-		}
+		$columns['social'] = 'Social Score';
 		if ($this->options['smt_options_enable_analytics']) {
 			$columns['views'] = 'Views';
 		}
-		if ($this->options['smt_options_enable_comments']) {
-			$columns['comments'] = 'Comments';
-		}
+		$columns['comments'] = 'Comments';
 
 		return $columns;
 	}
@@ -333,5 +327,3 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 	}
 
 }
-
-$socialMetricsTrackerWidget = new SocialMetricsTrackerWidget();

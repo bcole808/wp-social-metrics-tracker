@@ -24,7 +24,11 @@ License: GPLv2+
 
 
 // Class Dependancies
-include('MetricsUpdater.class.php');
+require_once('MetricsUpdater.class.php');
+require_once('data-sources/sharedcount.com.php');
+require_once('data-sources/google_analytics.php');
+include_once('SocialMetricsSettings.class.php');
+include_once('SocialMetricsTrackerWidget.class.php');
 
 class SocialMetricsTracker {
 
@@ -69,7 +73,7 @@ class SocialMetricsTracker {
 
 		$screen = get_current_screen();
 
-		if (!in_array($screen->base, array('settings_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
+		if (!in_array($screen->base, array('social-metrics_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
 			return false;
 		}
 
@@ -106,8 +110,8 @@ class SocialMetricsTracker {
 			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
-		include_once('smt-settings-setup.php');
-		include_once('smt-dashboard-widget.php');
+		new socialMetricsSettings();
+		new SocialMetricsTrackerWidget();
 
 	} // end adminMenuSetup()
 
@@ -201,7 +205,7 @@ class SocialMetricsTracker {
 
 		if (get_option('smt_settings') === false) {
 
-			require('smt-settings.php');
+			require('settings/smt-general.php');
 
 			global $wpsf_settings;
 

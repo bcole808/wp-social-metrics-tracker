@@ -5,17 +5,9 @@
 *
 * http://wordpress.org/plugins/custom-list-table-example/
 ***************************************************/
-
-/*************************** LOAD THE BASE CLASS *******************************
- *******************************************************************************
- * The WP_List_Table class isn't automatically available to plugins, so we need
- * to check if it's available and load it if necessary.
- */
 if(!class_exists('WP_List_Table')){
-	// We include a copy of WP_List_Table with this plugin because this class is marked as Private in the Wordpress core and could change at any time.
-	require_once( 'lib/class-wp-list-table.php' );
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-
 class SocialMetricsDebugTable extends WP_List_Table {
 
 	function __construct(){
@@ -131,15 +123,11 @@ class SocialMetricsDebugTable extends WP_List_Table {
 		$columns['date'] = 'Date';
 		$columns['title'] = 'Title';
 
-		// if ($this->options['smt_options_enable_social']) {
-			$columns['aggregate'] = 'Aggregate Score';
-		// }
+		$columns['aggregate'] = 'Aggregate Score';
 		// if ($this->options['smt_options_enable_analytics']) {
 			$columns['decayed'] = 'Time Decayed Score';
 		// }
-		// if ($this->options['smt_options_enable_comments']) {
-			$columns['misc'] = 'Original Data';
-		// }
+		$columns['misc'] = 'Original Data';
 
 		return $columns;
 	}

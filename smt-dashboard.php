@@ -5,12 +5,9 @@
 *
 * http://wordpress.org/plugins/custom-list-table-example/
 ***************************************************/
-
 if(!class_exists('WP_List_Table')){
-	// We include a copy of WP_List_Table with this plugin because this class is marked as Private in the Wordpress core and could change at any time.
-	require_once( 'lib/class-wp-list-table.php' );
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-
 class SocialMetricsTable extends WP_List_Table {
 
 	function __construct(){
@@ -115,15 +112,11 @@ class SocialMetricsTable extends WP_List_Table {
 		$columns['date'] = 'Date';
 		$columns['title'] = 'Title';
 
-		if ($this->options['smt_options_enable_social']) {
-			$columns['social'] = 'Social Score';
-		}
+		$columns['social'] = 'Social Score';
 		if ($this->options['smt_options_enable_analytics']) {
 			$columns['views'] = 'Views';
 		}
-		if ($this->options['smt_options_enable_comments']) {
-			$columns['comments'] = 'Comments';
-		}
+		$columns['comments'] = 'Comments';
 
 		return $columns;
 	}

@@ -9,10 +9,6 @@
 * Updates are triggered by page views, so if no one views a page then no new data is fetched (but that is okay, because if no one views the page then that means the data has not changed).
 ***************************************************/
 
-// Data source adapters
-require('data-sources/sharedcount.com.php');
-// require('data-sources/googleanalytics.php'); // Not working in this version
-
 class MetricsUpdater {
 
 	private $options;
@@ -23,7 +19,7 @@ class MetricsUpdater {
 		$this->options = ($options) ? $options : get_option('smt_settings');
 
 		// Import adapters for 3rd party services
-		if (class_exists('SharedCountUpdater') && $this->options['smt_options_enable_social']) {
+		if (class_exists('SharedCountUpdater')) {
 			$SharedCountUpdater = new SharedCountUpdater();
 		}
 
