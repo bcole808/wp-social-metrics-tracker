@@ -15,6 +15,8 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$this->options = get_option('smt_settings');
 
+		$this->gapi = new GoogleAnalyticsUpdater(); 
+
 		$this->services = array(
 			'facebook'   => 'Facebook', 
 			'twitter'    => 'Twitter', 
@@ -113,7 +115,7 @@ class SocialMetricsTable extends WP_List_Table {
 		$columns['title'] = 'Title';
 
 		$columns['social'] = 'Social Score';
-		if ($this->options['smt_options_enable_analytics']) {
+		if ($this->gapi->can_sync()) {
 			$columns['views'] = 'Views';
 		}
 		$columns['comments'] = 'Comments';

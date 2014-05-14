@@ -24,7 +24,7 @@ class MetricsUpdater {
 		}
 
 		// If analytics are being tracked, pull update
-		if (class_exists('GoogleAnalyticsUpdater') && $this->options['smt_options_enable_analytics']) {
+		if (class_exists('GoogleAnalyticsUpdater')) {
 			$GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 

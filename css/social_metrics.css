@@ -243,3 +243,140 @@
 #dashboard-widgets #social-metrics-tracker tfoot {
 	display: none;
 }
+
+
+/* Configuration page CSS
+   ========================================================================== */
+
+.social-metrics_page_social-metrics-tracker-settings .wrap {
+	max-width: 900px;
+}
+
+#smt_gapi_steps {
+	display: block;
+	width: 100%;
+	min-width:850px;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	list-style: none;
+	border:1px solid #AAA;
+	background: #C1C1C1;
+}
+
+#smt_gapi_steps li {
+	display: block;
+	float: left;
+	margin:0;
+
+}
+
+#smt_gapi_steps li .btn {
+	display: block;
+	position: relative;
+	padding: 10px 0 10px 45px;
+	text-decoration: none;
+	background:#C1C1C1;
+	color:#666666;
+	cursor: default;
+}
+
+#smt_gapi_steps li a.btn:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#smt_gapi_steps li:first-child .btn {
+	padding-left: 15px;
+}
+
+#smt_gapi_steps li .btn:after { 
+	content: " "; 
+	display: block; 
+	width: 0; 
+	height: 0;
+	border-top: 50px solid transparent;
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid #C1C1C1;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px; 
+	left: 100%;
+	z-index: 2; 
+}
+
+#smt_gapi_steps li .btn:before { 
+	content: " "; 
+	display: block; 
+	width: 0; 
+	height: 0;
+	border-top: 50px solid transparent;       
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid white;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px; 
+	margin-left: 1px;
+	left: 100%;
+	z-index: 1; 
+}
+
+#smt_gapi_steps li:last-child .btn {
+	padding-right:15px;
+}
+#smt_gapi_steps li:last-child .btn:after,
+#smt_gapi_steps li:last-child .btn:before {
+	display: none;
+}
+
+#smt_gapi_steps li.done .btn {
+	background:#008000;
+	color:#94C692;
+}
+#smt_gapi_steps li.done .btn:after {
+	border-left-color:#008000;
+}
+#smt_gapi_steps li.current .btn {
+	background:#043D50;
+	color:#FFFFFF;
+}
+#smt_gapi_steps li.current .btn:after {
+	border-left-color:#043D50;
+}
+
+#smt_gapi_steps.ready {
+	background:#008000;
+}
+#smt_gapi_steps.ready .current .btn {
+	background:#008000;
+}
+
+#gapi-sign-in {
+	display: block;
+	max-width: 350px;
+	margin:0 auto;
+	text-align: center;
+}
+
+.blue-box {
+	background:#CDE0FF;
+	border:1px solid #96BFFF;
+}
+
+.blue-box th {
+	padding-left:20px;
+}
+
+.yellow-box {
+	background:#FFF7E7;
+	border:1px solid #C6C1B3;
+	margin-bottom:15px;
+}
+
+.yellow-box th {
+	padding-left:20px;
+}
+
+div.yellow-box { 
+	padding:0 15px; margin:15px 0; 
+}
