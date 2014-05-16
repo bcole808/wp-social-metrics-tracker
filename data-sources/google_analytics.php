@@ -45,6 +45,8 @@ class GoogleAnalyticsUpdater {
 	// Runs on every post sync
 	public function sync_data($post_id, $post_url) {
 
+		global $smt_stats;
+
 		$this->connect();
 
 		// Validation
@@ -55,7 +57,10 @@ class GoogleAnalyticsUpdater {
 		$value = $this->get_pageviews($post_url);
 
 		// Save data
-		if ($value) update_post_meta($post_id, 'ga_pageviews', $value);
+		if ($value) {
+			update_post_meta($post_id, 'ga_pageviews', $value);
+			$smt_stats['ga_pageviews'] = $value;
+		} 
 		
 	}
 

@@ -11,6 +11,8 @@ class SharedCountUpdater {
 	}
 
 	public function syncSharedCountData($post_id, $post_url) {
+		global $smt_stats;
+
 		// reject if missing arguments
 		if (!isset($post_id) || !isset($post_url))  return;
 
@@ -54,6 +56,7 @@ class SharedCountUpdater {
 		$stats['facebook_likes']    = $shared_count_service_data['Facebook']['like_count'];
 
 		// Calculate change since last update
+		$delta = array();
 		$old_meta = get_post_custom($post_id);
 		foreach ($stats as $key => $value) if ($value) $delta[$key] = $value - $old_meta['socialcount_'.$key][0];
 
@@ -61,6 +64,9 @@ class SharedCountUpdater {
 		foreach ($stats as $key => $value) if ($value) update_post_meta($post_id, 'socialcount_'.$key, $value);
 
 		$this->saveToDB($post_id, $delta);
+
+		$smt_stats['socialcount_TOTAL'] = $stats['TOTAL'];
+
 	}
 
 	// Save only the change value to the DB

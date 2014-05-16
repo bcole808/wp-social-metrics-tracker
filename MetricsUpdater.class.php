@@ -82,6 +82,8 @@ class MetricsUpdater {
 	* @return
 	*/
 	public function updatePostStats($post_id) {
+		global $smt_stats;
+		$smt_stats = array();
 
 		// Data validation
 		if ($post_id <= 0) return false;
@@ -99,12 +101,12 @@ class MetricsUpdater {
 		$post = get_post($post_id);
 
 		// Calculate aggregate score.
-		$social_aggregate_score_detail = $this->calculateScoreAggregate($stats['socialcount_TOTAL'], $stats['ga_pageviews'], $post->comment_count);
+		$social_aggregate_score_detail = $this->calculateScoreAggregate($smt_stats['socialcount_TOTAL'], $smt_stats['ga_pageviews'], $post->comment_count);
 
 		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
 		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
 
-		$stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
+		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
 
 		// Calculate decayed score.
 		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
@@ -112,12 +114,12 @@ class MetricsUpdater {
 		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
 		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
 
-		$stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
+		$smt_stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
 		// Custom action hook allows us to extend this function.
-		do_action('social_metrics_data_sync_complete', $post_id, $stats);
+		do_action('social_metrics_data_sync_complete', $post_id, $smt_stats);
 
-		return $stats['socialcount_TOTAL'];
+		return $smt_stats['socialcount_TOTAL'];
 	} // end updatePostStats()
 
 	/**
