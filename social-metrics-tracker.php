@@ -38,13 +38,16 @@ class SocialMetricsTracker {
 
 	public function __construct() {
 
-		// Set up options
-		$this->options = get_option('smt_settings');
-
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
 		register_uninstall_hook( __FILE__, array($this, 'uninstall') );
+
+		// Set up options
+		$this->options = get_option('smt_settings');
+
+		// Ensure setup occurs when network activated
+		if ($this->options === false) $this->activate();
 
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
@@ -237,7 +240,7 @@ class SocialMetricsTracker {
 
 	}
 
-	public function uninstall() {
+	public static function uninstall() {
 
 		// Delete options
 		delete_option('smt_settings');
