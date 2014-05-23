@@ -24,26 +24,35 @@ License: GPLv2+
 
 
 // Class Dependancies
-include('MetricsUpdater.class.php');
+require_once('MetricsUpdater.class.php');
+require_once('data-sources/sharedcount.com.php');
+require_once('data-sources/google_analytics.php');
+include_once('SocialMetricsSettings.class.php');
+include_once('SocialMetricsTrackerWidget.class.php');
 
 class SocialMetricsTracker {
 
+	private $version = '1.0.2'; // for db upgrade comparison
 	private $updater;
 	private $options;
 
 	public function __construct() {
-
-		// Set up options
-		$this->options = get_option('smt_settings');
 
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
 		register_uninstall_hook( __FILE__, array($this, 'uninstall') );
 
+		// Set up options
+		$this->options = get_option('smt_settings');
+
+		// Ensure setup occurs when network activated
+		if ($this->options === false) $this->activate();
+
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
+			add_action('plugins_loaded', array($this, 'version_check'));
 		}
 
 		// Check if we can enable data syncing
@@ -54,6 +63,15 @@ class SocialMetricsTracker {
 			$this->updater = new MetricsUpdater($this->options);
 		}
 
+		$this->updater = new MetricsUpdater($this->options);
+
+
+		// Manual data update for a post
+		if (is_admin() && $this->updater && $_REQUEST['smt_sync_now']) {
+			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
+			header("Location: ".remove_query_arg('smt_sync_now'));
+		}
+
 	} // end constructor
 
 	public function developmentServerNotice() {
@@ -61,7 +79,7 @@ class SocialMetricsTracker {
 
 		$screen = get_current_screen();
 
-		if (!in_array($screen->base, array('settings_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
+		if (!in_array($screen->base, array('social-metrics_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
 			return false;
 		}
 
@@ -98,8 +116,8 @@ class SocialMetricsTracker {
 			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
-		include_once('smt-settings-setup.php');
-		include_once('smt-dashboard-widget.php');
+		new socialMetricsSettings();
+		new SocialMetricsTrackerWidget();
 
 	} // end adminMenuSetup()
 
@@ -140,12 +158,60 @@ class SocialMetricsTracker {
 		return "$difference $periods[$j] ago";
 	}
 
+	/***************************************************
+	* Check the version of the plugin and perform upgrade tasks if necessary 
+	***************************************************/
+	public function version_check() {
+		$installed_version = get_option( "smt_version" );
+
+		if( $installed_version != $this->version ) {
+			update_option( "smt_version", $this->version );
+
+			// Do upgrade tasks
+			$this->db_setup();
+		}
+	}
+
+	/***************************************************
+	* Creates a custom table in the MySQL database for this plugin
+	* Can run each time the plugin version needs to be updated. 
+	***************************************************/
+	private function db_setup () {
+	   global $wpdb;
+	   require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+	   $table_name = $wpdb->prefix . "social_metrics_log"; 
+
+	   $sql = "CREATE TABLE $table_name (
+	     id int(11) unsigned NOT NULL AUTO_INCREMENT,
+	     post_id bigint(20) NOT NULL,
+	     day_retrieved datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+	     facebook int(11) DEFAULT NULL,
+	     facebook_shares int(11) DEFAULT NULL,
+	     facebook_comments int(11) DEFAULT NULL,
+	     facebook_likes int(11) DEFAULT NULL,
+	     twitter int(11) DEFAULT NULL,
+	     googleplus int(11) DEFAULT NULL,
+	     linkedin int(11) DEFAULT NULL,
+	     pinterest int(11) DEFAULT NULL,
+	     diggs int(11) DEFAULT NULL,
+	     delicious int(11) DEFAULT NULL,
+	     reddit int(11) DEFAULT NULL,
+	     stumbleupon int(11) DEFAULT NULL,
+	     TOTAL int(11) DEFAULT NULL,
+	     UNIQUE KEY id (id)
+	   );";
+	   
+	   dbDelta( $sql );
+
+	}
+
 	public function activate() {
 		// Add default settings
 
 		if (get_option('smt_settings') === false) {
 
-			require('smt-settings.php');
+			require('settings/smt-general.php');
 
 			global $wpsf_settings;
 
@@ -166,6 +232,8 @@ class SocialMetricsTracker {
 			MetricsUpdater::scheduleFullDataSync();
 		}
 
+		$this->version_check();
+
 	}
 
 	public function deactivate() {
@@ -175,7 +243,7 @@ class SocialMetricsTracker {
 
 	}
 
-	public function uninstall() {
+	public static function uninstall() {
 
 		// Delete options
 		delete_option('smt_settings');

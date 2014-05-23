@@ -5,18 +5,17 @@
 *
 * http://wordpress.org/plugins/custom-list-table-example/
 ***************************************************/
-
 if(!class_exists('WP_List_Table')){
-	// We include a copy of WP_List_Table with this plugin because this class is marked as Private in the Wordpress core and could change at any time.
-	require_once( 'lib/class-wp-list-table.php' );
+	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
-
 class SocialMetricsTable extends WP_List_Table {
 
 	function __construct(){
 		global $status, $page;
 
 		$this->options = get_option('smt_settings');
+
+		$this->gapi = new GoogleAnalyticsUpdater(); 
 
 		$this->services = array(
 			'facebook'   => 'Facebook', 
@@ -61,9 +60,9 @@ class SocialMetricsTable extends WP_List_Table {
 
 		//Build row actions
 		$actions = array(
-			'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
-			'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-			'update'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
+			'edit'    => sprintf('<a href="post.php?post=%s&action=edit">Edit Post</a>',$item['ID']),
+			'update'  => '<a href="'.add_query_arg( 'smt_sync_now', $item['ID']).'">Update Stats</a>',
+			'info'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
 		);
 
 		//Return the title contents
@@ -115,15 +114,11 @@ class SocialMetricsTable extends WP_List_Table {
 		$columns['date'] = 'Date';
 		$columns['title'] = 'Title';
 
-		if ($this->options['smt_options_enable_social']) {
-			$columns['social'] = 'Social Score';
-		}
-		if ($this->options['smt_options_enable_analytics']) {
+		$columns['social'] = 'Social Score';
+		if ($this->gapi->can_sync()) {
 			$columns['views'] = 'Views';
 		}
-		if ($this->options['smt_options_enable_comments']) {
-			$columns['comments'] = 'Comments';
-		}
+		$columns['comments'] = 'Comments';
 
 		return $columns;
 	}
