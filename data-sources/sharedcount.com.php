@@ -31,10 +31,6 @@ class SharedCountUpdater {
 		// reject if no response
 		if (!strlen($json)) return;
 
-		// Debug
-		$json = '
-{"StumbleUpon":0,"Reddit":0,"Facebook":{"commentsbox_count":0,"click_count":0,"total_count":1080,"comment_count":213,"like_count":611,"share_count":226},"Delicious":15,"GooglePlusOne":1310,"Buzz":0,"Twitter":83,"Diggs":0,"Pinterest":0,"LinkedIn":14}';
-
 		// decode social data from JSON
 		$shared_count_service_data = json_decode($json, true);
 

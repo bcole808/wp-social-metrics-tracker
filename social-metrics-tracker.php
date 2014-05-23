@@ -63,9 +63,6 @@ class SocialMetricsTracker {
 			$this->updater = new MetricsUpdater($this->options);
 		}
 
-		$this->updater = new MetricsUpdater($this->options);
-
-
 		// Manual data update for a post
 		if (is_admin() && $this->updater && $_REQUEST['smt_sync_now']) {
 			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
