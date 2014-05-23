@@ -1,4 +1,5 @@
 <?php
+
 /***************************************************
 * This class attaches an updater function which runs when
 * the Shared Count plugin updates an individual post.
@@ -28,7 +29,11 @@ class SharedCountUpdater {
 		curl_close($curl_handle);
 
 		// reject if no response
-		if (!$json) return;
+		if (!strlen($json)) return;
+
+		// Debug
+		$json = '
+{"StumbleUpon":0,"Reddit":0,"Facebook":{"commentsbox_count":0,"click_count":0,"total_count":1080,"comment_count":213,"like_count":611,"share_count":226},"Delicious":15,"GooglePlusOne":1310,"Buzz":0,"Twitter":83,"Diggs":0,"Pinterest":0,"LinkedIn":14}';
 
 		// decode social data from JSON
 		$shared_count_service_data = json_decode($json, true);
@@ -58,7 +63,7 @@ class SharedCountUpdater {
 		// Calculate change since last update
 		$delta = array();
 		$old_meta = get_post_custom($post_id);
-		foreach ($stats as $key => $value) if ($value) $delta[$key] = $value - $old_meta['socialcount_'.$key][0];
+		foreach ($stats as $key => $value) if (is_int($value)) $delta[$key] = $value - $old_meta['socialcount_'.$key][0];
 
 		// update post with populated stats
 		foreach ($stats as $key => $value) if ($value) update_post_meta($post_id, 'socialcount_'.$key, $value);
@@ -73,11 +78,31 @@ class SharedCountUpdater {
 	private function saveToDB($post_id, $delta) {
 		global $wpdb;
 
+		$reset = date_default_timezone_get();
+		date_default_timezone_set(get_option('timezone_string'));
+
 		$args = array(
 			'post_id' 	=> $post_id,
-			'time_retrieved' => date("Y-m-d H:i:s")
+			'day_retrieved' => date("Y-m-d H:i:s", strtotime('today'))
 		);
 
-		$wpdb->insert( $wpdb->prefix . "social_metrics_log", array_merge($args, $delta) );
+		date_default_timezone_set($reset);
+
+		$existing = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . "social_metrics_log WHERE post_id = ".$args['post_id']." AND day_retrieved = '".$args['day_retrieved']."'", ARRAY_A);
+
+		if ($existing === null) {
+
+			// Create new entry
+			$wpdb->insert( $wpdb->prefix . "social_metrics_log", array_merge($args, $delta) );
+
+		} else {
+
+			// Add the existing values to the delta array
+			foreach ($delta as $key => $val) if ($existing[$key] > 0) $delta[$key] = $existing[$key] + $val;
+
+			// Update existing entry
+			$wpdb->update($wpdb->prefix . "social_metrics_log", $delta, $args);
+			
+		}
 	}
 }

@@ -267,7 +267,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		$this->data_max['comment_count'] = 1;
 
 		// foreach ($querydata as $querydatum ) {
-		if ( $querydata->have_posts() ) : while ( $querydata->have_posts() ) : $querydata->the_post();
+		if ( $querydata && $querydata->have_posts() ) : while ( $querydata->have_posts() ) : $querydata->the_post();
 			global $post;
 
 			$item['ID'] = $post->ID;

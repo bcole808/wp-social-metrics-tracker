@@ -63,6 +63,9 @@ class SocialMetricsTracker {
 			$this->updater = new MetricsUpdater($this->options);
 		}
 
+		$this->updater = new MetricsUpdater($this->options);
+
+
 		// Manual data update for a post
 		if (is_admin() && $this->updater && $_REQUEST['smt_sync_now']) {
 			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
@@ -182,7 +185,7 @@ class SocialMetricsTracker {
 	   $sql = "CREATE TABLE $table_name (
 	     id int(11) unsigned NOT NULL AUTO_INCREMENT,
 	     post_id bigint(20) NOT NULL,
-	     time_retrieved datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+	     day_retrieved datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 	     facebook int(11) DEFAULT NULL,
 	     facebook_shares int(11) DEFAULT NULL,
 	     facebook_comments int(11) DEFAULT NULL,
@@ -195,7 +198,7 @@ class SocialMetricsTracker {
 	     delicious int(11) DEFAULT NULL,
 	     reddit int(11) DEFAULT NULL,
 	     stumbleupon int(11) DEFAULT NULL,
-	     socialcount_TOTAL int(11) DEFAULT NULL,
+	     TOTAL int(11) DEFAULT NULL,
 	     UNIQUE KEY id (id)
 	   );";
 	   
