@@ -213,6 +213,21 @@ class SocialMetricsTable extends WP_List_Table {
 
 	}
 
+	// Return an array of post types we currently track
+	public function get_post_types() {
+
+		$types_to_track = array();
+
+		$smt_post_types = get_post_types( array('public'=>true), 'names' ); 
+		unset($smt_post_types['attachment']);
+
+		foreach ($smt_post_types as $type) {
+			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+		}
+
+		return $types_to_track;
+
+	}
 
 	function prepare_items() {
 		global $wpdb; //This is used only if making any database queries
@@ -228,9 +243,7 @@ class SocialMetricsTable extends WP_List_Table {
 		$this->process_bulk_action();
 
 		// Get custom post types to display in our report.
-		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
-		unset($post_types['page']);
-		unset($post_types['attachment']);
+		$post_types = $this->get_post_types();
 
 		$limit = 30;
 

@@ -47,33 +47,46 @@ class MetricsUpdater {
 
 		global $post;
 
-		if (is_admin()) return;
-
 		// If no post ID specified, use current page
 		if ($post_id <= 0) $post_id = $post->ID;
 
 		// Validation
-		if ($post_id <= 0) 						return false;
-		if ($post->post_type == 'attachment') 	return false;
-		if ($post->post_status != 'publish') 	return false;
+		if (is_admin()) 							return false;
+		if ($post_id <= 0) 							return false; 
+		if ($post->post_status != 'publish') 		return false; // Allow only published posts
+		if (!is_singular($this->get_post_types()))	return false; // Allow singular view of enabled post types
 
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
 		$ttl = $this->options['smt_options_ttl_hours'] * 3600;
 
 		// If no timeout
-		$ttl = 0;
 		$temp = time() - $ttl;
 		if ($last_updated < $temp) {
 
 			// Schedule an update
 			wp_schedule_single_event( time(), 'social_metrics_update_single_post', array( $post_id ) );
-		} else {
 
-		}
+		} 
 
 		return;
 	} // end checkThisPost()
+
+	// Return an array of post types we currently track
+	public function get_post_types() {
+
+		$types_to_track = array();
+
+		$smt_post_types = get_post_types( array('public'=>true), 'names' ); 
+		unset($smt_post_types['attachment']);
+
+		foreach ($smt_post_types as $type) {
+			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+		}
+
+		return $types_to_track;
+
+	}
 
 	/**
 	* Fetch new stats from remote services and update post social score.

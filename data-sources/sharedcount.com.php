@@ -58,7 +58,7 @@ class SharedCountUpdater {
 		// Calculate change since last update
 		$delta = array();
 		$old_meta = get_post_custom($post_id);
-		foreach ($stats as $key => $value) if (is_int($value)) $delta[$key] = $value - $old_meta['socialcount_'.$key][0];
+		foreach ($stats as $key => $value) if (is_int($value) && is_int($old_meta['socialcount_'.$key][0])) $delta[$key] = $value - $old_meta['socialcount_'.$key][0];
 
 		// update post with populated stats
 		foreach ($stats as $key => $value) if ($value) update_post_meta($post_id, 'socialcount_'.$key, $value);
