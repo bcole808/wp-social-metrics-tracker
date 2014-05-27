@@ -55,7 +55,7 @@ class GoogleAnalyticsUpdater {
 		$value = $this->get_pageviews($post_url);
 
 		// Save data
-		if ($value) {
+		if ($value > 0) {
 			update_post_meta($post_id, 'ga_pageviews', $value);
 		} 
 		
@@ -240,9 +240,8 @@ class GoogleAnalyticsUpdater {
 
 			$single_result = $result->getRows();
 			$single_result = $single_result[0][1];
-			if (!$single_result) $single_result = 0;
-			
-			return ($single_result);
+
+			return ($single_result) ? $single_result : false;
 
 		} catch (Exception $e) {
 			// There was an error querying the Google Analytics service. 
