@@ -12,6 +12,8 @@
 class MetricsUpdater {
 
 	private $options;
+	public $SharedCountUpdater;
+	public $GoogleAnalyticsUpdater; // needs to be accessed from Settings page
 
 	public function __construct($options = false) {
 
@@ -20,12 +22,12 @@ class MetricsUpdater {
 
 		// Import adapters for 3rd party services
 		if (class_exists('SharedCountUpdater')) {
-			$SharedCountUpdater = new SharedCountUpdater();
+			$this->SharedCountUpdater = new SharedCountUpdater();
 		}
 
 		// If analytics are being tracked, pull update
 		if (class_exists('GoogleAnalyticsUpdater')) {
-			$GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
+			$this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
 		// Check post on each page load

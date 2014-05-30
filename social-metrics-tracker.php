@@ -118,7 +118,7 @@ class SocialMetricsTracker {
 			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
-		new socialMetricsSettings();
+		new socialMetricsSettings($this->updater->GoogleAnalyticsUpdater);
 		new SocialMetricsTrackerWidget();
 
 	} // end adminMenuSetup()

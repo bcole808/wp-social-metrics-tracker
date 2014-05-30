@@ -16,6 +16,9 @@ class GoogleAnalyticsUpdater {
 		// hook into post updater
 		add_action('social_metrics_data_sync', array($this, 'sync_data'), 10, 2);
 
+		// Display notices on plugin page
+		add_action('admin_notices', array($this, 'notices'));
+
 		if ($_POST && $_GET['section'] == 'gapi') {
 
 			// Multisite mode
@@ -39,6 +42,24 @@ class GoogleAnalyticsUpdater {
 			$this->update_gapi_data();
 
 		} 
+
+	}
+
+	public function notices() {
+		if (!current_user_can('manage_options')) return false;
+
+		$screen = get_current_screen();
+
+		if (!in_array($screen->base, array('social-metrics_page_social-metrics-tracker-settings', 'toplevel_page_social-metrics-tracker', 'social-metrics-tracker_page_social-metrics-tracker-debug'))) {
+			return false;
+		}
+
+		if ($this->data['data_is_flowing'] === false && strlen($this->data['gapi_client_id']) > 1 && strlen($this->data['gapi_client_secret']) > 1 && strlen($this->data['gapi_developer_key']) > 1 ) {
+
+			$message = '<h3 style="margin-top:0;">Google Analytics connection not activate</h3> Please <a href="admin.php?page=social-metrics-tracker-settings&section=gapi">visit the setup wizard</a> to complete necessary steps, or <a href="admin.php?page=social-metrics-tracker-settings&section=gapi&go_to_step=1">disable Google Analytics integration</a>. <ul>';
+
+			printf( '<div class="error"> <p> %s </p> </div>', $message);
+		}
 
 	}
 
@@ -123,6 +144,7 @@ class GoogleAnalyticsUpdater {
 		$this->connect();
 		$this->gapi->setScopes(array('https://www.googleapis.com/auth/analytics.readonly'));
 		$this->gapi->setAccessType('offline'); 
+		$this->gapi->setApprovalPrompt('force');
 		return $this->gapi->createAuthUrl();
 	}
 
@@ -182,7 +204,7 @@ class GoogleAnalyticsUpdater {
 	  		$smt_gapi_token_obj = json_decode(unserialize($this->data['gapi_token']));
 
 	  		// Refresh the token if needed
-	  		if (($smt_gapi_token_obj->created + $smt_gapi_token_obj->expires_in) < time()) {	  			
+	  		if (($smt_gapi_token_obj->created + $smt_gapi_token_obj->expires_in) < time()) {
 		  		$this->gapi->refreshToken($smt_gapi_token_obj->refresh_token);
 		  		$this->data['gapi_token'] = serialize($this->gapi->getAccessToken());
 		  		$this->update_gapi_data(); // save to DB
@@ -201,6 +223,10 @@ class GoogleAnalyticsUpdater {
 			*************/
 			$this->step = 4;
 			$this->is_ready = true;
+
+			$this->data['data_is_flowing'] = true;
+	  		$this->update_gapi_data(); // save to DB
+			  		
 			return true;
 
 		} catch(Exception $e) {
@@ -245,7 +271,11 @@ class GoogleAnalyticsUpdater {
 
 		} catch (Exception $e) {
 			// There was an error querying the Google Analytics service. 
-			// die( $e->getMessage() ); // Only use for debug
+
+			$this->data['data_is_flowing'] = false;
+			$this->update_gapi_data();
+
+			if ($_GET['smt_sync_now']) die( $e->getMessage() ); // Only use for debug
 
 			return false;
 		}
