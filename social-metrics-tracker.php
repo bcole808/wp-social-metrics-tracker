@@ -43,17 +43,23 @@ class SocialMetricsTracker {
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
 		register_uninstall_hook( __FILE__, array($this, 'uninstall') );
 
-		// Set up options
-		$this->options = get_option('smt_settings');
-
-		// Ensure setup occurs when network activated
-		if ($this->options === false) $this->activate();
-
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('plugins_loaded', array($this, 'version_check'));
 		}
+
+		add_action('init', array($this, 'init'));
+
+	} // end constructor
+
+	public function init() {
+
+		// Set up options
+		$this->options = get_option('smt_settings');
+
+		// Ensure setup occurs when network activated
+		if ($this->options === false) $this->activate();
 
 		// Check if we can enable data syncing
 		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
@@ -68,8 +74,7 @@ class SocialMetricsTracker {
 			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
 			header("Location: ".remove_query_arg('smt_sync_now'));
 		}
-
-	} // end constructor
+	}
 
 	public function developmentServerNotice() {
 		if (!current_user_can('manage_options')) return false;
