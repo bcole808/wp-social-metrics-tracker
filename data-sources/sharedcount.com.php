@@ -61,7 +61,7 @@ class SharedCountUpdater {
 		foreach ($stats as $key => $value) if (is_int($value) && intval($old_meta['socialcount_'.$key][0])) $delta[$key] = $value - intval($old_meta['socialcount_'.$key][0]);
 
 		// update post with populated stats
-		foreach ($stats as $key => $value) if ($value) update_post_meta($post_id, 'socialcount_'.$key, $value);
+		foreach ($stats as $key => $value) if ($value && $value > 0) update_post_meta($post_id, 'socialcount_'.$key, $value);
 
 		$this->saveToDB($post_id, $delta);
 
@@ -70,6 +70,9 @@ class SharedCountUpdater {
 	// Save only the change value to the DB
 	private function saveToDB($post_id, $delta) {
 		global $wpdb;
+
+		// Validation: Only save to DB if there was actually a change to save
+		if (array_sum($delta) <= 0) return false;
 
 		$reset = date_default_timezone_get();
 		date_default_timezone_set(get_option('timezone_string'));
