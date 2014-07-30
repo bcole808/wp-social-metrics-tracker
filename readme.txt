@@ -2,7 +2,7 @@
 Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
-Tested up to: 3.9
+Tested up to: 3.9.1
 Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -16,9 +16,9 @@ See which of your posts are most popular on social media!
 
 This WordPress plugin collects and displays an analysis of social media interactions and view counts of posts. A new dashboard panel is created called "Social Metrics" which shows how many times each post has been shared on various social networks.
 
-= Get stats from 9 social networks: =
+= Get stats from these social networks: =
 
-Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+Facebook, Twitter, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
 
 = Focus your writing topics: =
 
