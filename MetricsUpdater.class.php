@@ -52,11 +52,14 @@ class MetricsUpdater {
 		// If no post ID specified, use current page
 		if ($post_id <= 0) $post_id = $post->ID;
 
+		// Get post types to track
+		$types = $this->get_post_types();
+
 		// Validation
 		if (is_admin()) 							return false;
 		if ($post_id <= 0) 							return false; 
 		if ($post->post_status != 'publish') 		return false; // Allow only published posts
-		if (!is_singular($this->get_post_types()))	return false; // Allow singular view of enabled post types
+		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
