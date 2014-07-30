@@ -170,8 +170,43 @@ class SocialMetricsTracker {
 			update_option( "smt_version", $this->version );
 
 			// Do upgrade tasks
+			$this->db_setup();
 			
 		}
+	}
+
+	/***************************************************
+	* Creates a custom table in the MySQL database for this plugin
+	* Can run each time the plugin version needs to be updated. 
+	***************************************************/
+	private function db_setup () {
+	   global $wpdb;
+	   require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+	   $table_name = $wpdb->prefix . "social_metrics_log"; 
+
+	   $sql = "CREATE TABLE $table_name (
+	     id int(11) unsigned NOT NULL AUTO_INCREMENT,
+	     post_id bigint(20) NOT NULL,
+	     day_retrieved datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+	     facebook int(11) DEFAULT NULL,
+	     facebook_shares int(11) DEFAULT NULL,
+	     facebook_comments int(11) DEFAULT NULL,
+	     facebook_likes int(11) DEFAULT NULL,
+	     twitter int(11) DEFAULT NULL,
+	     googleplus int(11) DEFAULT NULL,
+	     linkedin int(11) DEFAULT NULL,
+	     pinterest int(11) DEFAULT NULL,
+	     diggs int(11) DEFAULT NULL,
+	     delicious int(11) DEFAULT NULL,
+	     reddit int(11) DEFAULT NULL,
+	     stumbleupon int(11) DEFAULT NULL,
+	     TOTAL int(11) DEFAULT NULL,
+	     UNIQUE KEY id (id)
+	   );";
+	   
+	   dbDelta( $sql );
+
 	}
 
 	public function activate() {

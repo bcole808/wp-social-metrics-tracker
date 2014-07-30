@@ -55,8 +55,50 @@ class SharedCountUpdater {
 		$stats['facebook_comments'] = $shared_count_service_data['Facebook']['comment_count'];
 		$stats['facebook_likes']    = $shared_count_service_data['Facebook']['like_count'];
 
+		// Calculate change since last update
+		$delta = array();
+		$old_meta = get_post_custom($post_id);
+		foreach ($stats as $key => $value) if (is_int($value) && intval($old_meta['socialcount_'.$key][0])) $delta[$key] = $value - intval($old_meta['socialcount_'.$key][0]);
+
 		// update post with populated stats
 		foreach ($stats as $key => $value) if ($value && $value > 0) update_post_meta($post_id, 'socialcount_'.$key, $value);
 
+		$this->saveToDB($post_id, $delta);
+
+	}
+
+	// Save only the change value to the DB
+	private function saveToDB($post_id, $delta) {
+		global $wpdb;
+
+		// Validation: Only save to DB if there was actually a change to save
+		if (array_sum($delta) <= 0) return false;
+
+		$reset = date_default_timezone_get();
+		date_default_timezone_set(get_option('timezone_string'));
+
+		$args = array(
+			'post_id' 	=> $post_id,
+			'day_retrieved' => date("Y-m-d H:i:s", strtotime('today'))
+		);
+
+		date_default_timezone_set($reset);
+
+		$existing = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix . "social_metrics_log WHERE post_id = ".$args['post_id']." AND day_retrieved = '".$args['day_retrieved']."'", ARRAY_A);
+
+		if ($existing === null) {
+
+			// Create new entry
+			$wpdb->insert( $wpdb->prefix . "social_metrics_log", array_merge($args, $delta) );
+
+		} else {
+
+			// Add the existing values to the delta array
+			foreach ($delta as $key => $val) if ($existing[$key] > 0) $delta[$key] = $existing[$key] + $val;
+
+			// Update existing entry
+			$wpdb->update($wpdb->prefix . "social_metrics_log", $delta, $args);
+			
+		}
 	}
 }
