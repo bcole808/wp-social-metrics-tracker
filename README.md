@@ -68,7 +68,7 @@ A: When activating the plugin, all posts are queued for an update; this takes so
 
 ### Q: Umm, what about page views?
 
-A: Page views are on the way, okay? You saw that this was a development branch, right?
+A: You can totally sync your page view data from Google Analytics! Just go and sign up for a Google API developer key and follow the setup wizard hidden deep within the settings panel of this plugin... good luck! 
 
 ### Q. Was this made with magic?
 

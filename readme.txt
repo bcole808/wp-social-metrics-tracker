@@ -3,7 +3,7 @@ Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
 Tested up to: 3.9
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,7 +62,7 @@ Absolutely! This plugin was created with large-scale Multisite blog networks in 
 
 = What about pageviews? =
 
-Page views will be added in a future iteration of the plugin.
+You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key. 
 
 = Who created this? =
 
@@ -76,6 +76,13 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
+= 1.1.0 =
+* Moved settings panel
+* Added support for custom post types
+* Added optional Google analytics integration
+* Added ability to manually trigger data sync
+* Optimized cron mechanism for keeping data in sync
+
 = 1.0.2 =
 * Compatibility fix for servers with PHP below version 5.3
 
@@ -88,6 +95,9 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Added some new features including custom post types, Google Analytics, and more. 
 
 = 1.0.1 =
 Compatibility fix for servers with PHP below version 5.3
