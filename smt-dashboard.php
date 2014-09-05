@@ -75,7 +75,7 @@ class SocialMetricsTable extends WP_List_Table {
 	function column_social($item) {
 
 		$total = floatval($item['socialcount_total']);
-		$bar_width = ($total == 0) ? 0 : round($total / max($this->data_max['socialcount_total'], 1)  * 100);
+		$bar_width = ($total == 0) ? 0 : round($total / max($this->data_max['socialcount_total'], 1) * 100);
 
 		$output = '<div class="bar" style="width:'.$bar_width.'%;">';
 
@@ -263,6 +263,8 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$data=array();
 
+		// Initialize array
+		$this->data_max = array();
 		$this->data_max['socialcount_total'] = 1;
 		$this->data_max['views'] = 1;
 		$this->data_max['comment_count'] = 1;

@@ -41,7 +41,7 @@ class SocialMetricsTracker {
 		// Plugin activation hooks
 		register_activation_hook( __FILE__, array($this, 'activate') );
 		register_deactivation_hook( __FILE__, array($this, 'deactivate') );
-		register_uninstall_hook( __FILE__, array($this, 'uninstall') );
+		register_uninstall_hook( __FILE__, array('SocialMetricsTracker', 'uninstall') );
 
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
