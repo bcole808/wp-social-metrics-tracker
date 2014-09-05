@@ -73,7 +73,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 	function column_social($item) {
 
-		//return print_r($item,true);
+
 		$total = max($item['socialcount_total'], 1);
 
 		$facebook = $item['socialcount_facebook'];
@@ -85,7 +85,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		$other = $total - $facebook - $twitter;
 		$other_percent = floor($other / $total * 100);
 
-		$bar_width = round($total / $this->data_max['socialcount_total'] * 100);
+		$bar_width = round($total / max($this->data_max['socialcount_total'], 1) * 100);
 		if ($total == 0) $bar_width = 0;
 
 		$bar_class = ($bar_width > 50) ? ' stats' : '';
@@ -105,7 +105,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 	// Column for views
 	function column_views($item) {
 		$output = '';
-		$output .= '<div class="bar" style="width:'.round($item['views'] / $this->data_max['views'] * 100).'%">';
+		$output .= '<div class="bar" style="width:'.round($item['views'] / max($this->data_max['views'], 1) * 100).'%">';
 		$output .= '<div class="total">'.number_format($item['views'],0,'.',',') . '</div>';
 		$output .= '</div>';
 
@@ -115,7 +115,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 	// Column for comments
 	function column_comments($item) {
 		$output = '';
-		$output .= '<div class="bar" style="width:'.round($item['comment_count'] / $this->data_max['comment_count'] * 100).'%">';
+		$output .= '<div class="bar" style="width:'.round($item['comment_count'] / max($this->data_max['comment_count'], 1) * 100).'%">';
 		$output .= '<div class="total">'.number_format($item['comment_count'],0,'.',',') . '</div>';
 		$output .= '</div>';
 

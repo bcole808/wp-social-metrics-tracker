@@ -98,7 +98,7 @@ class SocialMetricsDebugTable extends WP_List_Table {
 	// Column for views
 	function column_decayed($item) {
 		$output = '';
-		$output .= '<div class="bar" style="width:'.round($item['social_aggregate_score_decayed'] / $this->data_max['social_aggregate_score_decayed'] * 100).'%">';
+		$output .= '<div class="bar" style="width:'.round($item['social_aggregate_score_decayed'] / max($this->data_max['social_aggregate_score_decayed'], 1) * 100).'%">';
 		$output .= '<div class="total">'.number_format(floatval($item['social_aggregate_score_decayed']),2,'.',',') . '</div>';
 		$output .= '</div>';
 
