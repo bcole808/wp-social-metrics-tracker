@@ -11,13 +11,13 @@ class socialMetricsSettings {
 		add_action( 'admin_menu', array(&$this, 'admin_menu'), 99 );
 		// add_action( 'wpsf_before_settings_fields', array($this, 'section_id'));
 
-
-		switch ($_REQUEST['section']) {
+		$section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : false;
+		switch ($section) {
 			case 'gapi':
 				$this->section = 'gapi';
 				$this->gapi = $GoogleAnalyticsUpdater;
 
-				if ($_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
+				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
 
 				break;
 			

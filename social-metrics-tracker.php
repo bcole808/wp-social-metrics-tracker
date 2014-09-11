@@ -70,7 +70,7 @@ class SocialMetricsTracker {
 		}
 
 		// Manual data update for a post
-		if (is_admin() && $this->updater && $_REQUEST['smt_sync_now']) {
+		if (is_admin() && $this->updater && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
 			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
 			header("Location: ".remove_query_arg('smt_sync_now'));
 		}
