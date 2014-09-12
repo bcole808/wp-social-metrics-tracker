@@ -75,6 +75,12 @@ class SocialMetricsTracker {
 			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
 			header("Location: ".remove_query_arg('smt_sync_now'));
 		}
+
+		// Data export tool
+		if (is_admin() && isset($_GET['smt_download_export_file']) && $_GET['smt_download_export_file'] && $_GET['page'] == 'social-metrics-tracker-export') {
+			require('smt-export.php');
+			smt_download_export_file($this);
+		}
 	}
 
 	public function developmentServerNotice() {
@@ -119,6 +125,9 @@ class SocialMetricsTracker {
 			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
 		}
 
+		// Export page
+		add_submenu_page('social-metrics-tracker', 'Data Export Tool', 'Export Data', $visibility, 'social-metrics-tracker-export',  array($this, 'render_view_export'));
+
 		new socialMetricsSettings($this->updater->GoogleAnalyticsUpdater);
 
 	} // end adminMenuSetup()
@@ -136,6 +145,11 @@ class SocialMetricsTracker {
 		require('smt-dashboard-debug.php');
 		smt_render_dashboard_debug_view($this->options);
 	} // end render_view_AdvancedDashboard()
+
+	public function render_view_export() {
+		require('smt-export.php');
+		smt_render_export_view($this);
+	}
 
 	public function render_view_Settings() {
 		require('smc-settings-view.php');
@@ -162,6 +176,22 @@ class SocialMetricsTracker {
 		}
 
 		return "$difference $periods[$j] ago";
+	}
+
+	/***************************************************
+	* Return an array of the post types we are currently tracking
+	***************************************************/
+	function tracked_post_types() {
+		$types_to_track = array();
+
+		$smt_post_types = get_post_types( array( 'public' => true ), 'names' ); 
+		unset($smt_post_types['attachment']);
+
+		foreach ($smt_post_types as $type) {
+			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+		}
+
+		return $types_to_track;
 	}
 
 	/***************************************************
