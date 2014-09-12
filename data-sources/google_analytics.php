@@ -54,7 +54,11 @@ class GoogleAnalyticsUpdater {
 			return false;
 		}
 
-		if ($this->data['data_is_flowing'] === false && strlen($this->data['gapi_client_id']) > 1 && strlen($this->data['gapi_client_secret']) > 1 && strlen($this->data['gapi_developer_key']) > 1 ) {
+		if (!isset($this->data['gapi_client_id'])) {
+			return false;
+		}
+
+		if (strlen($this->data['gapi_client_id']) > 1 && strlen($this->data['gapi_client_secret']) > 1 && strlen($this->data['gapi_developer_key']) > 1 && $this->data['data_is_flowing'] === false) {
 
 			$message = '<h3 style="margin-top:0;">Google Analytics connection not activate</h3> Please <a href="admin.php?page=social-metrics-tracker-settings&section=gapi">visit the setup wizard</a> to complete necessary steps, or <a href="admin.php?page=social-metrics-tracker-settings&section=gapi&go_to_step=1">disable Google Analytics integration</a>. <ul>';
 
@@ -136,7 +140,7 @@ class GoogleAnalyticsUpdater {
 
 	// Returns true if can sync, false if not. 
 	public function can_sync() {
-		return (strlen($this->data['gapi_profile_id']) > 0 && isset($this->data['gapi_token']));
+		return (isset($this->data['gapi_profile_id']) && strlen($this->data['gapi_profile_id']) > 0 && isset($this->data['gapi_token']));
 	}
 
 	// Geenrate the URL for auth login

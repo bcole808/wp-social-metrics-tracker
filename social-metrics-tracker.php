@@ -47,6 +47,7 @@ class SocialMetricsTracker {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('plugins_loaded', array($this, 'version_check'));
+			add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
 		}
 
 		add_action('init', array($this, 'init'));
@@ -119,9 +120,12 @@ class SocialMetricsTracker {
 		}
 
 		new socialMetricsSettings($this->updater->GoogleAnalyticsUpdater);
-		new SocialMetricsTrackerWidget();
 
 	} // end adminMenuSetup()
+
+	public function dashboard_setup() {
+		new SocialMetricsTrackerWidget();
+	}
 
 	public function render_view_Dashboard() {
 		require('smt-dashboard.php');

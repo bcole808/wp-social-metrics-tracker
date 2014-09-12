@@ -20,7 +20,10 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		// Do not run if current user not allowed to see this
 		if (!current_user_can($this->options['smt_options_report_visibility'])) return false;
 
-		add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
+		$this->gapi = new GoogleAnalyticsUpdater();
+
+		add_meta_box( 'social-metrics-tracker', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
+
 
 		//Set parent defaults
 		parent::__construct( array(
@@ -28,11 +31,6 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 			'plural'    => 'posts',    //plural name of the listed records
 			'ajax'      => false        //does this table support ajax?
 		) );
-
-	}
-
-	function dashboard_setup() {
-		add_meta_box( 'social-metrics-tracker', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
 
 	}
 
@@ -127,7 +125,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		// $columns['date'] = 'Date';
 		$columns['title'] = 'Title';
 		$columns['social'] = 'Social Score';
-		if ($this->options['smt_options_enable_analytics']) {
+		if ($this->gapi->can_sync()) {
 			$columns['views'] = 'Views';
 		}
 		$columns['comments'] = 'Comments';
