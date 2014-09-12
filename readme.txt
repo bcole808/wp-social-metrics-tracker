@@ -3,7 +3,7 @@ Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
 Tested up to: 4.0
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,7 +79,7 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
-= 1.1.2 =
+= 1.2.0 =
 * Added data export tool
 * Fix various bugs
 
@@ -106,7 +106,7 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Upgrade Notice ==
 
-= 1.1.2 =
+= 1.2.0 =
 Added data export tool, and fixed bugs. 
 
 = 1.1.1 =
