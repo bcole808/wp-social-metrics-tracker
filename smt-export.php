@@ -40,12 +40,12 @@ function smt_download_export_file($smt) {
 		$item['Date Published']     = $post->post_date;
 		$item['URL to Post']        = get_permalink($post->ID);
 
-		$item['Author']             = get_the_author_meta('display_name') . '<' . get_the_author_meta('user_email') . '>';
+		$item['Author']             = get_the_author_meta('display_name') . ' <' . get_the_author_meta('user_email') . '>';
 
 		$item['Total Social Count'] = (get_post_meta($post->ID, "socialcount_TOTAL", true)) ? get_post_meta($post->ID, "socialcount_TOTAL", true) : 0;
-		$item['Comment Count']      = $post->comment_count;
+		$item['Total Comment Count']      = $post->comment_count;
 		
-		if ($gapi_can_sync) $item['Page Views'] = get_post_meta($post->ID, "ga_pageviews", true);
+		if ($gapi_can_sync) $item['Total Page Views'] = get_post_meta($post->ID, "ga_pageviews", true);
 
 		foreach ($services as $slug => $name) {
 			$item[$name] = get_post_meta($post->ID, "socialcount_$slug", true);

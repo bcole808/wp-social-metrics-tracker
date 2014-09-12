@@ -3,7 +3,7 @@ Contributors: bcole808
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.8.1
 Tested up to: 4.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,8 @@ Facebook, Twitter, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google
 Understand what posts your readers are sharing on social networks so that you can write more of what works well. 
 
 = Do more with the data: =
+
+Export collected data to a spreadsheet for analysis. 
 
 For web developers, this plugin collects and stores social metrics data in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as custom post meta fields on each individual post. This is an advanced feature which requires writing custom code. 
 
@@ -72,9 +74,14 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 == Screenshots ==
 
 1. The Social Metrics Tracker report view.
+2. Configuration options
 
 
 == Changelog ==
+
+= 1.1.2 =
+* Added data export tool
+* Fix various bugs
 
 = 1.1.1 =
 * Fix division by zero error message in WordPress 4.0
@@ -98,6 +105,12 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Added data export tool, and fixed bugs. 
+
+= 1.1.1 =
+Compatibility fix for WordPress 4.0
 
 = 1.1.0 =
 Added some new features including custom post types, Google Analytics, and more. 
