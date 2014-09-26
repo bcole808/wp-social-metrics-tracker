@@ -33,7 +33,7 @@ include_once('SocialMetricsTrackerWidget.class.php');
 class SocialMetricsTracker {
 
 	private $version = '1.2.0'; // for db upgrade comparison
-	private $updater;
+	public $updater;
 	public $options;
 
 	public function __construct() {
@@ -63,7 +63,7 @@ class SocialMetricsTracker {
 		if ($this->options === false) $this->activate();
 
 		// Check if we can enable data syncing
-		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+		if ($this->is_development_server()) {
 			add_action('admin_notices', array($this, 'developmentServerNotice'));
 
 		} else if (is_array($this->options)) {
@@ -81,6 +81,11 @@ class SocialMetricsTracker {
 			require('smt-export.php');
 			smt_download_export_file($this);
 		}
+	}
+
+	// Determines if we are on a development or staging environment
+	public function is_development_server() {
+		return (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1');
 	}
 
 	public function developmentServerNotice() {
@@ -128,7 +133,7 @@ class SocialMetricsTracker {
 		// Export page
 		add_submenu_page('social-metrics-tracker', 'Data Export Tool', 'Export Data', $visibility, 'social-metrics-tracker-export',  array($this, 'render_view_export'));
 
-		new socialMetricsSettings($this->updater->GoogleAnalyticsUpdater);
+		new socialMetricsSettings($this);
 
 	} // end adminMenuSetup()
 
@@ -226,7 +231,7 @@ class SocialMetricsTracker {
 		}
 
 
-		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+		if ($this-is_development_server()) {
 			// Do not schedule update
 		} else {
 			// Sync all data

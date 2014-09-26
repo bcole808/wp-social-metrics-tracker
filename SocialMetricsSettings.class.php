@@ -6,7 +6,7 @@ class socialMetricsSettings {
 
 	private $wpsf;
 
-	function __construct($GoogleAnalyticsUpdater) {
+	function __construct($smt) {
 
 		add_action( 'admin_menu', array(&$this, 'admin_menu'), 99 );
 		// add_action( 'wpsf_before_settings_fields', array($this, 'section_id'));
@@ -14,8 +14,9 @@ class socialMetricsSettings {
 		$section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : false;
 		switch ($section) {
 			case 'gapi':
+
 				$this->section = 'gapi';
-				$this->gapi = $GoogleAnalyticsUpdater;
+				$this->gapi = $smt->updater->GoogleAnalyticsUpdater;
 
 				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
 
@@ -58,7 +59,14 @@ class socialMetricsSettings {
 	// Render the Google API config page
 	//
 	// Beware: Messy PHP code within..... 
-	function gapi_section() { ?>
+	function gapi_section() {
+
+		if (!$this->gapi) {
+			print('<h1>Google Analytics Integration</h1><h3 style="color:red;">Sorry, Google Analytics integration can\'t be configured because this appears to be a development server. </h3>');
+			return;
+		}
+
+		?>
 
 		<h1>Google Analytics Integration</h1>
 		<p>This plugin can sync and display page view data from Google Analytics. </p>
@@ -107,7 +115,7 @@ class socialMetricsSettings {
 				<li>Add the following authorized redirect URI: <input value="<?php echo $this->gapi->redirect_uri; ?>" onClick="this.select();" style="min-width:300px; background:white; cursor:text; font-size:11px" readonly></li>
 			</ol>
 
-			<?php $keys = $this->gapi->get_gapi_keys(); print_r($keys); ?>
+			<?php $keys = $this->gapi->get_gapi_keys(); ?>
 			<table class="form-table yellow-box">
 			<tbody>
 				<tr>

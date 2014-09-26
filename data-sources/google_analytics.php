@@ -58,7 +58,7 @@ class GoogleAnalyticsUpdater {
 			return false;
 		}
 
-		if (strlen($this->data['gapi_client_id']) > 1 && strlen($this->data['gapi_client_secret']) > 1 && strlen($this->data['gapi_developer_key']) > 1 && $this->data['data_is_flowing'] === false) {
+		if (strlen($this->data['gapi_client_id']) > 1 && strlen($this->data['gapi_client_secret']) > 1 && strlen($this->data['gapi_developer_key']) > 1 && (isset($this->data['data_is_flowing']) && $this->data['data_is_flowing'] === false)) {
 
 			$message = '<h3 style="margin-top:0;">Google Analytics connection not activate</h3> Please <a href="admin.php?page=social-metrics-tracker-settings&section=gapi">visit the setup wizard</a> to complete necessary steps, or <a href="admin.php?page=social-metrics-tracker-settings&section=gapi&go_to_step=1">disable Google Analytics integration</a>. <ul>';
 
@@ -126,9 +126,9 @@ class GoogleAnalyticsUpdater {
 
 	// Get function 
 	public function get_gapi_keys() {
-		$values['gapi_client_id'] 		= $this->data['gapi_client_id'];
-		$values['gapi_client_secret'] 	= $this->data['gapi_client_secret'];
-		$values['gapi_developer_key'] 	= $this->data['gapi_developer_key'];
+		$values['gapi_client_id'] 		= isset($this->data['gapi_client_id'])     ? $this->data['gapi_client_id']     : null;
+		$values['gapi_client_secret'] 	= isset($this->data['gapi_client_secret']) ? $this->data['gapi_client_secret'] : null;
+		$values['gapi_developer_key'] 	= isset($this->data['gapi_developer_key']) ? $this->data['gapi_developer_key'] : null;
 
 		return $values;
 	}
@@ -154,7 +154,7 @@ class GoogleAnalyticsUpdater {
 
 	public function connect() {
 
-		if ($this->gapi) return $this->is_ready; // only one connection allowed
+		if (isset($this->gapi)) return $this->is_ready; // only one connection allowed
 
 
 		$this->redirect_uri = admin_URL('/admin.php?page=social-metrics-tracker-settings&section=gapi');
@@ -173,6 +173,7 @@ class GoogleAnalyticsUpdater {
 			$this->step = 1;
 
 			// Do we have the necessary credentials?
+			if (!$this->data)                       return false;
 			if (!$this->data['gapi_client_id'])		return false;
 			if (!$this->data['gapi_client_secret'])	return false;
 			if (!$this->data['gapi_developer_key']) return false;
@@ -193,7 +194,7 @@ class GoogleAnalyticsUpdater {
 			$this->step = 2;
 
 			// Did we just receive an authorization code?
-			if ($_GET['code'] && !$this->data['gapi_token']) {
+			if (isset($_GET['code']) && $_GET['code'] && !$this->data['gapi_token']) {
 				$this->gapi->authenticate($_GET['code']);
 				$this->data['gapi_token'] = serialize($this->gapi->getAccessToken());
 
@@ -201,7 +202,7 @@ class GoogleAnalyticsUpdater {
 			}
 
 			// We really do need that token...
-			if (!$this->data['gapi_token']) return false;
+			if (!isset($this->data['gapi_token'])) return false;
 
 	  		$this->gapi->setAccessToken(unserialize($this->data['gapi_token']));
 
