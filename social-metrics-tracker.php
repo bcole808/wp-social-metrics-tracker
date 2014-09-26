@@ -34,7 +34,7 @@ class SocialMetricsTracker {
 
 	private $version = '1.2.0'; // for db upgrade comparison
 	private $updater;
-	private $options;
+	public $options;
 
 	public function __construct() {
 
@@ -138,7 +138,7 @@ class SocialMetricsTracker {
 
 	public function render_view_Dashboard() {
 		require('smt-dashboard.php');
-		smt_render_dashboard_view($this->options);
+		smt_render_dashboard_view($this);
 	} // end render_view_Dashboard()
 
 	public function render_view_AdvancedDashboard() {
@@ -181,17 +181,18 @@ class SocialMetricsTracker {
 	/***************************************************
 	* Return an array of the post types we are currently tracking
 	***************************************************/
-	function tracked_post_types() {
+	public function tracked_post_types() {
 		$types_to_track = array();
 
 		$smt_post_types = get_post_types( array( 'public' => true ), 'names' ); 
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
-			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+			if (isset($this->options['smt_options_post_types_'.$type]) && $this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
 		}
 
-		return $types_to_track;
+		// If none selected, default post types
+		return ($types_to_track) ? $types_to_track : array_values($smt_post_types);
 	}
 
 	/***************************************************
@@ -216,8 +217,6 @@ class SocialMetricsTracker {
 			require('settings/smt-general.php');
 
 			global $wpsf_settings;
-
-			// $defaults = array("hello" => "test");
 
 			foreach ($wpsf_settings[0]['fields'] as $setting) {
 				$defaults['smt_options_'.$setting['id']] = $setting['std'];

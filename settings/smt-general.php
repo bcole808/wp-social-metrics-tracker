@@ -18,7 +18,7 @@ $wpsf_settings[] = array(
 		array(
             'id' => 'post_types',
             'title' => 'Post Types',
-            'desc' => 'Which post types should we track?',
+            'desc' => 'Which post types should we track? (Defaults to Posts and Pages if none are selected)',
             'type' => 'checkboxes',
             'std' => array(
                 'post'

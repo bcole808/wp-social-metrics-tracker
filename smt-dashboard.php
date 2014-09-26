@@ -10,10 +10,10 @@ if(!class_exists('WP_List_Table')){
 }
 class SocialMetricsTable extends WP_List_Table {
 
-	function __construct(){
+	function __construct($smt){
 		global $status, $page;
 
-		$this->options = get_option('smt_settings');
+		$this->smt = $smt;
 
 		$this->gapi = new GoogleAnalyticsUpdater(); 
 
@@ -150,7 +150,7 @@ class SocialMetricsTable extends WP_List_Table {
 
 	function date_range_filter( $where = '' ) {
 
-		$range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
+		$range = (isset($_GET['range'])) ? $_GET['range'] : $this->smt->options['smt_options_default_date_range_months'];
 
 		if ($range <= 0) return $where;
 
@@ -173,7 +173,7 @@ class SocialMetricsTable extends WP_List_Table {
 		
 		// get orderby
 		// If no sort, then get default option
-		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $this->options[ 'smt_options_default_sort_column' ];
+		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $this->smt->options[ 'smt_options_default_sort_column' ];
 				
 		// tweak query based on orderby
 		switch( $orderby ) {
@@ -213,22 +213,6 @@ class SocialMetricsTable extends WP_List_Table {
 
 	}
 
-	// Return an array of post types we currently track
-	public function get_post_types() {
-
-		$types_to_track = array();
-
-		$smt_post_types = get_post_types( array('public'=>true), 'names' ); 
-		unset($smt_post_types['attachment']);
-
-		foreach ($smt_post_types as $type) {
-			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
-		}
-
-		return $types_to_track;
-
-	}
-
 	function prepare_items() {
 		global $wpdb; //This is used only if making any database queries
 
@@ -243,7 +227,7 @@ class SocialMetricsTable extends WP_List_Table {
 		$this->process_bulk_action();
 
 		// Get custom post types to display in our report.
-		$post_types = $this->get_post_types();
+		$post_types = $this->smt->tracked_post_types();
 
 		$limit = 30;
 
@@ -319,7 +303,7 @@ class SocialMetricsTable extends WP_List_Table {
 	function extra_tablenav( $which ) {
 		if ( $which == "top" ){
 			//The code that goes before the table is here
-			$range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
+			$range = (isset($_GET['range'])) ? $_GET['range'] : $this->smt->options['smt_options_default_date_range_months'];
 			?>
 			<label for="range">Show only:</label>
 					<select name="range">
@@ -352,12 +336,12 @@ class SocialMetricsTable extends WP_List_Table {
  * so we've instead called those methods explicitly. It keeps things flexible, and
  * it's the way the list tables are used in the WordPress core.
  */
-function smt_render_dashboard_view($options){
+function smt_render_dashboard_view($smt){
 	?>
 	<div class="wrap">
 		<h2>Social Metrics Tracker</h2>
 		<?php
-		if(!is_array($options)) {
+		if(!is_array($smt->options)) {
 			printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-metrics-tracker-settings'>configure the Social Metrics Tracker</a>." );
 			die();
 		}
@@ -367,12 +351,12 @@ function smt_render_dashboard_view($options){
 		<form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker">
 			<!-- For plugins, we also need to ensure that the form posts back to our current page -->
 			<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
-			<input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $options['smt_options_default_sort_column']; ?>" />
+			<input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smt->options['smt_options_default_sort_column']; ?>" />
 			<input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
 
 			<?php
 			//Create an instance of our package class...
-			$SocialMetricsTable = new SocialMetricsTable();
+			$SocialMetricsTable = new SocialMetricsTable($smt);
 
 			//Fetch, prepare, sort, and filter our data...
 			$SocialMetricsTable->prepare_items();
