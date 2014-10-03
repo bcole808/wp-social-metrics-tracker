@@ -110,9 +110,11 @@ class socialMetricsSettings {
 
 			<ol>
 				<li><a href="https://console.developers.google.com" target="_new">Set up a free Google Developer account</a></li>
-				<li>Create a server-side API project</li>
+				<li>Create a new project</li>
 				<li>Enable the Google Analytics API for the project</li>
+				<li>Under <b>APIs & auth > Credentials</b> click "Create new Client ID" and select "Web Appplication"</li>
 				<li>Add the following authorized redirect URI: <input value="<?php echo $this->gapi->redirect_uri; ?>" onClick="this.select();" style="min-width:300px; background:white; cursor:text; font-size:11px" readonly></li>
+				<li>Enter the information you receive below: </li>
 			</ol>
 
 			<?php $keys = $this->gapi->get_gapi_keys(); ?>
@@ -120,16 +122,17 @@ class socialMetricsSettings {
 			<tbody>
 				<tr>
 					<th scope="row">Client ID</th>
-					<td><input type="text" name="gapi_client_id" id="gapi_client_id" value="<?php echo $keys['gapi_client_id']; ?>" class="regular-text "></td>
+					<td><input type="text" name="gapi_client_id" id="gapi_client_id" value="<?php echo $keys['gapi_client_id']; ?>" class="regular-text" placeholder="example: 123.apps.googleusercontent.com"></td>
+				</tr>
+				<tr>
+					<th scope="row">Email Address (API Key)</th>
+					<td><input type="text" name="gapi_developer_key" id="gapi_developer_key" value="<?php echo $keys['gapi_developer_key']; ?>" class="regular-text" placeholder="example: 123@developer.gserviceaccount.com"></td>
 				</tr>
 				<tr>
 					<th scope="row">Client Secret</th>
-					<td><input type="text" name="gapi_client_secret" id="gapi_client_secret" value="<?php echo $keys['gapi_client_secret']; ?>" class="regular-text "></td>
+					<td><input type="text" name="gapi_client_secret" id="gapi_client_secret" value="<?php echo $keys['gapi_client_secret']; ?>" class="regular-text" placeholder="example: 123abc"></td>
 				</tr>
-				<tr>
-					<th scope="row">API Key</th>
-					<td><input type="text" name="gapi_developer_key" id="gapi_developer_key" value="<?php echo $keys['gapi_developer_key']; ?>" class="regular-text "></td>
-				</tr>
+
 			</tbody>
 			</table>
 
@@ -183,7 +186,12 @@ class socialMetricsSettings {
 						<?php endforeach; ?>
 						</select>
 
+						<?php if (is_multisite() && current_user_can( 'manage_network' )) : ?>
+
 						<p class="description">With <b>shared credentials</b>, all blogs on this WP Multisite network will automatically use the Google Analytics profile you set up to sync data and you will only need to complete this setup wizard once. With <b>different credentials</b>, each blog will need to complete this wizard but each blog will be able to link to a seperate Gooogle Analytics account.</p>
+						
+						<?php endif; ?>
+
 					</td>
 				</tr>
 			</tbody>
