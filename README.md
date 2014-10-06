@@ -1,4 +1,6 @@
-# [Social Metrics Tracker](https://github.com/chapmanu/wp-social-metrics-tracker)
+[![Build Status](https://travis-ci.org/chapmanu/wp-social-metrics-tracker.svg)](https://travis-ci.org/chapmanu/wp-social-metrics-tracker)
+
+# Social Metrics Tracker
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
 
