@@ -85,7 +85,7 @@ class SocialMetricsTracker {
 
 	// Determines if we are on a development or staging environment
 	public function is_development_server() {
-		return (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1');
+		return ((defined('WP_ENV') && strtolower(WP_ENV) != 'production') || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] == '127.0.0.1'));
 	}
 
 	public function developmentServerNotice() {
