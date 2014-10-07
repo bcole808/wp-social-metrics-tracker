@@ -14,3 +14,6 @@ before_script:
     - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION 
 
 script: phpunit
+
+notifications:
+    flowdock: d9d29e9786ea83224219ec61abdec44f

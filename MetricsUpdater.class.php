@@ -50,16 +50,18 @@ class MetricsUpdater {
 		global $post;
 
 		// If no post ID specified, use current page
-		if ($post_id <= 0) $post_id = $post->ID;
+		if ($post_id <= 0 && $post) $post_id = $post->ID;
 
 		// Get post types to track
 		$types = $this->get_post_types();
 
 		// Validation
-		if (is_admin()) 							return false;
-		if ($post_id <= 0) 							return false; 
-		if ($post->post_status != 'publish') 		return false; // Allow only published posts
+		if (is_admin())                                  return false;
+		if (is_int($post_id) && $post_id <= 0)           return false; 
+		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
+
+		print("WINNING");
 
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
@@ -74,7 +76,7 @@ class MetricsUpdater {
 
 		} 
 
-		return;
+		return true;
 	} // end checkThisPost()
 
 	// Return an array of post types we currently track
@@ -86,6 +88,7 @@ class MetricsUpdater {
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
+			if (!isset($this->options['smt_options_post_types_'.$type])) continue;
 			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
 		}
 
@@ -147,6 +150,9 @@ class MetricsUpdater {
 	* @return An array representing the weighted score of all three input values
 	*/
 	public function calculateScoreAggregate($social_num = 0, $views_num = 0, $comment_num = 0) {
+
+		// Validate input
+		if (!is_int($social_num) || !is_int($views_num) || !is_int($comment_num)) return false;
 
 		// Configuration
 		$social_weight 	= 1;
