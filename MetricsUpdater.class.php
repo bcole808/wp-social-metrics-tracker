@@ -338,7 +338,7 @@ class MetricsUpdater {
 			$nextTime = $nextTime + ($interval * 2);
 		}
 
-		return;
+		return true;
 	} // end scheduleFullDataSync()
 
 	// Remove all queued updates from cron.

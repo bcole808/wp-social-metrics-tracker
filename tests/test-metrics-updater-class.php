@@ -148,6 +148,65 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertFalse($result, 'It should not check private content');
 	}
 
+	function test_recalculateAllScores() {
+
+		// SETUP: Make a post
+		$post = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+
+		update_post_meta($post_id, 'socialcount_LAST_UPDATED', time());
+
+		// 1: It runs without failing
+		$num = $this->updater->recalculateAllScores(false);
+		$this->assertEquals(1, $num, 'It did not update the right number of posts.');
+	}
+
+	function test_scheduleFullDataSync() {
+		// SETUP: Make a post
+		$post = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+
+		$post = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+		update_post_meta($post_id, 'socialcount_LAST_UPDATED', time());
+
+		// 1: It runs without failing
+		$this->assertTrue($this->updater->scheduleFullDataSync(), 'Function failed to complete successfully.');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It did not actually schedule a cron task!');
+	}
+
+	function test_removeAllQueuedUpdates() {
+		// SETUP: Make a post
+		$post = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+		$this->updater->scheduleFullDataSync();
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'Setup for this test failed!');
+
+		// 1: It removes scheduled tasks
+		$this->updater->removeAllQueuedUpdates();
+		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It failed to remove items from the cron queue!');
+	}
+
 
 }
 
