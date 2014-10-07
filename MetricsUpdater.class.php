@@ -61,8 +61,6 @@ class MetricsUpdater {
 		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
-		print("WINNING");
-
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
 		$ttl = $this->options['smt_options_ttl_hours'] * 3600;
@@ -84,15 +82,15 @@ class MetricsUpdater {
 
 		$types_to_track = array();
 
-		$smt_post_types = get_post_types( array('public'=>true), 'names' ); 
+		$smt_post_types = get_post_types( array( 'public' => true ), 'names' ); 
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
-			if (!isset($this->options['smt_options_post_types_'.$type])) continue;
-			if ($this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+			if (isset($this->options['smt_options_post_types_'.$type]) && $this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
 		}
 
-		return $types_to_track;
+		// If none selected, default post types
+		return ($types_to_track) ? $types_to_track : array_values($smt_post_types);
 
 	}
 

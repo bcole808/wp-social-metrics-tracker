@@ -71,7 +71,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertTrue(($result < 10), 'It should return a smaller value. ');
 	}
 
-	function test_validates_checkThisPost() {
+	function test_checkThisPost_validates() {
 		
 		// 1: It rejects bad input
 		$result = $this->updater->checkThisPost(0);
@@ -87,6 +87,67 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertFalse($result, 'It should reject string inputs');
 
 	}
+
+	function test_checkThisPost_posts() {
+
+		// SETUP: Make a post
+		$post = array(
+			'post_title'    => 'The man in the shoe.',
+			'post_content'  => 'There was once a man who lived in a shoe. The end.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+
+		$this->assertTrue($post_id > 0, 'There was some trouble creating a post.');
+
+		// 1: It does not queue the post if it is not on the correct page
+		$this->go_to( "/" ); 
+		$result = $this->updater->checkThisPost($post_id);
+		$this->assertFalse($result, 'It was not supposed to queue this post');
+
+		// 2: It does queue if on the correct page
+		$this->go_to( "/?p=$post_id" ); 
+		$result = $this->updater->checkThisPost($post_id);
+		$this->assertTrue($result, 'It should check a valid post');
+
+		// 3: It does not update a non-published post
+		wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
+		$this->go_to( "/?p=$post_id" ); 
+		$result = $this->updater->checkThisPost($post_id);
+		$this->assertFalse($result, 'It should not check draft content');
+
+	}
+
+	function test_checkThisPost_pages() {
+		// SETUP: Make a page
+		$page = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'page'
+		);
+		$page_id = wp_insert_post($page);
+
+		$this->assertTrue($page_id > 0, 'There was some trouble creating a page.');
+
+		// 1: It does not queue the post if it is not on the correct page
+		$this->go_to( "/wp-admin" ); 
+		$result = $this->updater->checkThisPost($page_id);
+		$this->assertFalse($result, 'It was not supposed to queue this page');
+
+		// 2: It does queue if on the correct page
+		$this->go_to( "/?page_id=$page_id" ); 
+		$result = $this->updater->checkThisPost($page_id);
+		$this->assertTrue($result, 'It should check a valid page');
+
+		// 3: It does not update a non-published post
+		wp_update_post(array('ID' => $page_id, 'post_status' => 'private'));
+		$this->go_to( "/?page_id=$page_id" ); 
+		$result = $this->updater->checkThisPost($page_id);
+		$this->assertFalse($result, 'It should not check private content');
+	}
+
 
 }
 
