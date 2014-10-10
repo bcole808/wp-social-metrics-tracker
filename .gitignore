@@ -3,4 +3,4 @@
 
 *.sublime-project
 
-/coverage/*
+/tests/coverage*

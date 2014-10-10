@@ -16,7 +16,6 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// $this->updater = new MetircsUpdater($this->plugin);
 
 		// TEMPORARY CODE:
-
 		$this->updater = new MetricsUpdater();
 	}
 
@@ -207,6 +206,39 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It failed to remove items from the cron queue!');
 	}
 
+	function test_updatePostStats() {
+
+		// SETUP: Create mock social updater
+		$sample_social_data = json_decode(file_get_contents(__DIR__ .'/sample-data/sharedcount.json'), true);
+
+		$mock = $this->getMock('SharedCountUpdater', array('getData'));
+
+		$mock->expects($this->any())
+		    ->method('getData')
+		    ->will($this->returnValue($sample_social_data));
+
+		$this->updater->SharedCountUpdater = $mock;
+
+		// SETUP: Make a post
+		$post = array(
+			'post_title'    => 'A test page',
+			'post_content'  => 'Lorem Ipsum Doler.',
+			'post_status'   => 'publish',
+			'post_type'     => 'post'
+		);
+		$post_id = wp_insert_post($post);
+
+		// 1: Ensure data is saved correctly
+		$this->updater->updatePostStats($post_id);
+		$meta = get_post_meta($post_id);
+
+		$this->assertEquals(1454, $meta['socialcount_facebook'][0],   'Social count saved incorrectly!');
+		$this->assertEquals(92,   $meta['socialcount_twitter'][0],    'Social count saved incorrectly!');
+		$this->assertEquals(1459, $meta['socialcount_googleplus'][0], 'Social count saved incorrectly!');
+		$this->assertEquals(14,   $meta['socialcount_linkedin'][0],   'Social count saved incorrectly!');
+		
+		$this->assertTrue($meta['socialcount_LAST_UPDATED'][0] <= time(), 'The timestamp was wrong');
+	}
 
 }
 

@@ -7,9 +7,7 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	// DO BEFORE ALL TESTS
 	function setUp() {
 		parent::setUp();
-
 		$this->plugin = new SocialMetricsTracker();
-		$this->plugin->init();
 	}
 
 	// DO AFTER ALL TESTS
@@ -31,6 +29,9 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	* Must ensure default options exist always. 
 	***************************************************/
 	function test_options_defaults() {
+		
+		$this->plugin->init();
+
 		$this->assertTrue(
 			is_array($this->plugin->options),
 			'The plugin does not create default options!'
