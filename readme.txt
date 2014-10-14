@@ -2,9 +2,9 @@
 Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
-Requires at least: 3.8.1
+Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,13 +23,13 @@ Facebook, Twitter, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google
 
 = Focus your writing topics: =
 
-Understand what posts your readers are sharing on social networks so that you can write more of what works well. 
+Understand what posts your readers are sharing on social networks so that you can write more of what works well.
 
 = Do more with the data: =
 
-Export collected data to a spreadsheet for analysis. 
+Export collected data to a spreadsheet for analysis.
 
-For web developers, this plugin collects and stores social metrics data in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as custom post meta fields on each individual post. This is an advanced feature which requires writing custom code. 
+For web developers, this plugin collects and stores social metrics data in a way that can be accessed by other WP plugins or themes. For example, the social metrics could be used to display a feed of the most popular posts. Metrics are stored as custom post meta fields on each individual post. This is an advanced feature which requires writing custom code.
 
 
 == Installation ==
@@ -38,7 +38,7 @@ For web developers, this plugin collects and stores social metrics data in a way
 2. Data will automatically begin syncing. This will take some time.
 3. Review the plugin settings under Settings > Social Metrics
 
-If you do not see any statistics on the Social Metrics dashboard, make sure that you have some posts published and that wp-cron.php is working correctly. This plugin relies on the WordPress Cron system to fetch data updates. This plugin will not work on local or development servers where URLs are not publicly accessible. 
+If you do not see any statistics on the Social Metrics dashboard, make sure that you have some posts published and that wp-cron.php is working correctly. This plugin relies on the WordPress Cron system to fetch data updates. This plugin will not work on local or development servers where URLs are not publicly accessible.
 
 
 == Frequently Asked Questions ==
@@ -61,11 +61,11 @@ When activating the plugin, all posts are queued for an update; this takes some 
 
 = Will this work with WordPress Multisite? =
 
-Absolutely! This plugin was created with large-scale Multisite blog networks in mind. 
+Absolutely! This plugin was created with large-scale Multisite blog networks in mind.
 
 = What about pageviews? =
 
-You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key. 
+You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key.
 
 = Who created this? =
 
@@ -80,10 +80,13 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
-= 1.2.2 = 
+= 1.2.3 =
+* Fixed bar width when displaying a widget on the admin Dashboard.
+
+= 1.2.2 =
 * Plugin activation hotfix
 
-= 1.2.1 = 
+= 1.2.1 =
 * Update Google Analytics setup wizard steps
 * Fix various bugs
 
@@ -106,13 +109,16 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 = 1.0.1 =
 * Added colors and labels to the graph for each of the nine social networks.
-* Bar graph expands on hover to show detail of the breakdown. 
+* Bar graph expands on hover to show detail of the breakdown.
 
 = 1.0 =
-* Plugin created, wohoo! 
+* Plugin created, wohoo!
 
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Squished more bugs!
 
 = 1.2.2 =
 Plugin activation hotfix
@@ -121,19 +127,19 @@ Plugin activation hotfix
 Fixed various bugs
 
 = 1.2.0 =
-Added data export tool, and fixed bugs. 
+Added data export tool, and fixed bugs.
 
 = 1.1.1 =
 Compatibility fix for WordPress 4.0
 
 = 1.1.0 =
-Added some new features including custom post types, Google Analytics, and more. 
+Added some new features including custom post types, Google Analytics, and more.
 
 = 1.0.1 =
 Compatibility fix for servers with PHP below version 5.3
 
 = 1.0.1 =
-Added colors and labels for all nine social networks. 
+Added colors and labels for all nine social networks.
 
 
 == Developers Guide ==
