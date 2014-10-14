@@ -174,7 +174,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function test_updatePostStats() {
 
 		// SETUP: Create mock social updater
-		$sample_social_data = json_decode(file_get_contents(__DIR__ .'/sample-data/sharedcount.json'), true);
+		$sample_social_data = json_decode(file_get_contents(dirname(__FILE__) .'/sample-data/sharedcount.json'), true);
 
 		$mock = $this->getMock('SharedCountUpdater', array('getData'));
 
