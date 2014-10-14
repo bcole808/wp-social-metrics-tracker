@@ -16,20 +16,20 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	}
 
 	/***************************************************
-	* The plugin must call the init function at the right time. 
+	* The plugin must call the init function at the right time.
 	***************************************************/
 	function test_has_init() {
 		$this->assertTrue(
-			is_int(has_action('init', array($this->plugin, 'init'))), 
+			is_int(has_action('init', array($this->plugin, 'init'))),
 			'The plugin does not have an init function!'
 		);
 	}
 
 	/***************************************************
-	* Must ensure default options exist always. 
+	* Must ensure default options exist always.
 	***************************************************/
 	function test_options_defaults() {
-		
+
 		$this->plugin->init();
 
 		$this->assertTrue(
@@ -60,8 +60,6 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 			'Returned an WP post type that did not exist!'
 		);
 	}
-
-
 
 }
 

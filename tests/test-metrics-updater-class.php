@@ -68,10 +68,14 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// 3: The return is smaller than the input
 		$result = $this->updater->calculateScoreDecay(10, 'January 1, 2014');
 		$this->assertTrue(($result < 10), 'It should return a smaller value. ');
+
+		// 3: The return is larger than the input
+		$result = $this->updater->calculateScoreDecay(10, date('r'));
+		$this->assertTrue(($result > 10), 'It should return a larger value. ');
 	}
 
 	function test_checkThisPost_validates() {
-		
+
 		// 1: It rejects bad input
 		$result = $this->updater->checkThisPost(0);
 		$this->assertFalse($result, 'It should reject invalid post IDs');
@@ -90,29 +94,23 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function test_checkThisPost_posts() {
 
 		// SETUP: Make a post
-		$post = array(
-			'post_title'    => 'The man in the shoe.',
-			'post_content'  => 'There was once a man who lived in a shoe. The end.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
+		$post_id = $this->factory->post->create();
 
 		$this->assertTrue($post_id > 0, 'There was some trouble creating a post.');
 
 		// 1: It does not queue the post if it is not on the correct page
-		$this->go_to( "/" ); 
+		$this->go_to( "/" );
 		$result = $this->updater->checkThisPost($post_id);
 		$this->assertFalse($result, 'It was not supposed to queue this post');
 
 		// 2: It does queue if on the correct page
-		$this->go_to( "/?p=$post_id" ); 
+		$this->go_to( "/?p=$post_id" );
 		$result = $this->updater->checkThisPost($post_id);
 		$this->assertTrue($result, 'It should check a valid post');
 
 		// 3: It does not update a non-published post
 		wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'));
-		$this->go_to( "/?p=$post_id" ); 
+		$this->go_to( "/?p=$post_id" );
 		$result = $this->updater->checkThisPost($post_id);
 		$this->assertFalse($result, 'It should not check draft content');
 
@@ -120,29 +118,23 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	function test_checkThisPost_pages() {
 		// SETUP: Make a page
-		$page = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'page'
-		);
-		$page_id = wp_insert_post($page);
+		$page_id = $this->factory->post->create(array('post_type' => 'page'));
 
 		$this->assertTrue($page_id > 0, 'There was some trouble creating a page.');
 
 		// 1: It does not queue the post if it is not on the correct page
-		$this->go_to( "/wp-admin" ); 
+		$this->go_to( "/wp-admin" );
 		$result = $this->updater->checkThisPost($page_id);
 		$this->assertFalse($result, 'It was not supposed to queue this page');
 
 		// 2: It does queue if on the correct page
-		$this->go_to( "/?page_id=$page_id" ); 
+		$this->go_to( "/?page_id=$page_id" );
 		$result = $this->updater->checkThisPost($page_id);
 		$this->assertTrue($result, 'It should check a valid page');
 
 		// 3: It does not update a non-published post
 		wp_update_post(array('ID' => $page_id, 'post_status' => 'private'));
-		$this->go_to( "/?page_id=$page_id" ); 
+		$this->go_to( "/?page_id=$page_id" );
 		$result = $this->updater->checkThisPost($page_id);
 		$this->assertFalse($result, 'It should not check private content');
 	}
@@ -150,13 +142,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function test_recalculateAllScores() {
 
 		// SETUP: Make a post
-		$post = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
+		$post_id = $this->factory->post->create();
 
 		update_post_meta($post_id, 'socialcount_LAST_UPDATED', time());
 
@@ -167,22 +153,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	function test_scheduleFullDataSync() {
 		// SETUP: Make a post
-		$post = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
-
-		$post = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
-		update_post_meta($post_id, 'socialcount_LAST_UPDATED', time());
+		$post_id = $this->factory->post->create();
 
 		// 1: It runs without failing
 		$this->assertTrue($this->updater->scheduleFullDataSync(), 'Function failed to complete successfully.');
@@ -191,13 +162,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	function test_removeAllQueuedUpdates() {
 		// SETUP: Make a post
-		$post = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
+		$post_id = $this->factory->post->create();
 		$this->updater->scheduleFullDataSync();
 		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'Setup for this test failed!');
 
@@ -220,13 +185,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->updater->SharedCountUpdater = $mock;
 
 		// SETUP: Make a post
-		$post = array(
-			'post_title'    => 'A test page',
-			'post_content'  => 'Lorem Ipsum Doler.',
-			'post_status'   => 'publish',
-			'post_type'     => 'post'
-		);
-		$post_id = wp_insert_post($post);
+		$post_id = $this->factory->post->create();
 
 		// 1: Ensure data is saved correctly
 		$this->updater->updatePostStats($post_id);
@@ -236,7 +195,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertEquals(92,   $meta['socialcount_twitter'][0],    'Social count saved incorrectly!');
 		$this->assertEquals(1459, $meta['socialcount_googleplus'][0], 'Social count saved incorrectly!');
 		$this->assertEquals(14,   $meta['socialcount_linkedin'][0],   'Social count saved incorrectly!');
-		
+
 		$this->assertTrue($meta['socialcount_LAST_UPDATED'][0] <= time(), 'The timestamp was wrong');
 	}
 
