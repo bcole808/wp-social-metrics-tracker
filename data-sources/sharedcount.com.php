@@ -17,21 +17,9 @@ class SharedCountUpdater {
 		if (!isset($post_id) || !isset($post_url))  return;
 
 		// get social data from api.sharedcount.com
-		$curl_handle = curl_init();
+		$shared_count_service_data = $this->getData($post_url);
 
-		curl_setopt($curl_handle, CURLOPT_URL, 'http://api.sharedcount.com/?url='.rawurlencode($post_url));
-		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 3);
-		curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-
-		$json = curl_exec($curl_handle);
-
-		curl_close($curl_handle);
-
-		// reject if no response
-		if (!strlen($json)) return;
-
-		// decode social data from JSON
-		$shared_count_service_data = json_decode($json, true);
+		if ($shared_count_service_data === false) return false;
 
 		// prepare stats array
 		$stats = array();
@@ -59,4 +47,22 @@ class SharedCountUpdater {
 		foreach ($stats as $key => $value) if ($value && $value > 0) update_post_meta($post_id, 'socialcount_'.$key, $value);
 
 	}
+
+	// Retrieve and return the data from the remote resource
+	public function getData($url) {
+
+		$curl_handle = curl_init();
+		curl_setopt($curl_handle, CURLOPT_URL, 'http://api.sharedcount.com/?url='.rawurlencode($url));
+		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 3);
+		curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+		$data = curl_exec($curl_handle);
+		curl_close($curl_handle);
+
+		// reject if no response
+		if (!strlen($data)) return false;
+
+		// decode social data from JSON
+		$shared_count_service_data = json_decode($data, true);
+	}
+	
 }

@@ -17,6 +17,8 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 		$this->options = get_option('smt_settings');
 
+		$this->data_max = array();
+
 		// Do not run if current user not allowed to see this
 		if (!current_user_can($this->options['smt_options_report_visibility'])) return false;
 

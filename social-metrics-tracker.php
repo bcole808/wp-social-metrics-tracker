@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.2.2
+Version: 1.2.3
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
@@ -32,7 +32,7 @@ include_once('SocialMetricsTrackerWidget.class.php');
 
 class SocialMetricsTracker {
 
-	private $version = '1.2.2'; // for db upgrade comparison
+	private $version = '1.2.3'; // for db upgrade comparison
 	public $updater;
 	public $options;
 
@@ -85,7 +85,7 @@ class SocialMetricsTracker {
 
 	// Determines if we are on a development or staging environment
 	public function is_development_server() {
-		return (defined('WP_ENV') && strtolower(WP_ENV) != 'production' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1');
+		return ((defined('WP_ENV') && strtolower(WP_ENV) != 'production') || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] == '127.0.0.1'));
 	}
 
 	public function developmentServerNotice() {
@@ -189,7 +189,7 @@ class SocialMetricsTracker {
 	public function tracked_post_types() {
 		$types_to_track = array();
 
-		$smt_post_types = get_post_types( array( 'public' => true ), 'names' ); 
+		$smt_post_types = get_post_types( array( 'public' => true ), 'names' );
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
@@ -201,7 +201,7 @@ class SocialMetricsTracker {
 	}
 
 	/***************************************************
-	* Check the version of the plugin and perform upgrade tasks if necessary 
+	* Check the version of the plugin and perform upgrade tasks if necessary
 	***************************************************/
 	public function version_check() {
 		$installed_version = get_option( "smt_version" );
@@ -210,7 +210,7 @@ class SocialMetricsTracker {
 			update_option( "smt_version", $this->version );
 
 			// Do upgrade tasks
-			
+
 		}
 	}
 

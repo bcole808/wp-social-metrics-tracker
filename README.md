@@ -1,4 +1,6 @@
-# [Social Metrics Tracker](https://github.com/chapmanu/wp-social-metrics-tracker)
+[![Build Status](https://travis-ci.org/chapmanu/wp-social-metrics-tracker.svg)](https://travis-ci.org/chapmanu/wp-social-metrics-tracker)
+
+# Social Metrics Tracker
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
 
@@ -45,12 +47,16 @@ Reddit | socialcount_reddit
 StumbleUpon | socialcount_stumbleupon
 Last Updated Timestamp | socialcount_LAST_UPDATED
 
-### Extending the plugin
+### Action Hooks
 
 There are some Wordpress action hooks which can be used to extend the functionality of this plugin.
 
-**social_metrics_post_sync** is called when an individual post is being updated, before new data is downloaded.
-**social_metrics_post_sync_complete** is called when an individual post is done being updated.
+**social_metrics_post_sync** is called just before an individual post is updated.
+**social_metrics_post_sync_complete** is called when an individual post update completes.
+
+### Contributing to development
+
+There are some *really super awesome* PHPUnit tests written to help make sure that code changes don't break any existing functionality. If you plan on submitting pull requests, please make sure to [read over the wiki page](https://github.com/chapmanu/wp-social-metrics-tracker/wiki/Plugin-testing-with-PHPUnit) which explains how to get PHPUnit up and running in your development environment. 
 
 # FAQ
 
@@ -60,7 +66,7 @@ A: Share counts and interactions are gathered from [SharedCount](http://www.shar
 
 ### Q: What social networks are measured?
 
-A: Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+.
+A: Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+.
 
 ### Q: When is the data updated?
 
