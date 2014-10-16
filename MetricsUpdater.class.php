@@ -57,7 +57,7 @@ class MetricsUpdater {
 
 		// Validation
 		if (is_admin())                                  return false;
-		if (is_int($post_id) && $post_id <= 0)           return false; 
+		if (is_int($post_id) && $post_id <= 0)           return false;
 		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
@@ -72,7 +72,7 @@ class MetricsUpdater {
 			// Schedule an update
 			wp_schedule_single_event( time(), 'social_metrics_update_single_post', array( $post_id ) );
 
-		} 
+		}
 
 		return true;
 	} // end checkThisPost()
@@ -82,7 +82,7 @@ class MetricsUpdater {
 
 		$types_to_track = array();
 
-		$smt_post_types = get_post_types( array( 'public' => true ), 'names' ); 
+		$smt_post_types = get_post_types( array( 'public' => true ), 'names' );
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
@@ -119,11 +119,11 @@ class MetricsUpdater {
 
 		// Calculate aggregate score.
 		$social_aggregate_score_detail = $this->calculateScoreAggregate(
-																	get_post_meta($post_id, 'socialcount_TOTAL', true),
-																	get_post_meta($post_id, 'ga_pageviews', true),
-																	$post->comment_count
+																	intval(get_post_meta($post_id, 'socialcount_TOTAL', true)),
+																	intval(get_post_meta($post_id, 'ga_pageviews', true)),
+																	intval($post->comment_count)
 																	);
-		
+
 		// Calculate decayed score.
 		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 

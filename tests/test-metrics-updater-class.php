@@ -47,6 +47,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$result = $this->updater->calculateScoreAggregate('foo', 'bar');
 		$this->assertFalse($result, 'It should reject bad input');
 
+		// 4: It combines some numbers
+		$result = $this->updater->calculateScoreAggregate(10,10,10);
+		$this->assertGreaterThan(0, $result['total'], 'Should return a positive number');
+
 	}
 
 	// Test score calculations
@@ -195,6 +199,9 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertEquals(92,   $meta['socialcount_twitter'][0],    'Social count saved incorrectly!');
 		$this->assertEquals(1459, $meta['socialcount_googleplus'][0], 'Social count saved incorrectly!');
 		$this->assertEquals(14,   $meta['socialcount_linkedin'][0],   'Social count saved incorrectly!');
+
+		$this->assertEquals(3044,   $meta['social_aggregate_score'][0],   'social_aggregate_score incorrect!');
+		$this->assertGreaterThanOrEqual(time(), $meta['social_aggregate_score_decayed_last_updated'][0],   'social_aggregate_score_decayed_last_updated incorrect!');
 
 		$this->assertTrue($meta['socialcount_LAST_UPDATED'][0] <= time(), 'The timestamp was wrong');
 	}
