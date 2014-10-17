@@ -6,7 +6,7 @@ if ( !$_tests_dir ) $_tests_dir = '/tmp/wordpress-tests-lib';
 require_once $_tests_dir . '/includes/functions.php';
 
 function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../social-metrics-tracker.php';
+	require dirname( __FILE__ ) . '/../src/social-metrics-tracker.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
