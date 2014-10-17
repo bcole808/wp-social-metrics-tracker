@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,9 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
+= 1.2.5 =
+Fixed a bug where social scores were not being updated.
+
 = 1.2.4 =
 Important bug fix for ranking of posts.
 
@@ -119,6 +122,9 @@ Important bug fix for ranking of posts.
 
 
 == Upgrade Notice ==
+
+= 1.2.5 =
+Fixed a bug where social scores were not being updated.
 
 = 1.2.4 =
 Important bug fix for ranking of posts.
