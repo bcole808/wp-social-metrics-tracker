@@ -64,5 +64,5 @@ class SharedCountUpdater {
 		// decode social data from JSON
 		$shared_count_service_data = json_decode($data, true);
 	}
-	
+
 }
