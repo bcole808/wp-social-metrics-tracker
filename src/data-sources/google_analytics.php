@@ -41,7 +41,7 @@ class GoogleAnalyticsUpdater {
 			// Save to DB
 			$this->update_gapi_data();
 
-		} 
+		}
 
 	}
 
@@ -82,11 +82,11 @@ class GoogleAnalyticsUpdater {
 		// Save data
 		if ($value > 0) {
 			update_post_meta($post_id, 'ga_pageviews', $value);
-		} 
-		
+		}
+
 	}
 
-	// Turns multisite mode on or off. ***Changing this disrupts all saved data. 
+	// Turns multisite mode on or off. ***Changing this disrupts all saved data.
 	public function set_multisite_mode($bool) {
 		if (is_multisite()) {
 			update_site_option( 'smt_gapi_multisite_mode', (bool) $bool );
@@ -124,7 +124,7 @@ class GoogleAnalyticsUpdater {
 
 	}
 
-	// Get function 
+	// Get function
 	public function get_gapi_keys() {
 		$values['gapi_client_id'] 		= isset($this->data['gapi_client_id'])     ? $this->data['gapi_client_id']     : null;
 		$values['gapi_client_secret'] 	= isset($this->data['gapi_client_secret']) ? $this->data['gapi_client_secret'] : null;
@@ -138,7 +138,7 @@ class GoogleAnalyticsUpdater {
 		return $this->data['gapi_profile_name'];
 	}
 
-	// Returns true if can sync, false if not. 
+	// Returns true if can sync, false if not.
 	public function can_sync() {
 		return (isset($this->data['gapi_profile_id']) && strlen($this->data['gapi_profile_id']) > 0 && isset($this->data['gapi_token']));
 	}
@@ -147,7 +147,7 @@ class GoogleAnalyticsUpdater {
 	public function get_oauth_login_url() {
 		$this->connect();
 		$this->gapi->setScopes(array('https://www.googleapis.com/auth/analytics.readonly'));
-		$this->gapi->setAccessType('offline'); 
+		$this->gapi->setAccessType('offline');
 		$this->gapi->setApprovalPrompt('force');
 		return $this->gapi->createAuthUrl();
 	}
@@ -231,7 +231,7 @@ class GoogleAnalyticsUpdater {
 
 			$this->data['data_is_flowing'] = true;
 	  		$this->update_gapi_data(); // save to DB
-			  		
+
 			return true;
 
 		} catch(Exception $e) {
@@ -241,7 +241,7 @@ class GoogleAnalyticsUpdater {
 
 	}
 
-	// Get the number of pageviews for a given URL. 
+	// Get the number of pageviews for a given URL.
 	public function get_pageviews($full_url) {
 
 		if (strlen($full_url) < 1) 				return false;
@@ -267,7 +267,7 @@ class GoogleAnalyticsUpdater {
 				date('Y-m-d'), // end
 				'ga:pageviews',
 				$options
-			); 
+			);
 
 			$single_result = $result->getRows();
 			$single_result = $single_result[0][1];
@@ -275,7 +275,7 @@ class GoogleAnalyticsUpdater {
 			return ($single_result) ? $single_result : false;
 
 		} catch (Exception $e) {
-			// There was an error querying the Google Analytics service. 
+			// There was an error querying the Google Analytics service.
 
 			$this->data['data_is_flowing'] = false;
 			$this->update_gapi_data();
@@ -288,7 +288,7 @@ class GoogleAnalyticsUpdater {
 
 	public function go_to_step($num) {
 		switch ($num) {
-			case 1: 
+			case 1:
 				// Remove API Keys
 				unset($this->data['gapi_client_id']);
 				unset($this->data['gapi_client_secret']);
@@ -300,7 +300,7 @@ class GoogleAnalyticsUpdater {
 				unset($this->data['gapi_token']);
 
 				// Fall through to next case
-			
+
 			case 3:
 				// Remove selected profile
 				unset($this->data['gapi_profile_id']);
@@ -317,7 +317,7 @@ class GoogleAnalyticsUpdater {
 	}
 
 
-	// Return an array with all of the profile IDs associated with the current Analytics account. 
+	// Return an array with all of the profile IDs associated with the current Analytics account.
 	public function get_profile_list() {
 		$profiles = array();
 
@@ -327,13 +327,13 @@ class GoogleAnalyticsUpdater {
 
 		    $result = $this->analytics->management_webproperties->listManagementWebproperties($account->id);
 		    $webProperties = $result->items;
-		     
+
 		    foreach ($webProperties as $webProperty) {
 
 		        $result = $this->analytics->management_profiles->listManagementProfiles($account->id, $webProperty->id);
 		        $items = $result->items;
 		        foreach ($items as $item) array_push($profiles, array('id'=> $item->id,'name'=> $item->name, 'parent'=>$account->name));
-		         
+
 		    }
 		}
 
