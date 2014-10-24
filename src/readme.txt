@@ -80,11 +80,14 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 == Changelog ==
 
+= 1.3.0 =
+* Added uninstall.php to delete all traces of this plugin if un-installed through WordPress.
+
 = 1.2.5 =
-Fixed a bug where social scores were not being updated.
+* Fixed a bug where social scores were not being updated.
 
 = 1.2.4 =
-Important bug fix for ranking of posts.
+* Important bug fix for ranking of posts.
 
 = 1.2.3 =
 * Fixed bar width when displaying a widget on the admin Dashboard.
