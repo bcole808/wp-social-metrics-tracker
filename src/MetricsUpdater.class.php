@@ -21,9 +21,6 @@ class MetricsUpdater {
 		$this->options = ($options) ? $options : get_option('smt_settings');
 
 		// Import adapters for 3rd party services
-		if (class_exists('SharedCountUpdater')) {
-			$this->SharedCountUpdater = new SharedCountUpdater();
-		}
 
 		// If analytics are being tracked, pull update
 		if (class_exists('GoogleAnalyticsUpdater')) {
