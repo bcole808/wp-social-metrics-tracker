@@ -12,7 +12,6 @@ abstract class HTTPResourceUpdater {
 	public $data = null;
 
 	public function __construct() {
-		add_action('social_metrics_data_sync', array($this, 'sync'), 10, 2);
 		return $this;
 	}
 
@@ -69,6 +68,11 @@ abstract class HTTPResourceUpdater {
 	* Maps retrieved data to corresponding meta fields
 	***************************************************/
 	abstract function parse();
+
+	/***************************************************
+	* Return the total of social points
+	***************************************************/
+	abstract function get_total();
 
 	/***************************************************
 	* Retrieve the contents of a remote URL

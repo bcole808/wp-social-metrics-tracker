@@ -19,7 +19,6 @@ class FacebookUpdater extends HTTPResourceUpdater {
 			'format' => 'json',
 			'urls' => $this->updater->post_url
 		);
-
 	}
 
 	public function parse() {
@@ -31,6 +30,10 @@ class FacebookUpdater extends HTTPResourceUpdater {
 		$updater->meta['facebook_comments']    = $updater->data[0]['comment_count'];
 		$updater->meta['facebook_shares']      = $updater->data[0]['share_count'];
 		$updater->meta['facebook_likes']       = $updater->data[0]['like_count'];
+	}
+
+	public function get_total() {
+		return ($this->updater->data === null) ? 0 : $this->updater->data[0]['total_count'];
 	}
 
 }

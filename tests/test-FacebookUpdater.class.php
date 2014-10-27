@@ -168,6 +168,18 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	}
 
 
+	/***************************************************
+	* Should return only the value we want contributed toward the total
+	***************************************************/
+	function test_get_total() {
+		$post_id = $this->factory->post->create();
+		$this->updater->sync($post_id, get_permalink($post_id));
+
+		// 1. It should return the total
+		$this->assertEquals($this->updater->get_total(), 1606);
+	}
+
+
 
 }
 
