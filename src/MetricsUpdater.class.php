@@ -11,6 +11,8 @@
 
 require_once('data-sources/HTTPResourceUpdater.class.php');
 require_once('data-sources/FacebookUpdater.class.php');
+require_once('data-sources/TwitterUpdater.class.php');
+require_once('data-sources/LinkedInUpdater.class.php');
 
 class MetricsUpdater {
 
@@ -23,14 +25,6 @@ class MetricsUpdater {
 		// Set options
 		$this->options = ($options) ? $options : get_option('smt_settings');
 
-		// Import adapters for 3rd party services
-		$this->FacebookUpdater = new FacebookUpdater();
-
-		// If analytics are being tracked, pull update
-		if (class_exists('GoogleAnalyticsUpdater')) {
-			$this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
-		}
-
 		// Check post on each page load
 		add_action( 'wp_head', array($this, 'checkThisPost'));
 
@@ -39,6 +33,21 @@ class MetricsUpdater {
 		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
 
 	} // end constructor
+
+	public function setupDataSources() {
+		if (isset($this->dataSourcesReady) && $this->dataSourcesReady) return;
+
+		if (class_exists('GoogleAnalyticsUpdater')) {
+			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
+		}
+
+		// Import adapters for 3rd party services
+		if (!isset($this->FacebookUpdater)) $this->FacebookUpdater = new FacebookUpdater();
+		if (!isset($this->TwitterUpdater))  $this->TwitterUpdater  = new TwitterUpdater();
+		if (!isset($this->LinkedInUpdater)) $this->LinkedInUpdater = new LinkedInUpdater();
+
+		return $this->dataSourcesReady = true;
+	}
 
 	/**
 	* Check to see if this post requires an update, and if so schedule it.
@@ -103,7 +112,10 @@ class MetricsUpdater {
 	*/
 	public function updatePostStats($post_id) {
 
+		$this->setupDataSources();
+
 		// Data validation
+		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
 		// Remove secure protocol from URL
@@ -112,8 +124,23 @@ class MetricsUpdater {
 		// Retrieve 3rd party data updates
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
+		// Social Network data
+		$this->FacebookUpdater->sync($post_id, $permalink);
+		$this->TwitterUpdater->sync($post_id, $permalink);
+		$this->LinkedInUpdater->sync($post_id, $permalink);
+
+		// Calculate new socialcount_TOTAL
+		$all = array (
+		        $this->FacebookUpdater->get_total(),
+		        $this->TwitterUpdater->get_total(),
+		        $this->LinkedInUpdater->get_total()
+       	);
+
+		update_post_meta($post_id, 'socialcount_TOTAL', array_sum($all));
+
 		// Last updated time
 		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
+
 
 		// Get comment count from DB
 		$post = get_post($post_id);
