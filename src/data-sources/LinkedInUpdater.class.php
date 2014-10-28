@@ -26,7 +26,7 @@ class LinkedInUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_linkedin'] = $updater->data['count'];
+		$updater->meta['socialcount_linkedin'] = $this->get_total();
 	}
 
 	public function get_total() {

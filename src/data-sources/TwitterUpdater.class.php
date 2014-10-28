@@ -25,7 +25,7 @@ class TwitterUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_twitter'] = $updater->data['count'];
+		$updater->meta['socialcount_twitter'] = $this->get_total();
 	}
 
 	public function get_total() {

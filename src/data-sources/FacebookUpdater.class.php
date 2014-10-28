@@ -26,7 +26,7 @@ class FacebookUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_facebook'] = $updater->data[0]['total_count'];
+		$updater->meta['socialcount_facebook'] = $this->get_total();
 		$updater->meta['facebook_comments']    = $updater->data[0]['comment_count'];
 		$updater->meta['facebook_shares']      = $updater->data[0]['share_count'];
 		$updater->meta['facebook_likes']       = $updater->data[0]['like_count'];
