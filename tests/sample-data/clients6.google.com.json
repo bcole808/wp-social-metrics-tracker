@@ -1,0 +1,15 @@
+{
+   "id":"p",
+   "result":{
+      "kind":"pos#plusones",
+      "id":"http://www.wordpress.org/",
+      "isSetByViewer":false,
+      "metadata":{
+         "type":"URL",
+         "globalCounts":{
+            "count":79594.0
+         }
+      },
+      "abtk":"AEIZW7SGy0fRDbuA2hSFC4EPEHLB8mS3aKxqoYVHIP8lZ0qbZw2o5rmrEINtA18wtGW/v5Ferrwu"
+   }
+}

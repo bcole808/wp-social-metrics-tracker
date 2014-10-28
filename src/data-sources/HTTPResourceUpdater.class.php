@@ -9,7 +9,10 @@ abstract class HTTPResourceUpdater {
 
 	public $resource_uri;
 	public $resource_params;
-	public $data = null;
+	public $resource_request_method;
+
+	public $data;
+	public $meta;
 
 	public function __construct() {
 		return $this;
@@ -59,7 +62,12 @@ abstract class HTTPResourceUpdater {
 
 		if (!is_array($this->resource_params)) return false;
 
-		$data = $this->getURL($this->resource_uri . '?' . http_build_query($this->resource_params));
+		if (strtolower($this->resource_request_method) == 'post') {
+			$data = $this->getURL($this->resource_uri, $this->resource_params);
+		} else {
+			$get_query = $this->resource_uri . '?' . http_build_query($this->resource_params);
+			$data = $this->getURL($get_query);
+		}
 
 		return $this->data = (strlen($data) > 0) ? json_decode($data, true) : false;
 	}
@@ -77,11 +85,18 @@ abstract class HTTPResourceUpdater {
 	/***************************************************
 	* Retrieve the contents of a remote URL
 	***************************************************/
-	public function getURL($url) {
+	public function getURL($url, $post_params = null) {
+
 		$curl_handle = curl_init();
 		curl_setopt($curl_handle, CURLOPT_URL, $url);
 		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
 		curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+
+		if (is_array($post_params)) {
+			curl_setopt($curl_handle, CURLOPT_POSTFIELDS, json_encode($post_params));
+		}
+
 		$response = curl_exec($curl_handle);
 		curl_close($curl_handle);
 

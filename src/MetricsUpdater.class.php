@@ -13,6 +13,7 @@ require_once('data-sources/HTTPResourceUpdater.class.php');
 require_once('data-sources/FacebookUpdater.class.php');
 require_once('data-sources/TwitterUpdater.class.php');
 require_once('data-sources/LinkedInUpdater.class.php');
+require_once('data-sources/GooglePlusUpdater.class.php');
 
 class MetricsUpdater {
 
@@ -42,9 +43,10 @@ class MetricsUpdater {
 		}
 
 		// Import adapters for 3rd party services
-		if (!isset($this->FacebookUpdater)) $this->FacebookUpdater = new FacebookUpdater();
-		if (!isset($this->TwitterUpdater))  $this->TwitterUpdater  = new TwitterUpdater();
-		if (!isset($this->LinkedInUpdater)) $this->LinkedInUpdater = new LinkedInUpdater();
+		if (!isset($this->FacebookUpdater))   $this->FacebookUpdater   = new FacebookUpdater();
+		if (!isset($this->TwitterUpdater))    $this->TwitterUpdater    = new TwitterUpdater();
+		if (!isset($this->LinkedInUpdater))   $this->LinkedInUpdater   = new LinkedInUpdater();
+		if (!isset($this->GooglePlusUpdater)) $this->GooglePlusUpdater = new GooglePlusUpdater();
 
 		return $this->dataSourcesReady = true;
 	}
@@ -128,12 +130,14 @@ class MetricsUpdater {
 		$this->FacebookUpdater->sync($post_id, $permalink);
 		$this->TwitterUpdater->sync($post_id, $permalink);
 		$this->LinkedInUpdater->sync($post_id, $permalink);
+		$this->GooglePlusUpdater->sync($post_id, $permalink);
 
 		// Calculate new socialcount_TOTAL
 		$all = array (
 		        $this->FacebookUpdater->get_total(),
 		        $this->TwitterUpdater->get_total(),
-		        $this->LinkedInUpdater->get_total()
+		        $this->LinkedInUpdater->get_total(),
+		        $this->GooglePlusUpdater->get_total()
        	);
 
 		update_post_meta($post_id, 'socialcount_TOTAL', array_sum($all));
