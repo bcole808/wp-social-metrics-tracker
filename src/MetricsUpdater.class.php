@@ -14,6 +14,8 @@ require_once('data-sources/FacebookUpdater.class.php');
 require_once('data-sources/TwitterUpdater.class.php');
 require_once('data-sources/LinkedInUpdater.class.php');
 require_once('data-sources/GooglePlusUpdater.class.php');
+require_once('data-sources/PinterestUpdater.class.php');
+require_once('data-sources/StumbleUponUpdater.class.php');
 
 class MetricsUpdater {
 
@@ -43,10 +45,12 @@ class MetricsUpdater {
 		}
 
 		// Import adapters for 3rd party services
-		if (!isset($this->FacebookUpdater))   $this->FacebookUpdater   = new FacebookUpdater();
-		if (!isset($this->TwitterUpdater))    $this->TwitterUpdater    = new TwitterUpdater();
-		if (!isset($this->LinkedInUpdater))   $this->LinkedInUpdater   = new LinkedInUpdater();
-		if (!isset($this->GooglePlusUpdater)) $this->GooglePlusUpdater = new GooglePlusUpdater();
+		if (!isset($this->FacebookUpdater))    $this->FacebookUpdater    = new FacebookUpdater();
+		if (!isset($this->TwitterUpdater))     $this->TwitterUpdater     = new TwitterUpdater();
+		if (!isset($this->LinkedInUpdater))    $this->LinkedInUpdater    = new LinkedInUpdater();
+		if (!isset($this->GooglePlusUpdater))  $this->GooglePlusUpdater  = new GooglePlusUpdater();
+		if (!isset($this->PinterestUpdater))   $this->PinterestUpdater   = new PinterestUpdater();
+		if (!isset($this->StumbleUponUpdater)) $this->StumbleUponUpdater = new StumbleUponUpdater();
 
 		return $this->dataSourcesReady = true;
 	}
@@ -131,13 +135,17 @@ class MetricsUpdater {
 		$this->TwitterUpdater->sync($post_id, $permalink);
 		$this->LinkedInUpdater->sync($post_id, $permalink);
 		$this->GooglePlusUpdater->sync($post_id, $permalink);
+		$this->PinterestUpdater->sync($post_id, $permalink);
+		$this->StumbleUponUpdater->sync($post_id, $permalink);
 
 		// Calculate new socialcount_TOTAL
 		$all = array (
 		        $this->FacebookUpdater->get_total(),
 		        $this->TwitterUpdater->get_total(),
 		        $this->LinkedInUpdater->get_total(),
-		        $this->GooglePlusUpdater->get_total()
+		        $this->GooglePlusUpdater->get_total(),
+		        $this->PinterestUpdater->get_total(),
+		        $this->StumbleUponUpdater->get_total()
        	);
 
 		update_post_meta($post_id, 'socialcount_TOTAL', array_sum($all));
