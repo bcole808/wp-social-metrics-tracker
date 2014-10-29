@@ -69,7 +69,7 @@ abstract class HTTPResourceUpdater {
 			$data = $this->getURL($get_query);
 		}
 
-		return $this->data = (strlen($data) > 0) ? json_decode($data, true) : false;
+		return $this->data = (strlen($data) > 0) ? $this->jsonp_decode($data, true) : false;
 	}
 
 	/***************************************************
@@ -120,6 +120,17 @@ abstract class HTTPResourceUpdater {
 		}
 
 		return $this->complete;
+	}
+
+	/***************************************************
+	* jsonp_decode handles either json or jsonp strings
+	***************************************************/
+	private function jsonp_decode($input, $assoc = false) {
+		if ($input[0] !== '[' && $input[0] !== '{') {
+			$input = substr($input, strpos($input, '('));
+			$input = trim($input,'();');
+		}
+		return json_decode($input, $assoc);
 	}
 
 }
