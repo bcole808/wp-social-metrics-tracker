@@ -402,7 +402,7 @@ class MetricsUpdater {
 		return;
 	} // end removeAllQueuedUpdates()
 
-	public static function printQueueLength() {
+	public static function getQueueLength() {
 		$queue = array();
 		$cron = _get_cron_array();
 		foreach ( $cron as $timestamp => $cronhooks ) {
@@ -415,7 +415,11 @@ class MetricsUpdater {
 			}
 		}
 
-		$count = count($queue);
+		return count($queue);
+	}
+
+	public static function printQueueLength() {
+		$count = MetricsUpdater::getQueueLength();
 		if ($count >= 1) {
 			$label = ($count >=2) ? ' items' : ' item';
 			printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
