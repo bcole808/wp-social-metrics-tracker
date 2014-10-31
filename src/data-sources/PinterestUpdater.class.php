@@ -7,9 +7,11 @@
 
 class PinterestUpdater extends HTTPResourceUpdater {
 
+	private $id  = 'pinterest';
+	private $uri = 'http://api.pinterest.com/v1/urls/count.json';
+
 	public function __construct() {
-		$this->updater = parent::__construct();
-		$this->updater->resource_uri = 'http://api.pinterest.com/v1/urls/count.json';
+		$this->updater = parent::__construct($this->id, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -26,7 +28,7 @@ class PinterestUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_pinterest'] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
 	}
 
 	public function get_total() {

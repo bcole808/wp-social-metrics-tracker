@@ -7,9 +7,11 @@
 
 class GooglePlusUpdater extends HTTPResourceUpdater {
 
+	private $id  = 'googleplus';
+	private $uri = 'https://clients6.google.com/rpc';
+
 	public function __construct() {
-		$this->updater = parent::__construct();
-		$this->updater->resource_uri = 'https://clients6.google.com/rpc';
+		$this->updater = parent::__construct($this->id, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -38,7 +40,7 @@ class GooglePlusUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_googleplus'] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
 	}
 
 	public function get_total() {

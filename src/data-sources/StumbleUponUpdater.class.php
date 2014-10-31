@@ -7,9 +7,11 @@
 
 class StumbleUponUpdater extends HTTPResourceUpdater {
 
+	private $id  = 'stumbleupon';
+	private $uri = 'http://www.stumbleupon.com/services/1.01/badge.getinfo';
+
 	public function __construct() {
-		$this->updater = parent::__construct();
-		$this->updater->resource_uri = 'http://www.stumbleupon.com/services/1.01/badge.getinfo';
+		$this->updater = parent::__construct($this->id, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -25,7 +27,7 @@ class StumbleUponUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta['socialcount_stumbleupon'] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
 	}
 
 	public function get_total() {

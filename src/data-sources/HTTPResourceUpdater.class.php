@@ -14,7 +14,13 @@ abstract class HTTPResourceUpdater {
 	public $data;
 	public $meta;
 
-	public function __construct() {
+	public $meta_prefix = 'socialcount_';
+
+	public function __construct($shortname, $resource_uri) {
+
+		$this->shortname = $shortname;
+		$this->resource_uri = $resource_uri;
+
 		return $this;
 	}
 
