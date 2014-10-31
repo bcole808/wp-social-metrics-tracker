@@ -31,6 +31,13 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	function assertMatchingMetaProperty() {
+		$this->assertEquals($this->updater->meta['socialcount_facebook'], 1606);
+		$this->assertEquals($this->updater->meta['facebook_comments'], 70);
+		$this->assertEquals($this->updater->meta['facebook_shares'], 1431);
+		$this->assertEquals($this->updater->meta['facebook_likes'], 105);
+	}
+
 
 	/***************************************************
 	* Make sure setParams works well
@@ -95,10 +102,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$this->updater->fetch();
 		$this->updater->parse();
 
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 1606);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 70);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 1431);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 105);
+		$this->assertMatchingMetaProperty();
 	}
 
 
@@ -152,18 +156,12 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		// 3. It should save correct meta field/values
 		$this->updater->sync($post_id, get_permalink($post_id));
 
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 1606);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 70);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 1431);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 105);
+		$this->assertMatchingMetaProperty();
 
 		// 4. It should not affect existing social data if remote service is down
 		$this->offlineUpdater->sync($post_id, get_permalink($post_id));
 
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 1606);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 70);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 1431);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 105);
+		$this->assertMatchingMetaProperty();
 
 	}
 
@@ -177,6 +175,35 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 
 		// 1. It should return the total
 		$this->assertEquals($this->updater->get_total(), 1606);
+	}
+
+
+	/***************************************************
+	* In case a remote service goes down, circuit breaker should stop future attempts
+	***************************************************/
+	function test_circuit_breaker() {
+		$post_id = $this->factory->post->create();
+		$num = $this->offlineUpdater->updater->wpcb->get('max_failures');
+
+		// NOTE: We expect that getURL will be called exactly the number of times as the 'max_failures' property as set in the circuit breaker.
+		$cb_updater = $this->getMock('FacebookUpdater', array('getURL'));
+		$cb_updater->expects($this->exactly($num))
+		    ->method('getURL')
+		    ->will($this->returnValue(false));
+
+
+		// 1. The first three attempst should go through
+		$this->assertTrue($cb_updater->wpcb->readyToConnect()); // Allow attempt 1
+		$cb_updater->sync($post_id, get_permalink($post_id));
+
+		$this->assertTrue($cb_updater->wpcb->readyToConnect()); // Allow attempt 2
+		$cb_updater->sync($post_id, get_permalink($post_id));
+
+		$this->assertTrue($cb_updater->wpcb->readyToConnect()); // Allow attempt 3
+		$cb_updater->sync($post_id, get_permalink($post_id));
+
+		$this->assertFalse($cb_updater->wpcb->readyToConnect()); // Block attempt 4
+		$cb_updater->sync($post_id, get_permalink($post_id));
 	}
 
 

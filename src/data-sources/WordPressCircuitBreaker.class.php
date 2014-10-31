@@ -81,7 +81,7 @@ class WordPressCircuitBreaker {
 	/***************************************************
 	* Get a value
 	***************************************************/
-	private function get($key) {
+	public function get($key) {
 		return isset($this->data[$key]) ? $this->data[$key] : false;
 	}
 

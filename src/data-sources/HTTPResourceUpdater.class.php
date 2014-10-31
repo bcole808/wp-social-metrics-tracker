@@ -5,6 +5,8 @@
 * allow us to call them via a HTTP GET request.
 ***************************************************/
 
+require_once('WordPressCircuitBreaker.class.php');
+
 abstract class HTTPResourceUpdater {
 
 	public $resource_uri;
@@ -16,10 +18,14 @@ abstract class HTTPResourceUpdater {
 
 	public $meta_prefix = 'socialcount_';
 
+	private $curl_error = 'Uh oh, something went wrong!';
+
 	public function __construct($shortname, $resource_uri) {
 
 		$this->shortname = $shortname;
 		$this->resource_uri = $resource_uri;
+
+		$this->wpcb = new WordPressCircuitBreaker($shortname);
 
 		return $this;
 	}
@@ -66,16 +72,28 @@ abstract class HTTPResourceUpdater {
 	***************************************************/
 	public function fetch() {
 
+		// Validation
 		if (!is_array($this->resource_params)) return false;
 
+		// Circuit breaker
+		if (!$this->wpcb->readyToConnect()) return false;
+
+		// Get the data
 		if (strtolower($this->resource_request_method) == 'post') {
-			$data = $this->getURL($this->resource_uri, $this->resource_params);
+			$result = $this->getURL($this->resource_uri, $this->resource_params);
 		} else {
 			$get_query = $this->resource_uri . '?' . http_build_query($this->resource_params);
-			$data = $this->getURL($get_query);
+			$result = $this->getURL($get_query);
 		}
 
-		return $this->data = (strlen($data) > 0) ? $this->jsonp_decode($data, true) : false;
+		// Report to circuit breaker
+		if ($result === false) {
+			$this->wpcb->reportFailure($this->curl_error);
+		} else {
+			$this->wpcb->reportSuccess();
+		}
+
+		return $this->data = (strlen($result) > 0) ? $this->jsonp_decode($result, true) : false;
 	}
 
 	/***************************************************
@@ -104,6 +122,8 @@ abstract class HTTPResourceUpdater {
 		}
 
 		$response = curl_exec($curl_handle);
+		$this->curl_error = curl_error($curl_handle);
+
 		curl_close($curl_handle);
 
 		return $response;
