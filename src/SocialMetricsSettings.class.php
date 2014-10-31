@@ -21,7 +21,7 @@ class socialMetricsSettings {
 				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
 
 				break;
-			
+
 			default:
 				$this->section = 'general';
 				$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
@@ -58,7 +58,7 @@ class socialMetricsSettings {
 
 	// Render the Google API config page
 	//
-	// Beware: Messy PHP code within..... 
+	// Beware: Messy PHP code within.....
 	function gapi_section() {
 
 		if (!$this->gapi) {
@@ -79,9 +79,9 @@ class socialMetricsSettings {
 
 		// Display a different HTML block per each wizard step
 		switch ($this->gapi->step) {
-			/*************************************************/ 
-			case 1: 
-		  	/*************************************************/ 
+			/*************************************************/
+			case 1:
+		  	/*************************************************/
 			?>
 			<form method="POST" action="admin.php?page=social-metrics-tracker-settings&section=gapi">
 
@@ -140,10 +140,10 @@ class socialMetricsSettings {
 
 			</form>
 
-			<?php 
-			/*************************************************/ 
-			break; case 2: 
-		  	/*************************************************/ 
+			<?php
+			/*************************************************/
+			break; case 2:
+		  	/*************************************************/
 			?>
 
 			<h2>Google Analytics sign-in</h2>
@@ -162,10 +162,10 @@ class socialMetricsSettings {
 				<br />
 			</div>
 
-			<?php 
-			/*************************************************/ 
-			break; case 3: 
-		  	/*************************************************/ 
+			<?php
+			/*************************************************/
+			break; case 3:
+		  	/*************************************************/
 			?>
 
 			<h2>Select a reporting profile</h2>
@@ -189,7 +189,7 @@ class socialMetricsSettings {
 						<?php if (is_multisite() && current_user_can( 'manage_network' )) : ?>
 
 						<p class="description">With <b>shared credentials</b>, all blogs on this WP Multisite network will automatically use the Google Analytics profile you set up to sync data and you will only need to complete this setup wizard once. With <b>different credentials</b>, each blog will need to complete this wizard but each blog will be able to link to a seperate Gooogle Analytics account.</p>
-						
+
 						<?php endif; ?>
 
 					</td>
@@ -201,10 +201,10 @@ class socialMetricsSettings {
 
 			</form>
 
-			<?php 
-			/*************************************************/ 
-			break; case 4: 
-		  	/*************************************************/ 
+			<?php
+			/*************************************************/
+			break; case 4:
+		  	/*************************************************/
 			?>
 
 			<h2>Setup complete. Connected to: </h2>
@@ -218,16 +218,16 @@ class socialMetricsSettings {
 
 			<p>If you wish to disable data sync, navigate back to any of the previous setup steps and data syncing will stop.</p>
 
-			<?php 
-			/*************************************************/ 
-			break; default: 
-		  	/*************************************************/ 
+			<?php
+			/*************************************************/
+			break; default:
+		  	/*************************************************/
 			?>
 			<h2>Something isn't working right...</h2>
-			<?php 
-			/*************************************************/ 
-			break; 
-		  	/*************************************************/ 
+			<?php
+			/*************************************************/
+			break;
+		  	/*************************************************/
 
 		} // end switch
 

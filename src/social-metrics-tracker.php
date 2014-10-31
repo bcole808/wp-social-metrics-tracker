@@ -25,7 +25,6 @@ License: GPLv2+
 
 // Class Dependancies
 require_once('MetricsUpdater.class.php');
-require_once('data-sources/sharedcount.com.php');
 require_once('data-sources/google_analytics.php');
 include_once('SocialMetricsSettings.class.php');
 include_once('SocialMetricsTrackerWidget.class.php');

@@ -8,21 +8,86 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function setUp() {
 		parent::setUp();
 
-
-		// SWITCH TO CODE AFTER WRITING TESTS:
-
-		// $this->plugin = new SocialMetricsTracker();
-		// $this->plugin->init();
-		// $this->updater = new MetircsUpdater($this->plugin);
-
-		// TEMPORARY CODE:
 		$this->updater = new MetricsUpdater();
+
+		// MOCK FACEBOOK
+		// =====================
+		$this->sample_return = file_get_contents(
+			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
+		);
+
+		$this->updater->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+
+		$this->updater->FacebookUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue($this->sample_return));
+
+		// MOCK TWITTER
+		// =====================
+		$this->sample_return = file_get_contents(
+			dirname(__FILE__) .'/sample-data/urls.api.twitter.com.json'
+		);
+
+		$this->updater->TwitterUpdater = $this->getMock('TwitterUpdater', array('getURL'));
+
+		$this->updater->TwitterUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue($this->sample_return));
+
+		// MOCK LINKEDIN
+		// =====================
+		$this->sample_return = file_get_contents(
+			dirname(__FILE__) .'/sample-data/linkedin.com.json'
+		);
+
+		$this->updater->LinkedInUpdater = $this->getMock('LinkedInUpdater', array('getURL'));
+
+		$this->updater->LinkedInUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue($this->sample_return));
+
 	}
 
 	// DO AFTER ALL TESTS
 	function tearDown() {
 		parent::tearDown();
 	}
+
+	function assert_correct_data($post_id) {
+		// Facebook
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_facebook', true), 1606);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_comments', true), 70);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_shares', true), 1431);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_likes', true), 105);
+
+		// Twitter
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_twitter', true), 6);
+
+		// LinkedIn
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_linkedin', true), 1207);
+
+		// Totals
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_TOTAL', true), 2819);
+
+		// Timestamp / meta
+		$this->assertTrue(get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) >= time()-5);
+	}
+
+
+	function test_updatePostStats() {
+
+		// 1. It should work correctly
+		$post_id = $this->factory->post->create();
+		$this->updater->updatePostStats($post_id);
+		$this->assert_correct_data($post_id);
+
+		// 2. It shoudl accept a string as an input
+		$post_id_2 = $this->factory->post->create();
+		$this->updater->updatePostStats("$post_id_2");
+		$this->assert_correct_data($post_id_2);
+
+	}
+
 
 	// Test score calculations
 	function test_calculateScoreAggregate() {
@@ -175,36 +240,6 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It failed to remove items from the cron queue!');
 	}
 
-	function test_updatePostStats() {
-
-		// SETUP: Create mock social updater
-		$sample_social_data = json_decode(file_get_contents(dirname(__FILE__) .'/sample-data/sharedcount.json'), true);
-
-		$mock = $this->getMock('SharedCountUpdater', array('getData'));
-
-		$mock->expects($this->any())
-		    ->method('getData')
-		    ->will($this->returnValue($sample_social_data));
-
-		$this->updater->SharedCountUpdater = $mock;
-
-		// SETUP: Make a post
-		$post_id = $this->factory->post->create();
-
-		// 1: Ensure data is saved correctly
-		$this->updater->updatePostStats($post_id);
-		$meta = get_post_meta($post_id);
-
-		$this->assertEquals(1454, $meta['socialcount_facebook'][0],   'Social count saved incorrectly!');
-		$this->assertEquals(92,   $meta['socialcount_twitter'][0],    'Social count saved incorrectly!');
-		$this->assertEquals(1459, $meta['socialcount_googleplus'][0], 'Social count saved incorrectly!');
-		$this->assertEquals(14,   $meta['socialcount_linkedin'][0],   'Social count saved incorrectly!');
-
-		$this->assertEquals(3044,   $meta['social_aggregate_score'][0],   'social_aggregate_score incorrect!');
-		$this->assertGreaterThanOrEqual(time(), $meta['social_aggregate_score_decayed_last_updated'][0],   'social_aggregate_score_decayed_last_updated incorrect!');
-
-		$this->assertTrue($meta['socialcount_LAST_UPDATED'][0] <= time(), 'The timestamp was wrong');
-	}
 
 }
 

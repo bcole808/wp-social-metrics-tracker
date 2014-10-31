@@ -9,6 +9,14 @@
 * Updates are triggered by page views, so if no one views a page then no new data is fetched (but that is okay, because if no one views the page then that means the data has not changed).
 ***************************************************/
 
+require_once('data-sources/HTTPResourceUpdater.class.php');
+require_once('data-sources/FacebookUpdater.class.php');
+require_once('data-sources/TwitterUpdater.class.php');
+require_once('data-sources/LinkedInUpdater.class.php');
+require_once('data-sources/GooglePlusUpdater.class.php');
+require_once('data-sources/PinterestUpdater.class.php');
+require_once('data-sources/StumbleUponUpdater.class.php');
+
 class MetricsUpdater {
 
 	private $options;
@@ -20,16 +28,6 @@ class MetricsUpdater {
 		// Set options
 		$this->options = ($options) ? $options : get_option('smt_settings');
 
-		// Import adapters for 3rd party services
-		if (class_exists('SharedCountUpdater')) {
-			$this->SharedCountUpdater = new SharedCountUpdater();
-		}
-
-		// If analytics are being tracked, pull update
-		if (class_exists('GoogleAnalyticsUpdater')) {
-			$this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
-		}
-
 		// Check post on each page load
 		add_action( 'wp_head', array($this, 'checkThisPost'));
 
@@ -38,6 +36,24 @@ class MetricsUpdater {
 		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
 
 	} // end constructor
+
+	public function setupDataSources() {
+		if (isset($this->dataSourcesReady) && $this->dataSourcesReady) return;
+
+		if (class_exists('GoogleAnalyticsUpdater')) {
+			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
+		}
+
+		// Import adapters for 3rd party services
+		if (!isset($this->FacebookUpdater))    $this->FacebookUpdater    = new FacebookUpdater();
+		if (!isset($this->TwitterUpdater))     $this->TwitterUpdater     = new TwitterUpdater();
+		if (!isset($this->LinkedInUpdater))    $this->LinkedInUpdater    = new LinkedInUpdater();
+		if (!isset($this->GooglePlusUpdater))  $this->GooglePlusUpdater  = new GooglePlusUpdater();
+		if (!isset($this->PinterestUpdater))   $this->PinterestUpdater   = new PinterestUpdater();
+		if (!isset($this->StumbleUponUpdater)) $this->StumbleUponUpdater = new StumbleUponUpdater();
+
+		return $this->dataSourcesReady = true;
+	}
 
 	/**
 	* Check to see if this post requires an update, and if so schedule it.
@@ -102,7 +118,10 @@ class MetricsUpdater {
 	*/
 	public function updatePostStats($post_id) {
 
+		$this->setupDataSources();
+
 		// Data validation
+		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
 		// Remove secure protocol from URL
@@ -111,8 +130,29 @@ class MetricsUpdater {
 		// Retrieve 3rd party data updates
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
+		// Social Network data
+		$this->FacebookUpdater->sync($post_id, $permalink);
+		$this->TwitterUpdater->sync($post_id, $permalink);
+		$this->LinkedInUpdater->sync($post_id, $permalink);
+		$this->GooglePlusUpdater->sync($post_id, $permalink);
+		$this->PinterestUpdater->sync($post_id, $permalink);
+		$this->StumbleUponUpdater->sync($post_id, $permalink);
+
+		// Calculate new socialcount_TOTAL
+		$all = array (
+		        $this->FacebookUpdater->get_total(),
+		        $this->TwitterUpdater->get_total(),
+		        $this->LinkedInUpdater->get_total(),
+		        $this->GooglePlusUpdater->get_total(),
+		        $this->PinterestUpdater->get_total(),
+		        $this->StumbleUponUpdater->get_total()
+       	);
+
+		update_post_meta($post_id, 'socialcount_TOTAL', array_sum($all));
+
 		// Last updated time
 		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
+
 
 		// Get comment count from DB
 		$post = get_post($post_id);
@@ -362,7 +402,7 @@ class MetricsUpdater {
 		return;
 	} // end removeAllQueuedUpdates()
 
-	public static function printQueueLength() {
+	public static function getQueueLength() {
 		$queue = array();
 		$cron = _get_cron_array();
 		foreach ( $cron as $timestamp => $cronhooks ) {
@@ -375,7 +415,11 @@ class MetricsUpdater {
 			}
 		}
 
-		$count = count($queue);
+		return count($queue);
+	}
+
+	public static function printQueueLength() {
+		$count = MetricsUpdater::getQueueLength();
 		if ($count >= 1) {
 			$label = ($count >=2) ? ' items' : ' item';
 			printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
