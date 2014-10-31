@@ -8,7 +8,7 @@
 
 ## Quick Start
 
-1. Download the [development release](https://github.com/chapmanu/wp-social-metrics-tracker/archive/development.zip).
+1. Download the [latest release](https://github.com/chapmanu/wp-social-metrics-tracker/releases/latest).
 2. From your [Dashboard Screen](http://codex.wordpress.org/Dashboard_Screen), add and activate the plugin.
 
 ![uploading the plugin](http://i.imgur.com/kWl0iIq.png)
@@ -41,9 +41,6 @@ Twitter | socialcount_twitter
 Google Plus | socialcount_googleplus
 LinkedIn | socialcount_linkedin
 Pinterest | socialcount_pinterest
-Digg | socialcount_diggs
-Delicious | socialcount_delicious
-Reddit | socialcount_reddit
 StumbleUpon | socialcount_stumbleupon
 Last Updated Timestamp | socialcount_LAST_UPDATED
 
@@ -62,7 +59,7 @@ There are some *really super awesome* PHPUnit tests written to help make sure th
 
 ### Q: Where is social network data gathered from?
 
-A: Share counts and interactions are gathered from [SharedCount](http://www.sharedcount.com/).
+A: The information is retrieved directly from the public APIs that each social network provides. This plugin will make requests to these APIs periodically in order to display the latest possible data. 
 
 ### Q: What social networks are measured?
 
@@ -78,7 +75,7 @@ A: You can totally sync your page view data from Google Analytics! Just go and s
 
 ### Q. Was this made with magic?
 
-A: Yes, we used the tears of a baby unicorn forlock. Also, PHP.
+A: Yes, we used the tears of a baby unicorn forlock. Also, PHP and PHPUnit.
 
 ### Q: A whole University created this? Who did you pay?
 

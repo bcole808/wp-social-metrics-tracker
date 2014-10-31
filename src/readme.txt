@@ -19,7 +19,7 @@ This WordPress plugin collects and displays an analysis of social media interact
 
 = Get stats from these social networks: =
 
-Facebook, Twitter, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+
 
 = Focus your writing topics: =
 
@@ -40,16 +40,20 @@ For web developers, this plugin collects and stores social metrics data in a way
 
 If you do not see any statistics on the Social Metrics dashboard, make sure that you have some posts published and that wp-cron.php is working correctly. This plugin relies on the WordPress Cron system to fetch data updates. This plugin will not work on local or development servers where URLs are not publicly accessible.
 
+= Un-installation =
+
+When you un-install this plugin through the WordPress dashboard, it will remove all traces of any social data collected by the plugin. If you wish to keep the data, manually delete the plugin files instead of using the WordPress dashboard; this will bypass the uninstall.php script which deletes the data.
+
 
 == Frequently Asked Questions ==
 
 = Where is social network data gathered from? =
 
-Share counts and interactions are downloaded from the http://www.sharedcount.com/ API
+The information is retrieved directly from the public APIs that each social network provides. This plugin will make requests to these APIs periodically in order to display the latest possible data.
 
 = What social networks are measured? =
 
-Data is collected from the following social networks: Facebook, Twitter, Reddit, LinkedIn, Digg, Delicious, StumbleUpon, Pinterest, and Google+
+Data is collected from the following social networks: Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+
 
 = What information is sent from my blog to other services? =
 
@@ -69,7 +73,7 @@ You can link with your Google Analytics account to import pageview data for post
 
 = Who created this? =
 
-This plugin was created by the Chapman University web marketing team. Our use for the plugin is to track posts on social networks to see which stories students, alumni, and faculty are most interested in sharing.
+This plugin was created by Ben Cole, as a member of the Chapman University web marketing team. Our use for the plugin is to track posts on social networks to see which stories students, alumni, and faculty are most interested in sharing.
 
 
 == Screenshots ==
@@ -81,7 +85,11 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 == Changelog ==
 
 = 1.3.0 =
+* Data is now synced directly from social network APIs instead of relying on the sharedcount.com API
+* Removed Digg.com, and Delicious.com because they no longer provide data.
+* Removed Reddit.com because it was not previously working, but will re-add in a future version.
 * Added uninstall.php to delete all traces of this plugin if un-installed through WordPress.
+* IMPORANT: As of January 1, 2015, versions of this plugin below 1.3 will no longer work. You MUST upgrade to version 1.3 or higher before this date.
 
 = 1.2.5 =
 * Fixed a bug where social scores were not being updated.
@@ -117,7 +125,7 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 * Compatibility fix for servers with PHP below version 5.3
 
 = 1.0.1 =
-* Added colors and labels to the graph for each of the nine social networks.
+* Added colors and labels to the graph for each of the social networks.
 * Bar graph expands on hover to show detail of the breakdown.
 
 = 1.0 =
@@ -125,6 +133,9 @@ This plugin was created by the Chapman University web marketing team. Our use fo
 
 
 == Upgrade Notice ==
+
+= 1.3 =
+Major update which changes the way social data is collected
 
 = 1.2.5 =
 Fixed a bug where social scores were not being updated.
@@ -169,7 +180,7 @@ To display the total number of social interactions, get the post meta:
 
 Here is a listing of all of the available data fields which you can access in that way:
 
-socialcount_TOTAL, socialcount_facebook, socialcount_twitter, socialcount_googleplus, socialcount_linkedin, socialcount_pinterest, socialcount_diggs, socialcount_delicious, socialcount_reddit, socialcount_stumbleupon, socialcount_LAST_UPDATED
+socialcount_TOTAL, socialcount_facebook, socialcount_twitter, socialcount_googleplus, socialcount_linkedin, socialcount_pinterest, socialcount_stumbleupon, socialcount_LAST_UPDATED
 
 **Extending the plugin**
 
