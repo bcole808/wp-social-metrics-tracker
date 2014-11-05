@@ -15,17 +15,17 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$this->smt = $smt;
 
-		$this->gapi = new GoogleAnalyticsUpdater(); 
+		$this->gapi = new GoogleAnalyticsUpdater();
 
 		$this->services = array(
-			'facebook'   => 'Facebook', 
-			'twitter'    => 'Twitter', 
-			'googleplus' => 'Google Plus', 
-			'linkedin'   => 'LinkedIn', 
-			'pinterest'  => 'Pinterest', 
-			'diggs'      => 'Digg.com', 
-			'delicious'	 => 'Delicious', 
-			'reddit'	 => 'Reddit', 
+			'facebook'   => 'Facebook',
+			'twitter'    => 'Twitter',
+			'googleplus' => 'Google Plus',
+			'linkedin'   => 'LinkedIn',
+			'pinterest'  => 'Pinterest',
+			'diggs'      => 'Digg.com',
+			'delicious'	 => 'Delicious',
+			'reddit'	 => 'Reddit',
 			'stumbleupon'=> 'Stumble Upon'
 		);
 
@@ -165,48 +165,48 @@ class SocialMetricsTable extends WP_List_Table {
 	 * This action tweaks the query to handle sorting in the dashboard.
 	 */
 	function handle_dashboard_sorting($query) {
-		
+
 		// get order
 		// this should be taken care of by default but something is interfering
 		// If no order, default is DESC
 		$query->set( 'order', ! empty( $_REQUEST[ 'order' ] ) ? $_REQUEST[ 'order' ] : 'DESC' );
-		
+
 		// get orderby
 		// If no sort, then get default option
 		$orderby = ! empty( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : $this->smt->options[ 'smt_options_default_sort_column' ];
-				
+
 		// tweak query based on orderby
 		switch( $orderby ) {
-		
+
 			case 'aggregate':
-			
+
 				$query->set( 'orderby', 'meta_value_num' );
 				$query->set( 'meta_key', 'social_aggregate_score' );
 				break;
-				
+
 			case 'comments':
-			
-				$query->set( 'orderby', 'comment_count' );				
+
+				$query->set( 'orderby', 'comment_count' );
 				break;
-				
+
 			case 'post_date':
-			
-				$query->set( 'orderby', 'post_date' );			
+
+				$query->set( 'orderby', 'post_date' );
 				break;
-				
+
 			case 'social':
-			
+
 				$query->set( 'orderby', 'meta_value_num' );
-				$query->set( 'meta_key', 'socialcount_TOTAL' );				
+				$query->set( 'meta_key', 'socialcount_TOTAL' );
 				break;
-				
+
 			case 'views':
-			
+
 				$query->set( 'orderby', 'meta_value_num' );
 				$query->set( 'meta_key', 'ga_pageviews' );
-				
+
 				break;
-		
+
 		}
 
 		$query = apply_filters( 'smt_dashboard_query', $query ); // Allows developers to add additional query params
@@ -233,7 +233,7 @@ class SocialMetricsTable extends WP_List_Table {
 
 		// Filter our query results
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
-		add_filter( 'pre_get_posts', array($this, 'handle_dashboard_sorting') ); 
+		add_filter( 'pre_get_posts', array($this, 'handle_dashboard_sorting') );
 
 		$querydata = new WP_Query(array(
 			'posts_per_page'=> $limit,
@@ -313,7 +313,7 @@ class SocialMetricsTable extends WP_List_Table {
 						<option value="12"<?php if ($range == 12) echo 'selected="selected"'; ?>>Items published within 12 Months</option>
 						<option value="0"<?php if ($range == 0) echo 'selected="selected"'; ?>>Items published anytime</option>
 					</select>
-					
+
 					<?php do_action( 'smt_dashboard_query_options' ); // Allows developers to add additional sort options ?>
 
 					<input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
@@ -340,13 +340,6 @@ function smt_render_dashboard_view($smt){
 	?>
 	<div class="wrap">
 		<h2>Social Metrics Tracker</h2>
-		<?php
-		if(!is_array($smt->options)) {
-			printf( '<div class="error"> <p> %s </p> </div>', "Before you can view data, you must <a class='login' href='options-general.php?page=social-metrics-tracker-settings'>configure the Social Metrics Tracker</a>." );
-			die();
-		}
-
-		?>
 
 		<form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker">
 			<!-- For plugins, we also need to ensure that the form posts back to our current page -->
