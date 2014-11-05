@@ -89,6 +89,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * Removed Digg.com, and Delicious.com because they no longer provide data.
 * Removed Reddit.com because it was not previously working, but will re-add in a future version.
 * Added uninstall.php to delete all traces of this plugin if un-installed through WordPress.
+* Fixed plugin activation error on blogs with a large number of posts.
 * IMPORANT: As of January 1, 2015, versions of this plugin below 1.3 will no longer work. You MUST upgrade to version 1.3 or higher before this date.
 
 = 1.2.5 =

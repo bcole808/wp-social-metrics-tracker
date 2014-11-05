@@ -214,8 +214,8 @@ class SocialMetricsTracker {
 	}
 
 	public function activate() {
-		// Add default settings
 
+		// Add default settings
 		if (get_option('smt_settings') === false) {
 
 			require('settings/smt-general.php');
@@ -227,14 +227,6 @@ class SocialMetricsTracker {
 			}
 
 			add_option('smt_settings', $defaults);
-		}
-
-
-		if ($this->is_development_server()) {
-			// Do not schedule update
-		} else {
-			// Sync all data
-			MetricsUpdater::scheduleFullDataSync();
 		}
 
 		$this->version_check();
