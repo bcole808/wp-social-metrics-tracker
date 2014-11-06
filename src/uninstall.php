@@ -16,6 +16,7 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 delete_option('smt_settings');
 delete_option('smt_version');
 delete_option('smt_gapi_data');
+delete_option('smt_last_full_sync');
 
 // Remove post meta fields
 global $wpdb;

@@ -223,10 +223,12 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function test_scheduleFullDataSync() {
 		// SETUP: Make a post
 		$post_id = $this->factory->post->create();
+		$second_post_id = $this->factory->post->create();
 
 		// 1: It runs without failing
-		$this->assertTrue($this->updater->scheduleFullDataSync(), 'Function failed to complete successfully.');
+		$this->assertTrue(($this->updater->scheduleFullDataSync() == 2), 'Function failed to complete successfully.');
 		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It did not actually schedule a cron task!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($second_post_id)), 'It did not actually schedule a cron task!');
 	}
 
 	function test_removeAllQueuedUpdates() {

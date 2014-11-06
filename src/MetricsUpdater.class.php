@@ -333,9 +333,13 @@ class MetricsUpdater {
 	*/
 	public static function scheduleFullDataSync() {
 
+		update_option( 'smt_last_full_sync', time() );
+
 		// We are going to stagger the updates so we do not overload the Wordpress cron.
 		$nextTime = time();
 		$interval = 5; // in seconds
+
+		$num = 0;
 
 		// Get posts that have not ever been updated.
 		// In case the function does not finish, we want to start with posts that have NO data yet.
@@ -356,6 +360,7 @@ class MetricsUpdater {
 		foreach ($querydata as $querydatum ) {
 			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
 			$nextTime = $nextTime + $interval;
+			$num++;
 		}
 
 		// Get posts which HAVE been updated
@@ -376,9 +381,10 @@ class MetricsUpdater {
 		foreach ($querydata as $querydatum ) {
 			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
 			$nextTime = $nextTime + ($interval * 2);
+			$num++;
 		}
 
-		return true;
+		return $num;
 	} // end scheduleFullDataSync()
 
 	// Remove all queued updates from cron.
@@ -422,7 +428,7 @@ class MetricsUpdater {
 		$count = MetricsUpdater::getQueueLength();
 		if ($count >= 1) {
 			$label = ($count >=2) ? ' items' : ' item';
-			printf( '<div class="updated"> <p> %s </p> </div>',  'Currently updating <b>'.$count . $label.'</b> with the most recent social and analytics data...');
+			printf( '<div class="updated"> <p> %s </p> </div>',  '<b>'.$count . $label.'</b> scheduled to be synced with social networks the next time WP Cron is run...');
 		}
 	} // end printQueueLength()
 

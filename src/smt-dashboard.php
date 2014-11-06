@@ -318,6 +318,9 @@ class SocialMetricsTable extends WP_List_Table {
 
 					<input type="submit" name="filter" id="submit_filter" class="button" value="Filter">
 
+
+					<a href="<?php echo add_query_arg(array('smt_full_sync' => 1)); ?>" class="button" onClick="return confirm('Are you sure? This will schedule ALL your posts to be updated and may take a long time if you have a lot of posts.')">Schedule full sync</a>
+
 			<?php
 
 		}
@@ -337,15 +340,41 @@ class SocialMetricsTable extends WP_List_Table {
  * it's the way the list tables are used in the WordPress core.
  */
 function smt_render_dashboard_view($smt){
+
+	$last_full_sync = get_option( "smt_last_full_sync" );
+
 	?>
 	<div class="wrap">
 		<h2>Social Metrics Tracker</h2>
 
+
+		<?php if (isset($_REQUEST['smt_full_sync'])) : ?>
+
+		<h3>Now scheduling a full data update...</h3>
+		<p>This process must check all posts in your database and may take a short while...</p>
+		<?php $num = MetricsUpdater::scheduleFullDataSync(); ?>
+		<p>... all done! </p>
+		<p><b><?php echo $num; ?> items</b> were scheduled to be udpated.</p>
+		<p>Your server will work on retrieving share stats from social networks in the background. You should not need to run this again as the plugin will automatically keep items up-to-date as visitors browse and share your content. </p>
+		<p><a href="<?php echo remove_query_arg('smt_full_sync'); ?>">Return to Social Metrics dashboard</a></p>
+
+		<?php return; endif; ?>
+
+
 		<form id="social-metrics-tracker" method="get" action="admin.php?page=social-metrics-tracker">
-			<!-- For plugins, we also need to ensure that the form posts back to our current page -->
 			<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 			<input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smt->options['smt_options_default_sort_column']; ?>" />
 			<input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
+
+			<?php if (!$last_full_sync) : ?>
+			<div class="update-nag" style="margin-bottom:30px;">
+				<h3> Setup Instructions </h3>
+				<p>You need to perform a one time full-sync. </p>
+				<p>We will schedule it now, and it will run in the background.</p>
+				<p>In general, social stats can take a little while to appear. This plugin will keep numbers up to date by periodically checking for new stats as visitors view your posts. Even after social shares occur, it can take a few hours for them to appear here.</p>
+				<p><a href="<?php echo add_query_arg(array('smt_full_sync' => 1)); ?>" class="button">Schedule full sync</a></p>
+			</div>
+			<?php endif; ?>
 
 			<?php
 			//Create an instance of our package class...
@@ -354,11 +383,12 @@ function smt_render_dashboard_view($smt){
 			//Fetch, prepare, sort, and filter our data...
 			$SocialMetricsTable->prepare_items();
 			$SocialMetricsTable->display();
-
 			?>
+
 		</form>
 
 		<?php MetricsUpdater::printQueueLength(); ?>
+
 
 	</div>
 	<?php
