@@ -82,7 +82,7 @@ abstract class HTTPResourceUpdater {
 		$result = $this->getURL($this->resource_uri, $this->resource_params, $this->resource_request_method);
 
 		// Report to circuit breaker
-		if ($result === false) {
+		if (!$result) {
 			$this->wpcb->reportFailure($this->http_error);
 		} else {
 			$this->wpcb->reportSuccess();
