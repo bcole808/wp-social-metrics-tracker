@@ -18,7 +18,7 @@ abstract class HTTPResourceUpdater {
 
 	public $meta_prefix = 'socialcount_';
 
-	private $curl_error = 'Uh oh, something went wrong!';
+	public $http_error = '';
 
 	public function __construct($shortname, $resource_uri) {
 
@@ -79,16 +79,11 @@ abstract class HTTPResourceUpdater {
 		if (!$this->wpcb->readyToConnect()) return false;
 
 		// Get the data
-		if (strtolower($this->resource_request_method) == 'post') {
-			$result = $this->getURL($this->resource_uri, $this->resource_params);
-		} else {
-			$get_query = $this->resource_uri . '?' . http_build_query($this->resource_params);
-			$result = $this->getURL($get_query);
-		}
+		$result = $this->getURL($this->resource_uri, $this->resource_params, $this->resource_request_method);
 
 		// Report to circuit breaker
 		if ($result === false) {
-			$this->wpcb->reportFailure($this->curl_error);
+			$this->wpcb->reportFailure($this->http_error);
 		} else {
 			$this->wpcb->reportSuccess();
 		}
@@ -109,24 +104,37 @@ abstract class HTTPResourceUpdater {
 	/***************************************************
 	* Retrieve the contents of a remote URL
 	***************************************************/
-	public function getURL($url, $post_params = null) {
+	public function getURL($url, $post_params = null, $method = 'get') {
 
-		$curl_handle = curl_init();
-		curl_setopt($curl_handle, CURLOPT_URL, $url);
-		curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
-		curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+		$method = ($method) ? $method : 'get';
 
-		if (is_array($post_params)) {
-			curl_setopt($curl_handle, CURLOPT_POSTFIELDS, json_encode($post_params));
+		$args = array(
+			'timeout'     => 3,
+			'blocking'    => true,
+			'headers'     => array('Content-type' => 'application/json'),
+			'sslverify'   => true
+		);
+
+		switch (strtolower($method)) {
+			case 'post':
+				$args['body'] = json_encode($post_params);
+				$response = wp_remote_post($url, $args);
+				break;
+
+			case 'get' :
+				$response = wp_remote_get($url . '?' . http_build_query($this->resource_params), $args);
+				break;
 		}
 
-		$response = curl_exec($curl_handle);
-		$this->curl_error = curl_error($curl_handle);
+		if (is_wp_error($response)) {
+			$this->http_error = $response->get_error_message();
+			return false;
+		}
 
-		curl_close($curl_handle);
+		// TO-DO:
+		// Still need to catch correct response which is an HTTP error of some kind.
 
-		return $response;
+		return wp_remote_retrieve_body($response);
 	}
 
 	/***************************************************

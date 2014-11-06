@@ -25,6 +25,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Facebook API is unavailable!!!');
 
 		// 2. Enforce expected data structure
@@ -47,6 +48,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Twitter API is unavailable!!!');
 
 		// 2. Enforce expected data structure
@@ -69,6 +71,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The LinkedIn API is unavailable!!!');
 
 		// 2. Enforce expected data structure
@@ -91,6 +94,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The GooglePlus API is unavailable!!!');
 
 		// 2. Enforce expected data structure
@@ -113,6 +117,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Pinterest API is unavailable!!!');
 
 		// 2. Enforce expected data structure
@@ -135,6 +140,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The StumbleUpon API is unavailable!!!');
 
 		// 2. Enforce expected data structure
