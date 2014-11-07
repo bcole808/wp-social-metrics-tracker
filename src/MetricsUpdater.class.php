@@ -364,7 +364,7 @@ class MetricsUpdater {
 	* This should only be run when the plugin is first installed, or if data syncing was interrupted.
 	*
 	*/
-	public static function scheduleFullDataSync() {
+	public function scheduleFullDataSync($verbose = false) {
 
 		update_option( 'smt_last_full_sync', time() );
 
@@ -374,9 +374,14 @@ class MetricsUpdater {
 
 		$num = 0;
 
+		$post_types = $this->get_post_types();
+
 		// Get posts that have not ever been updated.
 		// In case the function does not finish, we want to start with posts that have NO data yet.
-		$querydata = query_posts(array(
+		$q = new WP_Query();
+
+		$q->query(array(
+			'post_type'     => $post_types,
 			'order'			=>'DESC',
 			'orderby'		=>'post_date',
 			'posts_per_page'=>-1,
@@ -390,14 +395,22 @@ class MetricsUpdater {
 			)
 		));
 
-		foreach ($querydata as $querydatum ) {
-			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
+		foreach ($q->posts as $post ) {
+			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $post->ID ) );
 			$nextTime = $nextTime + $interval;
 			$num++;
+
+			if ($verbose) {
+				print('<li>Scheduled '.$post->post_type.': '.$post->post_title.'</li>');
+				flush();
+			}
 		}
 
 		// Get posts which HAVE been updated
-		$querydata = query_posts(array(
+		$q = new WP_Query();
+
+		$q->query(array(
+			'post_type'     => $post_types,
 			'order'			=>'DESC',
 			'orderby'		=>'post_date',
 			'posts_per_page'=>-1,
@@ -411,10 +424,15 @@ class MetricsUpdater {
 			)
 		));
 
-		foreach ($querydata as $querydatum ) {
-			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $querydatum->ID ) );
+		foreach ($q->posts as $post ) {
+			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $post->ID ) );
 			$nextTime = $nextTime + ($interval * 2);
 			$num++;
+
+			if ($verbose) {
+				print('<li>Scheduled '.$post->post_type.': '.$post->post_title.'</li>');
+				flush();
+			}
 		}
 
 		return $num;

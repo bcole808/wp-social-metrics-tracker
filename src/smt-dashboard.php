@@ -352,8 +352,12 @@ function smt_render_dashboard_view($smt){
 
 		<h3>Now scheduling a full data update...</h3>
 		<p>This process must check all posts in your database and may take a short while...</p>
-		<?php $num = MetricsUpdater::scheduleFullDataSync(); ?>
+		<p>If you have custom post types that you would like to track or exclude please go to the configuration page!</p>
+		<?php flush(); ?>
+		<?php $metricsUpdater = new MetricsUpdater(); ?>
+		<?php $num = $metricsUpdater->scheduleFullDataSync(true); ?>
 		<p>... all done! </p>
+		<?php flush(); ?>
 		<p><b><?php echo $num; ?> items</b> were scheduled to be udpated.</p>
 		<p>Your server will work on retrieving share stats from social networks in the background. You should not need to run this again as the plugin will automatically keep items up-to-date as visitors browse and share your content. </p>
 		<p><a href="<?php echo remove_query_arg('smt_full_sync'); ?>">Return to Social Metrics dashboard</a></p>
@@ -371,7 +375,7 @@ function smt_render_dashboard_view($smt){
 				<h3> Setup Instructions </h3>
 				<p>You need to perform a one time full-sync. </p>
 				<p>We will schedule it now, and it will run in the background.</p>
-				<p>In general, social stats can take a little while to appear. This plugin will keep numbers up to date by periodically checking for new stats as visitors view your posts. Even after social shares occur, it can take a few hours for them to appear here.</p>
+				<p>In general, social stats can take a little while to appear. This plugin will keep numbers up to date by periodically checking for new stats as visitors view your posts. Even after social shares occur, it can take a few hours for them to appear here. If you have custom post types, please visit the configuration page first. </p>
 				<p><a href="<?php echo add_query_arg(array('smt_full_sync' => 1)); ?>" class="button">Schedule full sync</a></p>
 			</div>
 			<?php endif; ?>
