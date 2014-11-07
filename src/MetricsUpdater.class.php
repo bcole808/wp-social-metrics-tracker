@@ -35,6 +35,13 @@ class MetricsUpdater {
 		add_action( 'social_metrics_full_update', array( $this, 'scheduleFullDataSync' ) );
 		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
 
+		// Manual data update for a post
+		if (is_admin() && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
+			add_action ( 'wp_loaded', array($this, 'manualUpdate') );
+		} else if (is_admin() && isset($_REQUEST['smt_sync_done']) && $_REQUEST['smt_sync_done']) {
+			add_action ( 'admin_notices', array($this, 'manualUpdateNotice') );
+		}
+
 	} // end constructor
 
 	public function setupDataSources() {
@@ -53,6 +60,32 @@ class MetricsUpdater {
 		if (!isset($this->StumbleUponUpdater)) $this->StumbleUponUpdater = new StumbleUponUpdater();
 
 		return $this->dataSourcesReady = true;
+	}
+
+	// Manual data update for a post
+	public function manualUpdate() {
+
+		$post_id = intval( $_REQUEST['smt_sync_now'] );
+		if (!$post_id) return false;
+
+		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > time()-300) {
+			$message = "You must wait at least 5 minutes before performing another update on this post. ";
+			printf( '<div class="error"> <p> %s </p> </div>', $message);
+		} else {
+			$this->updatePostStats($_REQUEST['smt_sync_now']);
+			header("Location: ".add_query_arg(array('smt_sync_done' => $post_id), remove_query_arg('smt_sync_now')));
+		}
+
+	}
+
+	// Display a notice that we updated a post
+	public function manualUpdateNotice() {
+		$post_id = intval( $_REQUEST['smt_sync_done'] );
+		if (!$post_id) return false;
+
+		$title = get_the_title($post_id);
+		$message = "<b>$title</b> was updated successfully! &nbsp;<a href=\"".remove_query_arg('smt_sync_done')."\">Dismiss</a> ";
+		printf( '<div class="updated"> <p> %s </p> </div>', $message);
 	}
 
 	/**

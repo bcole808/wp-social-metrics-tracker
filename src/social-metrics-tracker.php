@@ -69,12 +69,6 @@ class SocialMetricsTracker {
 			$this->updater = new MetricsUpdater($this->options);
 		}
 
-		// Manual data update for a post
-		if (is_admin() && $this->updater && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
-			$this->updater->updatePostStats($_REQUEST['smt_sync_now']);
-			header("Location: ".remove_query_arg('smt_sync_now'));
-		}
-
 		// Data export tool
 		if (is_admin() && isset($_GET['smt_download_export_file']) && $_GET['smt_download_export_file'] && $_GET['page'] == 'social-metrics-tracker-export') {
 			require('smt-export.php');
