@@ -87,6 +87,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
+	/**
+	* @group travis-ignore
+	*/
 	function test_googleplus() {
 
 		$updater = new GooglePlusUpdater();
