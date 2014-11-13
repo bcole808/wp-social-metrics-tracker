@@ -26,6 +26,17 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 		add_meta_box( 'social-metrics-tracker', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
 
+		$this->services = array(
+			'facebook'   => 'Facebook',
+			'twitter'    => 'Twitter',
+			'googleplus' => 'Google Plus',
+			'linkedin'   => 'LinkedIn',
+			'pinterest'  => 'Pinterest',
+			'diggs'      => 'Digg.com',
+			'delicious'	 => 'Delicious',
+			'reddit'	 => 'Reddit',
+			'stumbleupon'=> 'Stumble Upon'
+		);
 
 		//Set parent defaults
 		parent::__construct( array(
@@ -73,30 +84,17 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 	function column_social($item) {
 
+		$total = floatval($item['socialcount_total']);
+		$bar_width = ($total == 0) ? 0 : round($total / max($this->data_max['socialcount_total'], 1) * 100);
 
-		$total = max($item['socialcount_total'], 1);
+		$output = '<div class="bar" style="width:'.$bar_width.'%;">';
 
-		$facebook = $item['socialcount_facebook'];
-		$facebook_percent = floor($facebook / $total * 100);
+		foreach ($this->services as $slug => $name) {
+			$percent = floor($item['socialcount_'.$slug] / max($total, 1) * 100);
+			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item['socialcount_'.$slug].' ('.$percent.'% of total)">'.$name.'</span>';
+		}
 
-		$twitter = $item['socialcount_twitter'];
-		$twitter_percent = floor($twitter / $total * 100);
-
-		$other = $total - $facebook - $twitter;
-		$other_percent = floor($other / $total * 100);
-
-		$bar_width = round($total / max($this->data_max['socialcount_total'], 1) * 100);
-		if ($total == 0) $bar_width = 0;
-
-		$bar_class = ($bar_width > 50) ? ' stats' : '';
-
-		$output = '';
-		$output .= '<div class="bar'.$bar_class.'" style="width:'.$bar_width.'%">';
-		$output .= '<span class="facebook" style="width:'.$facebook_percent.'%">'. $facebook_percent .'% Facebook</span>';
-		$output .= '<span class="twitter" style="width:'.$twitter_percent.'%">'. $twitter_percent .'% Twitter</span>';
-		$output .= '<span class="other" style="width:'.$other_percent.'%">'. $other_percent .'% Other</span>';
-		$output .= '</div>';
-		$output .= '<div class="total">'.number_format($total,0,'.',',') . '</div>';
+		$output .= '</div><div class="total">'.number_format($total,0,'.',',') . '</div>';
 
 		return $output;
 
@@ -275,11 +273,13 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 			$item['post_date'] = $post->post_date;
 			$item['comment_count'] = $post->comment_count;
 			$item['socialcount_total'] = (get_post_meta($post->ID, "socialcount_TOTAL", true)) ? get_post_meta($post->ID, "socialcount_TOTAL", true) : 0;
-			$item['socialcount_twitter'] = get_post_meta($post->ID, "socialcount_twitter", true);
-			$item['socialcount_facebook'] = get_post_meta($post->ID, "socialcount_facebook", true);
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
+
+			foreach ($this->services as $slug => $name) {
+				$item['socialcount_'.$slug] = get_post_meta($post->ID, "socialcount_$slug", true);
+			}
 
 			$this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
 
