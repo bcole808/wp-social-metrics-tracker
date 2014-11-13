@@ -7,11 +7,13 @@
 
 class FacebookUpdater extends HTTPResourceUpdater {
 
-	private $id  = 'facebook';
+	public $slug  = 'facebook';
+	public $name  = 'Facebook';
+
 	private $uri = 'https://api.facebook.com/method/links.getStats';
 
 	public function __construct() {
-		$this->updater = parent::__construct($this->id, $this->uri);
+		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -28,7 +30,7 @@ class FacebookUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->slug] = $this->get_total();
 		$updater->meta['facebook_comments']    = $updater->data[0]['comment_count'];
 		$updater->meta['facebook_shares']      = $updater->data[0]['share_count'];
 		$updater->meta['facebook_likes']       = $updater->data[0]['like_count'];

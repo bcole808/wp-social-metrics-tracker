@@ -7,11 +7,13 @@
 
 class TwitterUpdater extends HTTPResourceUpdater {
 
-	private $id  = 'twitter';
+	public $slug  = 'twitter';
+	public $name  = 'Twitter';
+
 	private $uri = 'http://urls.api.twitter.com/1/urls/count.json';
 
 	public function __construct() {
-		$this->updater = parent::__construct($this->id, $this->uri);
+		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -27,7 +29,7 @@ class TwitterUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->slug] = $this->get_total();
 	}
 
 	public function get_total() {

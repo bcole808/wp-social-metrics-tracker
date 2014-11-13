@@ -16,16 +16,21 @@ abstract class HTTPResourceUpdater {
 	public $data;
 	public $meta;
 
+	public $slug;
+	public $name;
+
 	public $meta_prefix = 'socialcount_';
 
 	public $http_error = '';
+	public $complete;
 
-	public function __construct($shortname, $resource_uri) {
+	public function __construct($slug, $name, $resource_uri) {
 
-		$this->shortname = $shortname;
+		$this->slug = $slug;
+		$this->name = $name;
 		$this->resource_uri = $resource_uri;
 
-		$this->wpcb = new WordPressCircuitBreaker($shortname);
+		$this->wpcb = new WordPressCircuitBreaker($slug);
 
 		return $this;
 	}

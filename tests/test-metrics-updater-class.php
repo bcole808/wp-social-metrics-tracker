@@ -8,7 +8,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function setUp() {
 		parent::setUp();
 
-		$this->updater = new MetricsUpdater();
+		$this->updater = new MetricsUpdater(new SocialMetricsTracker());
 
 		// MOCK FACEBOOK
 		// =====================
@@ -16,9 +16,9 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
 		);
 
-		$this->updater->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
 
-		$this->updater->FacebookUpdater->expects($this->any())
+		$this->updater->sources->FacebookUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
@@ -28,9 +28,9 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/urls.api.twitter.com.json'
 		);
 
-		$this->updater->TwitterUpdater = $this->getMock('TwitterUpdater', array('getURL'));
+		$this->updater->sources->TwitterUpdater = $this->getMock('TwitterUpdater', array('getURL'));
 
-		$this->updater->TwitterUpdater->expects($this->any())
+		$this->updater->sources->TwitterUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
@@ -40,9 +40,9 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/linkedin.com.json'
 		);
 
-		$this->updater->LinkedInUpdater = $this->getMock('LinkedInUpdater', array('getURL'));
+		$this->updater->sources->LinkedInUpdater = $this->getMock('LinkedInUpdater', array('getURL'));
 
-		$this->updater->LinkedInUpdater->expects($this->any())
+		$this->updater->sources->LinkedInUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 

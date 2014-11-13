@@ -12,31 +12,18 @@ if(!class_exists('WP_List_Table')){
 class SocialMetricsTrackerWidget extends WP_List_Table {
 
 
-	function __construct(){
+	function __construct($smt){
 		global $status, $page;
 
-		$this->options = get_option('smt_settings');
-
+		$this->smt = $smt;
 		$this->data_max = array();
 
 		// Do not run if current user not allowed to see this
-		if (!current_user_can($this->options['smt_options_report_visibility'])) return false;
+		if (!current_user_can($this->smt->options['smt_options_report_visibility'])) return false;
 
 		$this->gapi = new GoogleAnalyticsUpdater();
 
 		add_meta_box( 'social-metrics-tracker', 'Popular stories', array($this, 'render_widget'), 'dashboard', 'normal', 'high' );
-
-		$this->services = array(
-			'facebook'   => 'Facebook',
-			'twitter'    => 'Twitter',
-			'googleplus' => 'Google Plus',
-			'linkedin'   => 'LinkedIn',
-			'pinterest'  => 'Pinterest',
-			'diggs'      => 'Digg.com',
-			'delicious'	 => 'Delicious',
-			'reddit'	 => 'Reddit',
-			'stumbleupon'=> 'Stumble Upon'
-		);
 
 		//Set parent defaults
 		parent::__construct( array(
@@ -89,9 +76,14 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 		$output = '<div class="bar" style="width:'.$bar_width.'%;">';
 
-		foreach ($this->services as $slug => $name) {
-			$percent = floor($item['socialcount_'.$slug] / max($total, 1) * 100);
-			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item['socialcount_'.$slug].' ('.$percent.'% of total)">'.$name.'</span>';
+		foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
+
+			$slug     = $HTTPResourceUpdater->slug;
+			$name     = $HTTPResourceUpdater->name;
+			$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
+
+			$percent = floor($item[$meta_key] / max($total, 1) * 100);
+			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item[$meta_key].' ('.$percent.'% of total)">'.$name.'</span>';
 		}
 
 		$output .= '</div><div class="total">'.number_format($total,0,'.',',') . '</div>';
@@ -158,7 +150,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 	function date_range_filter( $where = '' ) {
 
-		$range = (isset($_GET['range'])) ? $_GET['range'] : $this->options['smt_options_default_date_range_months'];
+		$range = (isset($_GET['range'])) ? $_GET['range'] : $this->smt->options['smt_options_default_date_range_months'];
 
 		if ($range <= 0) return $where;
 
@@ -190,7 +182,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 
 		$order = 'DESC';
-		$orderby = $this->options['smt_options_default_sort_column']; //If no sort, default
+		$orderby = $this->smt->options['smt_options_default_sort_column']; //If no sort, default
 
 
 		// Get custom post types to display in our report.
@@ -277,8 +269,9 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
 
-			foreach ($this->services as $slug => $name) {
-				$item['socialcount_'.$slug] = get_post_meta($post->ID, "socialcount_$slug", true);
+			foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
+				$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
+				$item[$meta_key] = get_post_meta($post->ID, $meta_key, true);
 			}
 
 			$this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
@@ -318,9 +311,15 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		}
 		if ( $which == "bottom" ){
 			//The code that goes after the table is there
-			$period = ($this->options['smt_options_default_date_range_months'] > 1) ? 'months' : 'month';
+			$period = ($this->smt->options['smt_options_default_date_range_months'] > 1) ? 'months' : 'month';
+			$range = $this->smt->options['smt_options_default_date_range_months'];
 
-			echo '<p style="float:left;">Showing most popular posts published within '.$this->options['smt_options_default_date_range_months'].' '.$period.'.</p>';
+			if ($range == 0) {
+				echo '<p style="float:left;">Showing most popular posts from all-time.</p>';
+			} else {
+				echo '<p style="float:left;">Showing most popular posts published within '.$this->smt->options['smt_options_default_date_range_months'].' '.$period.'.</p>';
+			}
+
 			echo '<a href="admin.php?page=social-metrics-tracker" style="float:right; margin:10px;" class="button-primary">More Social Metrics &raquo;</a>';
 
 		}

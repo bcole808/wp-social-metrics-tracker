@@ -7,11 +7,13 @@
 
 class LinkedInUpdater extends HTTPResourceUpdater {
 
-	private $id  = 'linkedin';
+	public $slug = 'linkedin';
+	public $name = 'LinkedIn';
+
 	private $uri = 'http://www.linkedin.com/countserv/count/share';
 
 	public function __construct() {
-		$this->updater = parent::__construct($this->id, $this->uri);
+		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -28,7 +30,7 @@ class LinkedInUpdater extends HTTPResourceUpdater {
 		if (!is_array($updater->data)) return false;
 
 		$updater->meta = array();
-		$updater->meta[$this->updater->meta_prefix.$this->updater->shortname] = $this->get_total();
+		$updater->meta[$this->updater->meta_prefix.$this->updater->slug] = $this->get_total();
 	}
 
 	public function get_total() {

@@ -19,14 +19,12 @@ require_once('data-sources/StumbleUponUpdater.class.php');
 
 class MetricsUpdater {
 
-	private $options;
-	public $SharedCountUpdater;
 	public $GoogleAnalyticsUpdater; // needs to be accessed from Settings page
+	public $sources; // Object containing HTTPResourceUpdater instances
 
-	public function __construct($options = false) {
-
-		// Set options
-		$this->options = ($options) ? $options : get_option('smt_settings');
+	public function __construct($smt) {
+		$this->smt = $smt;
+		$this->sources = new stdClass();
 
 		// Check post on each page load
 		add_action( 'wp_head', array($this, 'checkThisPost'));
@@ -52,14 +50,20 @@ class MetricsUpdater {
 		}
 
 		// Import adapters for 3rd party services
-		if (!isset($this->FacebookUpdater))    $this->FacebookUpdater    = new FacebookUpdater();
-		if (!isset($this->TwitterUpdater))     $this->TwitterUpdater     = new TwitterUpdater();
-		if (!isset($this->LinkedInUpdater))    $this->LinkedInUpdater    = new LinkedInUpdater();
-		if (!isset($this->GooglePlusUpdater))  $this->GooglePlusUpdater  = new GooglePlusUpdater();
-		if (!isset($this->PinterestUpdater))   $this->PinterestUpdater   = new PinterestUpdater();
-		if (!isset($this->StumbleUponUpdater)) $this->StumbleUponUpdater = new StumbleUponUpdater();
+		if (!isset($this->sources->FacebookUpdater))    $this->sources->FacebookUpdater    = new FacebookUpdater();
+		if (!isset($this->sources->TwitterUpdater))     $this->sources->TwitterUpdater     = new TwitterUpdater();
+		if (!isset($this->sources->LinkedInUpdater))    $this->sources->LinkedInUpdater    = new LinkedInUpdater();
+		if (!isset($this->sources->GooglePlusUpdater))  $this->sources->GooglePlusUpdater  = new GooglePlusUpdater();
+		if (!isset($this->sources->PinterestUpdater))   $this->sources->PinterestUpdater   = new PinterestUpdater();
+		if (!isset($this->sources->StumbleUponUpdater)) $this->sources->StumbleUponUpdater = new StumbleUponUpdater();
 
 		return $this->dataSourcesReady = true;
+	}
+
+	// Gets sources object
+	public function getSources() {
+		$this->setupDataSources();
+		return $this->sources;
 	}
 
 	// Manual data update for a post
@@ -112,7 +116,7 @@ class MetricsUpdater {
 
 		// Check TTL timeout
 		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
-		$ttl = $this->options['smt_options_ttl_hours'] * 3600;
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * 3600;
 
 		// If no timeout
 		$temp = time() - $ttl;
@@ -135,7 +139,7 @@ class MetricsUpdater {
 		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
-			if (isset($this->options['smt_options_post_types_'.$type]) && $this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
+			if (isset($this->smt->options['smt_options_post_types_'.$type]) && $this->smt->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
 		}
 
 		// If none selected, default post types
@@ -151,6 +155,8 @@ class MetricsUpdater {
 	*/
 	public function updatePostStats($post_id) {
 
+		if ($this->smt->is_development_server()) return false;
+
 		$this->setupDataSources();
 
 		// Data validation
@@ -164,28 +170,26 @@ class MetricsUpdater {
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
 		// Social Network data
-		$this->FacebookUpdater->sync($post_id, $permalink);
-		$this->TwitterUpdater->sync($post_id, $permalink);
-		$this->LinkedInUpdater->sync($post_id, $permalink);
-		$this->GooglePlusUpdater->sync($post_id, $permalink);
-		$this->PinterestUpdater->sync($post_id, $permalink);
-		$this->StumbleUponUpdater->sync($post_id, $permalink);
+		foreach ($this->sources as $HTTPResourceUpdater) {
+			$HTTPResourceUpdater->sync($post_id, $permalink);
+		}
 
 		// Calculate new socialcount_TOTAL
-		$all = array (
-		        $this->FacebookUpdater->get_total(),
-		        $this->TwitterUpdater->get_total(),
-		        $this->LinkedInUpdater->get_total(),
-		        $this->GooglePlusUpdater->get_total(),
-		        $this->PinterestUpdater->get_total(),
-		        $this->StumbleUponUpdater->get_total()
-       	);
+		$total = 0;
+		foreach ($this->sources as $HTTPResourceUpdater) {
+			if ($HTTPResourceUpdater->complete) {
+				// If new total was just fetched
+				$total += $HTTPResourceUpdater->get_total();
+			} else {
+				// If failure occured, use the previously saved value
+				$total += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+			}
+		}
 
-		update_post_meta($post_id, 'socialcount_TOTAL', array_sum($all));
+		update_post_meta($post_id, 'socialcount_TOTAL', $total);
 
 		// Last updated time
 		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
-
 
 		// Get comment count from DB
 		$post = get_post($post_id);

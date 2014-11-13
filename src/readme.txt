@@ -84,6 +84,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.3.1 =
+* Dashboard widget now displays social network names instead of the word "other"
+
 = 1.3.0 =
 * Data is now synced directly from social network APIs instead of relying on the sharedcount.com API
 * Removed Digg.com, and Delicious.com because they no longer provide data.
@@ -134,6 +137,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Added better error messages and debug info
 
 = 1.3 =
 Major update which changes the way social data is collected

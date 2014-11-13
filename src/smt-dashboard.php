@@ -17,18 +17,6 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$this->gapi = new GoogleAnalyticsUpdater();
 
-		$this->services = array(
-			'facebook'   => 'Facebook',
-			'twitter'    => 'Twitter',
-			'googleplus' => 'Google Plus',
-			'linkedin'   => 'LinkedIn',
-			'pinterest'  => 'Pinterest',
-			'diggs'      => 'Digg.com',
-			'delicious'	 => 'Delicious',
-			'reddit'	 => 'Reddit',
-			'stumbleupon'=> 'Stumble Upon'
-		);
-
 		//Set parent defaults
 		parent::__construct( array(
 			'singular'  => 'post',     //singular name of the listed records
@@ -79,9 +67,17 @@ class SocialMetricsTable extends WP_List_Table {
 
 		$output = '<div class="bar" style="width:'.$bar_width.'%;">';
 
-		foreach ($this->services as $slug => $name) {
-			$percent = floor($item['socialcount_'.$slug] / max($total, 1) * 100);
-			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item['socialcount_'.$slug].' ('.$percent.'% of total)">'.$name.'</span>';
+		// print("You've got a ");
+		// print_r($this->smt);
+
+		foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
+
+			$slug     = $HTTPResourceUpdater->slug;
+			$name     = $HTTPResourceUpdater->name;
+			$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
+
+			$percent = floor($item[$meta_key] / max($total, 1) * 100);
+			$output .= '<span class="'.$slug.'" style="width:'.$percent.'%" title="'.$name.': '.$item[$meta_key].' ('.$percent.'% of total)">'.$name.'</span>';
 		}
 
 		$output .= '</div><div class="total">'.number_format($total,0,'.',',') . '</div>';
@@ -266,8 +262,9 @@ class SocialMetricsTable extends WP_List_Table {
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
 
-			foreach ($this->services as $slug => $name) {
-				$item['socialcount_'.$slug] = get_post_meta($post->ID, "socialcount_$slug", true);
+			foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
+				$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
+				$item[$meta_key] = get_post_meta($post->ID, $meta_key, true);
 			}
 
 			$this->data_max['socialcount_total'] = max($this->data_max['socialcount_total'], $item['socialcount_total']);
