@@ -221,6 +221,10 @@ class SocialMetricsTracker {
 				$defaults['smt_options_'.$setting['id']] = $setting['std'];
 			}
 
+			// Track these post types by default
+			$defaults['smt_options_post_types_post'] = 'post';
+			$defaults['smt_options_post_types_page'] = 'page';
+
 			add_option('smt_settings', $defaults);
 		}
 
