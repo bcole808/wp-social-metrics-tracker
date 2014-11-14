@@ -16,6 +16,8 @@ class socialMetricsSettings {
 			case 'gapi':
 
 				$this->section = 'gapi';
+
+				$smt->updater->setupDataSources();
 				$this->gapi = $smt->updater->GoogleAnalyticsUpdater;
 
 				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
