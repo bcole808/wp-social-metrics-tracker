@@ -420,6 +420,8 @@ function smt_render_dashboard_view($smt){
 
 		</form>
 
+		<?php MetricsUpdater::printQueueLength(); ?>
+
 	</div>
 	<?php
 }
