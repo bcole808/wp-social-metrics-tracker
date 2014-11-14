@@ -86,6 +86,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.3.1 =
 * Dashboard widget now displays social network names instead of the word "other"
+* "Schedule Full Sync" should no longer cause memory errors on large blogs.
 * Fixed a bug where Google Analytics could not be configured.
 
 = 1.3.0 =

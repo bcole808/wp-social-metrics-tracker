@@ -350,14 +350,10 @@ function smt_render_dashboard_view($smt){
 		<h3>Now scheduling a full data update...</h3>
 		<p>This process must check all posts in your database and may take a short while...</p>
 		<p>If you have custom post types that you would like to track or exclude please go to the configuration page!</p>
-		<?php flush(); ?>
-		<?php $metricsUpdater = new MetricsUpdater(); ?>
-		<?php $num = $metricsUpdater->scheduleFullDataSync(true); ?>
-		<p>... all done! </p>
-		<?php flush(); ?>
-		<p><b><?php echo $num; ?> items</b> were scheduled to be udpated.</p>
+
+		<?php $num = $smt->updater->scheduleFullDataSync(true); ?>
+
 		<p>Your server will work on retrieving share stats from social networks in the background. You should not need to run this again as the plugin will automatically keep items up-to-date as visitors browse and share your content. </p>
-		<p><a href="<?php echo remove_query_arg('smt_full_sync'); ?>">Return to Social Metrics dashboard</a></p>
 
 		<?php return; endif; ?>
 

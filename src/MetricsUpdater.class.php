@@ -372,75 +372,78 @@ class MetricsUpdater {
 
 		update_option( 'smt_last_full_sync', time() );
 
-		// We are going to stagger the updates so we do not overload the Wordpress cron.
-		$nextTime = time();
-		$interval = 5; // in seconds
-
-		$num = 0;
-
 		$post_types = $this->get_post_types();
+		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
 
-		// Get posts that have not ever been updated.
-		// In case the function does not finish, we want to start with posts that have NO data yet.
 		$q = new WP_Query();
-
 		$q->query(array(
-			'post_type'     => $post_types,
-			'order'			=>'DESC',
-			'orderby'		=>'post_date',
-			'posts_per_page'=>-1,
-			'post_status'   => 'publish',
-			'meta_query' 	=> array(
-				array(
-					'key' 		=> 'socialcount_LAST_UPDATED',
-					'compare' 	=> 'NOT EXISTS', // works!
-					'value' 	=> '' // This is ignored, but is necessary...
-				)
-			)
+			'post_type'              => $post_types,
+			'order'			         => 'DESC',
+			'orderby'		         => 'post_date',
+			'posts_per_page'         => 50,
+			'offset'                 => $offset,
+			'post_status'            => 'publish',
+			'cache_results'          => false,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false
 		));
 
-		foreach ($q->posts as $post ) {
-			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $post->ID ) );
-			$nextTime = $nextTime + $interval;
-			$num++;
+		/***************************************************
+		* This prints the progress so the user can see how far we are.
+		*
+		* We really need a template engine here... the horror, the horror....
+		***************************************************/
+		if ($verbose) {
+			$percent = round(($offset + $q->post_count) / $q->found_posts * 100);
+			print('<div style="width: 100%; border:1px solid #CCC; background:#EEE; border-radius: 6px; padding:20px; margin: 15px 0; box-sizing:border-box;">');
+			print('<h1 style="margin-top:0;">Scheduled '.($offset + $q->post_count).' out of '.$q->found_posts.' posts.</h1>');
+			print('<div style="width:100%; border:1px solid #CCC; background: #BDBFC2; border-radius: 10px; overflow: hidden;">');
+			print('<div style="background: #3b5998; color:#FFF; font-size: 12px; padding: 4px; text-align:center; width: '.$percent.'%">'. $percent .'%</div>');
+			print('</div>');
+			print('</div>');
+		}
+		// End Print Progress
 
-			if ($verbose) {
-				print('<li>Scheduled '.$post->post_type.': '.$post->post_title.'</li>');
-				flush();
+		$i = 1;
+		foreach ($q->posts as $post ) {
+			// We are going to stagger the updates so we do not overload the Wordpress cron.
+			$time = time() + (5 * ($offset + $i++));
+
+			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID ) );
+			if ($next == false) {
+				wp_schedule_single_event( $time, 'social_metrics_update_single_post', array( $post->ID ) );
 			}
+
 		}
 
-		// Get posts which HAVE been updated
-		$q = new WP_Query();
+		/***************************************************
+		* Make them go to the next page!
+		***************************************************/
+		$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || !empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+		$domain_name = $_SERVER['HTTP_HOST'];
 
-		$q->query(array(
-			'post_type'     => $post_types,
-			'order'			=>'DESC',
-			'orderby'		=>'post_date',
-			'posts_per_page'=>-1,
-			'post_status'   => 'publish',
-			'meta_query' 	=> array(
-				array(
-					'key' 		=> 'socialcount_LAST_UPDATED',
-					'compare' 	=> '>=', // works!
-					'value' 	=> '0' // This is ignored, but is necessary...
-				)
-			)
-		));
+		if ($verbose && $offset + $q->post_count < $q->found_posts) :
+			$loc = $protocol . $domain_name . add_query_arg(array('smt_sync_offset' => $offset+$q->post_count));
+			?>
+			<script>
+			setTimeout(function() {
+				window.location = "<?php echo $loc; ?>";
+			}, 500);
+			</script>
+			<p><a href="<?php echo $loc; ?>">Click if you are not automatically redirected...</a></p>
+			<?php
+			return;
+		endif;
 
-		foreach ($q->posts as $post ) {
-			wp_schedule_single_event( $nextTime, 'social_metrics_update_single_post', array( $post->ID ) );
-			$nextTime = $nextTime + ($interval * 2);
-			$num++;
-
-			if ($verbose) {
-				print('<li>Scheduled '.$post->post_type.': '.$post->post_title.'</li>');
-				flush();
-			}
+		if ($verbose) {
+			print('<h2>Finished!</h2>');
+			print('<p><a href="'.remove_query_arg(array('smt_full_sync', 'smt_sync_offset')).'">Return to Social Metrics dashboard</a></p>');
 		}
 
-		return $num;
+		return $q->found_posts;
+
 	} // end scheduleFullDataSync()
+
 
 	// Remove all queued updates from cron.
 	public static function removeAllQueuedUpdates() {
