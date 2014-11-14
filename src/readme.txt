@@ -85,7 +85,8 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Changelog ==
 
 = 1.3.1 =
-* Dashboard widget now displays social network names instead of the word "other"
+* Added a status indicator to show if data is being collected successfully.
+* Dashboard widget shows social network names instead of the word "other"
 * "Schedule Full Sync" should no longer cause memory errors on large blogs.
 * Fixed a bug where Google Analytics could not be configured.
 

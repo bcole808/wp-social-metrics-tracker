@@ -290,35 +290,35 @@
 	padding-left: 15px;
 }
 
-#smt_gapi_steps li .btn:after { 
-	content: " "; 
-	display: block; 
-	width: 0; 
+#smt_gapi_steps li .btn:after {
+	content: " ";
+	display: block;
+	width: 0;
 	height: 0;
 	border-top: 50px solid transparent;
 	border-bottom: 50px solid transparent;
 	border-left: 30px solid #C1C1C1;
 	position: absolute;
 	top: 50%;
-	margin-top: -50px; 
+	margin-top: -50px;
 	left: 100%;
-	z-index: 2; 
+	z-index: 2;
 }
 
-#smt_gapi_steps li .btn:before { 
-	content: " "; 
-	display: block; 
-	width: 0; 
+#smt_gapi_steps li .btn:before {
+	content: " ";
+	display: block;
+	width: 0;
 	height: 0;
-	border-top: 50px solid transparent;       
+	border-top: 50px solid transparent;
 	border-bottom: 50px solid transparent;
 	border-left: 30px solid white;
 	position: absolute;
 	top: 50%;
-	margin-top: -50px; 
+	margin-top: -50px;
 	margin-left: 1px;
 	left: 100%;
-	z-index: 1; 
+	z-index: 1;
 }
 
 #smt_gapi_steps li:last-child .btn {
@@ -377,6 +377,70 @@
 	padding-left:20px;
 }
 
-div.yellow-box { 
-	padding:0 15px; margin:15px 0; 
+div.yellow-box {
+	padding:0 15px; margin:15px 0;
+}
+
+
+/* Status indicator on dashboard
+   ========================================================================== */
+
+#smt-connection-status {
+	display: block;
+	clear: both;
+	background: #FFF;
+	border: 1px solid #DDD;
+	padding: 5px 10px;
+	margin: 15px 0 30px 0;
+	overflow: auto;
+}
+
+#smt-connection-status small {
+	color: #AAA;
+	font-size: 11px;
+}
+
+.smt-connection-item {
+	display: block;
+	position: relative;
+	/*float: left;*/
+	padding: 10px 20px 10px 28px;
+	color: #666;
+}
+
+.smt-connection-item:before {
+	content:"";
+	position: absolute;
+	left:10px;
+	top:13px;
+	display: block;
+	background: black;
+	border-radius: 100%;
+	height: 12px;
+	width: 12px;
+	margin: 0;
+}
+
+.smt-connection-item.online:before {
+	background: radial-gradient(circle at 3px 3px, rgb(0,180,100), rgba(80,80,80,0.9));
+}
+.smt-connection-item.offline:before {
+	background: radial-gradient(circle at 3px 3px, rgb(180,50,0), rgba(80,80,80,0.9));
+}
+
+
+button.smt-connection-item {
+	float: right;
+	background: none;
+	border:none;
+	cursor: pointer;
+	padding-right: 0;
+}
+
+button.smt-connection-item:hover {
+	text-decoration: underline;
+}
+
+button.smt-connection-item:focus {
+	outline: none;
 }

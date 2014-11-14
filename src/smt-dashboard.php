@@ -340,21 +340,24 @@ function smt_render_dashboard_view($smt){
 
 	$last_full_sync = get_option( "smt_last_full_sync" );
 
+	if (isset($_REQUEST['smt_test_http_now'])) {
+		$smt->debugger->testHTTPResourceUpdaters();
+	}
+
+	$offline_updaters = $smt->debugger->getOfflineHTTPResourceUpdaters();
+
 	?>
 	<div class="wrap">
+
 		<h2>Social Metrics Tracker</h2>
 
 
 		<?php if (isset($_REQUEST['smt_full_sync'])) : ?>
-
 		<h3>Now scheduling a full data update...</h3>
 		<p>This process must check all posts in your database and may take a short while...</p>
 		<p>If you have custom post types that you would like to track or exclude please go to the configuration page!</p>
-
 		<?php $num = $smt->updater->scheduleFullDataSync(true); ?>
-
 		<p>Your server will work on retrieving share stats from social networks in the background. You should not need to run this again as the plugin will automatically keep items up-to-date as visitors browse and share your content. </p>
-
 		<?php return; endif; ?>
 
 
@@ -362,6 +365,7 @@ function smt_render_dashboard_view($smt){
 			<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 			<input type="hidden" name="orderby" value="<?php echo (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : $smt->options['smt_options_default_sort_column']; ?>" />
 			<input type="hidden" name="order" value="<?php echo (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'DESC'; ?>" />
+
 
 			<?php if (!$last_full_sync) : ?>
 			<div class="update-nag" style="margin-bottom:30px;">
@@ -372,6 +376,38 @@ function smt_render_dashboard_view($smt){
 				<p><a href="<?php echo add_query_arg(array('smt_full_sync' => 1)); ?>" class="button">Schedule full sync</a></p>
 			</div>
 			<?php endif; ?>
+
+
+			<?php if (!$smt->is_development_server() && $last_full_sync) : ?>
+
+				<?php if (count($offline_updaters) == 0) : ?>
+				<button id="smt-connection-status-toggle" class="smt-connection-item online">Data is being synced in the background</button>
+				<?php else : ?>
+				<button id="smt-connection-status-toggle" class="smt-connection-item offline">Temporary connectivity issue detected. Click for details.</button>
+				<?php endif; ?>
+
+				<div id="smt-connection-status" style="<?php echo (isset($_REQUEST['smt_test_http_now'])) ? '' : 'display:none;' ?>">
+					<?php foreach ($smt->updater->getSources() as $h) { ?>
+					<?php $status = $h->wpcb->getStatusDetail(); ?>
+					<div class="smt-connection-item <?php echo ($status['working']) ? 'online' : 'offline'; ?>">
+						<?php echo $h->name ?>
+						<?php if (!$status['working']) : ?> - <?php echo $status['fail_count'] ?> failures - <?php echo $status['error_message'] ?> <br /><small>Will automatically retry <?php echo date("M j, g:i a", $status['next_query_at']); ?>.</small>
+						<?php endif; ?>
+
+						<br />
+						<small>Last checked <?php echo date("M j, g:i a", $status['last_query_at']); ?></small>
+					</div>
+					<?php } ?>
+
+					<?php if (count($offline_updaters) > 0 && !isset($_REQUEST['smt_test_http_now'])) : ?>
+					<p><a class="button" href="<?php echo add_query_arg(array('smt_test_http_now' => 1)); ?>">Re-check all connections right now.</a></p>
+					<p><small>If any of the services listed above are displaying errors, they will be automatically excluded when checking for new data. If errors do not resolve themselves within one day, there might be a problem with the servers ability to connect to social network APIs to retrieve data. </small></p>
+					<?php endif; ?>
+
+				</div>
+
+			<?php endif; ?>
+
 
 			<?php
 			//Create an instance of our package class...
@@ -384,11 +420,7 @@ function smt_render_dashboard_view($smt){
 
 		</form>
 
-		<?php MetricsUpdater::printQueueLength(); ?>
-
-
 	</div>
 	<?php
 }
-
 ?>

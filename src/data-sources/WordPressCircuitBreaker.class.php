@@ -14,7 +14,7 @@ class WordPressCircuitBreaker {
 	//
 	// OPTIONS
 	public $persist_ttl = WEEK_IN_SECONDS; // Reset state if no activity for this period of time.
-	public $permanant_offline_failures = 100; // Resource is considered gone until manual intervention
+	// public $permanant_offline_failures = 100; // Resource is considered gone until manual intervention
 
 	public function __construct($identifier, $options = null) {
 
@@ -51,9 +51,11 @@ class WordPressCircuitBreaker {
 	***************************************************/
 	public function getStatusDetail() {
 		return array(
-			'working' => $this->get('fail_count') == 0,
-			'last_attempt' => $this->get('last_query_time'),
-			'error_message' => 'foo'
+			'working'       => $this->get('fail_count') == 0,
+			'fail_count'    => $this->get('fail_count'),
+			'error_message' => $this->get('error_message'),
+			'last_query_at' => $this->get('last_query_time'),
+			'next_query_at' => ($this->readyToConnect()) ? $this->getTime() : $this->get('last_query_time') + $this->get('time_to_wait'),
 		);
 	}
 
@@ -70,7 +72,7 @@ class WordPressCircuitBreaker {
 	/***************************************************
 	* Application should report each failure
 	***************************************************/
-	public function reportFailure($message = '') {
+	public function reportFailure($message = 'An error occured, but no error message was reported.') {
 		$this->set('fail_count', $this->get('fail_count') + 1);
 		$this->set('last_query_time', $this->getTime());
 		$this->set('error_message', $message);
@@ -118,6 +120,6 @@ class WordPressCircuitBreaker {
 	* Get the current time
 	***************************************************/
 	public function getTime() {
-		return time();
+		return current_time( 'timestamp' );
 	}
 }

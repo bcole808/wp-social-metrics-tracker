@@ -75,13 +75,13 @@ abstract class HTTPResourceUpdater {
 	/***************************************************
 	* Retrieve data from our remote resource
 	***************************************************/
-	public function fetch() {
+	public function fetch($force = false) {
 
 		// Validation
 		if (!is_array($this->resource_params)) return false;
 
 		// Circuit breaker
-		if (!$this->wpcb->readyToConnect()) return false;
+		if (!$this->wpcb->readyToConnect() && !$force) return false;
 
 		// Get the data
 		$result = $this->getURL($this->resource_uri, $this->resource_params, $this->resource_request_method);
@@ -134,10 +134,9 @@ abstract class HTTPResourceUpdater {
 		if (is_wp_error($response)) {
 			$this->http_error = $response->get_error_message();
 			return false;
+		} else if ($response['response']['code'] != 200) {
+			$this->http_error = "Received HTTP response code: <b>".$response['response']['code']." ".$response['response']['message']."</b>";
 		}
-
-		// TO-DO:
-		// Still need to catch correct response which is an HTTP error of some kind.
 
 		return wp_remote_retrieve_body($response);
 	}
