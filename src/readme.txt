@@ -84,6 +84,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.3.2 =
+* Fixed an issue where some servers were not correctly connecting to Facebook and LinkedIn
+
 = 1.3.1 =
 * Added a status indicator to show if data is being collected successfully.
 * Dashboard widget shows social network names instead of the word "other"
@@ -140,6 +143,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.3.2 =
+Hotfix for specific server configurations
 
 = 1.3.1 =
 Added better error messages and debug info

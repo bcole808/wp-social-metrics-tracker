@@ -127,7 +127,7 @@ abstract class HTTPResourceUpdater {
 				break;
 
 			case 'get' :
-				$response = wp_remote_get($url . '?' . http_build_query($this->resource_params), $args);
+				$response = wp_remote_get($url . '?' . http_build_query($this->resource_params, '', '&'), $args);
 				break;
 		}
 
