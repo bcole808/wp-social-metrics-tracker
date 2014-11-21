@@ -84,6 +84,10 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.3.3 =
+* Optimize reporting dashboard load speed
+* Improved pagination on reporting dashboard
+
 = 1.3.2 =
 * Fixed an issue where some servers were not correctly connecting to Facebook and LinkedIn
 
@@ -143,6 +147,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.3.3 =
+Optimize pagination on reporting dashboard
 
 = 1.3.2 =
 Hotfix for specific server configurations

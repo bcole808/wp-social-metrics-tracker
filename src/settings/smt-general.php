@@ -95,24 +95,6 @@ $wpsf_settings[] = array(
 			)
 		),
 		array(
-			'id'    => 'default_posts_limit',
-			'title' => 'Default Posts Limit',
-			'desc'  => 'Number of posts to display in reports. (Higher values might cause the report page to take longer to load)',
-			'type'  => 'select',
-			'std'   => '30',
-			'choices' => array(
-				'30'   => '30',
-				'60'   => '60',
-				'100'  => '100',
-				'200'  => '200',
-				'500'  => '500',
-				'1000' => '1000',
-				'2000' => '2000',
-				'5000' => '5000',
-				'-1'   => 'No Limit'
-			)
-		),
-		array(
 			'id'    => 'default_posts_per_page',
 			'title' => 'Default Posts per Page',
 			'desc'  => 'Number of posts per page to display in reports',

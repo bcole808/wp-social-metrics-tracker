@@ -225,14 +225,13 @@ class SocialMetricsTable extends WP_List_Table {
 		// Get custom post types to display in our report.
 		$post_types = $this->smt->tracked_post_types();
 
-		$limit = empty( $this->smt->options[ 'smt_options_default_posts_limit' ] ) ? 30 : $this->smt->options[ 'smt_options_default_limit' ];
-
 		// Filter our query results
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
 		add_filter( 'pre_get_posts', array($this, 'handle_dashboard_sorting') );
 
 		$querydata = new WP_Query(array(
-			'posts_per_page'=> $limit,
+			'posts_per_page'=> $per_page,
+			'offset'        => ($this->get_pagenum()-1) * $per_page,
 			'post_status'	=> 'publish',
 			'post_type'		=> $post_types
 		));
@@ -272,25 +271,18 @@ class SocialMetricsTable extends WP_List_Table {
 			$this->data_max['comment_count'] = max($this->data_max['comment_count'], $item['comment_count']);
 
 		   array_push($data, $item);
+
 		endwhile;
 		endif;
 
-		/**
-		 * REQUIRED for pagination.
-		 */
-		$current_page = $this->get_pagenum();
-
-		$total_items = count($data);
-
-		$data = array_slice($data,(($current_page-1)*$per_page),$per_page);
-
 		$this->items = $data;
 
-		$this->set_pagination_args( array(
-			'total_items' => $total_items,                  //WE have to calculate the total number of items
-			'per_page'    => $per_page,                     //WE have to determine how many items to show on a page
-			'total_pages' => ceil($total_items/$per_page)   //WE have to calculate the total number of pages
-		) );
+		// Pagination
+		$this->set_pagination_args(array(
+			'total_items' => $querydata->found_posts,                  // Calculate the total number of items
+			'per_page'    => $per_page,                                // Determine how many items to show on a page
+			'total_pages' => ceil($querydata->found_posts/$per_page)   // Calculate the total number of pages
+		));
 	}
 
 	/**
