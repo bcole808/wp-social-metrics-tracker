@@ -1,6 +1,6 @@
 <?php
 
-$smt_post_types = get_post_types( array('public'=>true, 'show_ui'=>true), 'names' ); 
+$smt_post_types = get_post_types( array('public'=>true, 'show_ui'=>true), 'names' );
 
 // Do not allow attachments
 unset($smt_post_types['attachment']);
@@ -92,6 +92,39 @@ $wpsf_settings[] = array(
 				'6'  => '6 Months',
 				'12' => '12 Months',
 				'0'  => 'All Time'
+			)
+		),
+		array(
+			'id'    => 'default_posts_limit',
+			'title' => 'Default Posts Limit',
+			'desc'  => 'Number of posts to display in reports. (Higher values might cause the report page to take longer to load)',
+			'type'  => 'select',
+			'std'   => '30',
+			'choices' => array(
+				'30'   => '30',
+				'60'   => '60',
+				'100'  => '100',
+				'200'  => '200',
+				'500'  => '500',
+				'1000' => '1000',
+				'2000' => '2000',
+				'5000' => '5000',
+				'-1'   => 'No Limit'
+			)
+		),
+		array(
+			'id'    => 'default_posts_per_page',
+			'title' => 'Default Posts per Page',
+			'desc'  => 'Number of posts per page to display in reports',
+			'type'  => 'select',
+			'std'   => '10',
+			'choices' => array(
+				'10'  => '10',
+				'20'  => '20',
+				'30'  => '30',
+				'40'  => '40',
+				'50'  => '50',
+				'100' => '100'
 			)
 		),
 		array(

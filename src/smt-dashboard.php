@@ -212,7 +212,7 @@ class SocialMetricsTable extends WP_List_Table {
 	function prepare_items() {
 		global $wpdb; //This is used only if making any database queries
 
-		$per_page = 10;
+		$per_page = empty( $this->smt->options[ 'smt_options_default_posts_per_page' ] ) ? 10 : $this->smt->options[ 'smt_options_default_posts_per_page' ];
 
 		$columns = $this->get_columns();
 		$hidden = array();
@@ -225,7 +225,7 @@ class SocialMetricsTable extends WP_List_Table {
 		// Get custom post types to display in our report.
 		$post_types = $this->smt->tracked_post_types();
 
-		$limit = 30;
+		$limit = empty( $this->smt->options[ 'smt_options_default_posts_limit' ] ) ? 30 : $this->smt->options[ 'smt_options_default_limit' ];
 
 		// Filter our query results
 		add_filter( 'posts_where', array($this, 'date_range_filter') );
