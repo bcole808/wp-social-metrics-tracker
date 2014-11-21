@@ -17,7 +17,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-
+	/**
+	* @group external-http
+	*/
 	function test_facebook() {
 
 		$updater = new FacebookUpdater();
@@ -41,6 +43,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
+	/**
+	* @group external-http
+	*/
 	function test_twitter() {
 
 		$updater = new TwitterUpdater();
@@ -64,6 +69,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
+	/**
+	* @group external-http
+	*/
 	function test_linkedin() {
 
 		$updater = new LinkedInUpdater();
@@ -89,6 +97,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	/**
 	* @group travis-ignore
+	* @group external-http
 	*/
 	function test_googleplus() {
 
@@ -113,6 +122,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
+	/**
+	* @group external-http
+	*/
 	function test_pinterest() {
 
 		$updater = new PinterestUpdater();
@@ -136,6 +148,9 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
+	/**
+	* @group external-http
+	*/
 	function test_stumbleupon() {
 
 		$updater = new StumbleUponUpdater();

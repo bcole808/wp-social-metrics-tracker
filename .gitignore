@@ -1,6 +1,5 @@
-
 *.sublime-workspace
-
 *.sublime-project
-
 /tests/coverage*
+node_modules/*
+.sass-cache/*
