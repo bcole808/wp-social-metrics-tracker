@@ -22,7 +22,7 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		// MOCK FACEBOOK
 		// =====================
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
+			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		);
 
 		$this->smt->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));

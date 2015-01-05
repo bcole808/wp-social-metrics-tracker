@@ -13,7 +13,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// MOCK FACEBOOK
 		// =====================
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
+			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		);
 
 		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
@@ -55,10 +55,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	function assert_correct_data($post_id) {
 		// Facebook
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_facebook', true), 1606);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_comments', true), 70);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_shares', true), 1431);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_likes', true), 105);
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_facebook', true), 8450);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_comments', true), 331);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_shares', true), 7169);
+		$this->assertEquals(get_post_meta($post_id, 'facebook_likes', true), 950);
 
 		// Twitter
 		$this->assertEquals(get_post_meta($post_id, 'socialcount_twitter', true), 6);
@@ -67,7 +67,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertEquals(get_post_meta($post_id, 'socialcount_linkedin', true), 1207);
 
 		// Totals
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_TOTAL', true), 2819);
+		$this->assertEquals(get_post_meta($post_id, 'socialcount_TOTAL', true), 9663);
 
 		// Timestamp / meta
 		$this->assertTrue(get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) >= time()-5);

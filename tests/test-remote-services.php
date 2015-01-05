@@ -32,10 +32,10 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 2. Enforce expected data structure
 		$expected_result = json_decode(file_get_contents(
-			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
+			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		), true);
 
-		$diff = array_diff_key($expected_result[0], $updater->data[0]);
+		$diff = array_diff_key($expected_result['data'][0], $updater->data['data'][0]);
 		$this->assertEquals(0, count($diff), 'The Facebook API did not return the expected json format!!!');
 
 		// 3. Make sure it returns a positive total integer

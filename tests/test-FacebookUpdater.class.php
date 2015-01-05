@@ -7,7 +7,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/api.facebook.com.json'
+			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		);
 
 		$this->updater = $this->getMock('FacebookUpdater', array('getURL'));
@@ -32,10 +32,10 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	}
 
 	function assertMatchingMetaProperty() {
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 1606);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 70);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 1431);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 105);
+		$this->assertEquals($this->updater->meta['socialcount_facebook'], 8450);
+		$this->assertEquals($this->updater->meta['facebook_comments'], 331);
+		$this->assertEquals($this->updater->meta['facebook_shares'], 7169);
+		$this->assertEquals($this->updater->meta['facebook_likes'], 950);
 	}
 
 
@@ -53,8 +53,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 
 		// 2. Params are configured
 		$this->assertTrue(count($this->updater->resource_params) > 0, 'It did not set params');
-		$this->assertTrue($this->updater->resource_params['format'] == 'json');
-		$this->assertTrue(isset($this->updater->resource_params['urls']));
+		$this->assertTrue(isset($this->updater->resource_params['q']));
 
 		// 3. Resetting params should clear the instance variables
 		$this->updater->fetch();
@@ -174,7 +173,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
-		$this->assertEquals($this->updater->get_total(), 1606);
+		$this->assertEquals($this->updater->get_total(), 8450);
 	}
 
 
