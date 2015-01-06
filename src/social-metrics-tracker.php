@@ -95,7 +95,7 @@ class SocialMetricsTracker {
 
 	// Determines if we are on a development or staging environment
 	public function is_development_server() {
-		return ((defined('WP_ENV') && strtolower(WP_ENV) != 'production') || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] == '127.0.0.1'));
+		return (defined('WP_ENV') && strtolower(WP_ENV) != 'production');
 	}
 
 	public function developmentServerNotice() {
@@ -107,17 +107,9 @@ class SocialMetricsTracker {
 			return false;
 		}
 
-		$message = '<h3 style="margin-top:0;">Social Metrics data syncing is disabled</h3> You are on a development server; Social Network share data cannot be retrieved for private development URLs. <ul>';
+		$message = '<h3 style="margin-top:0;">Social Metrics data syncing is disabled</h3> You are on a development server; Social Network share data cannot be retrieved for private development URLs. ';
 
-		if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
-			$message .= "<li>The server IP address appears to be set to 127.0.0.1 which is a local address. </li>";
-		}
-
-		if (defined('WP_ENV') && strtolower(WP_ENV) != 'production') {
-			$message .= "<li>The PHP constant <b>WP_ENV</b> must be set to <b>production</b> or be undefined. WP_ENV is currently set to: <b>".WP_ENV."</b>. </li>";
-		}
-
-		$message .= '</ul>';
+		$message .= "<ul><li>The PHP constant <b>WP_ENV</b> must be set to <b>production</b> or be undefined. WP_ENV is currently set to: <b>".WP_ENV."</b>. </li></ul>";
 
 		printf( '<div class="error"> <p> %s </p> </div>', $message);
 
