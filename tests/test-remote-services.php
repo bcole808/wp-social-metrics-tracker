@@ -18,6 +18,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 	}
 
 	/**
+	* @group travis-ignore
 	* @group external-http
 	*/
 	function test_facebook() {

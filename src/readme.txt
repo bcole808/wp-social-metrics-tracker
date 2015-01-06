@@ -1,14 +1,14 @@
 === Social Metrics Tracker ===
 Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
-Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, engagement, share, sharing, shares
+Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Collects social data and shows you which of your posts are most popular based on how many times each post has been shared on various social networks.
+Collects social data and shows you which posts are most popular based on post shares across popular social networks.
 
 
 == Description ==
@@ -36,7 +36,7 @@ For web developers, this plugin collects and stores social metrics data in a way
 
 1. Install and activate the WordPress plugin.
 2. Data will automatically begin syncing. This will take some time.
-3. Review the plugin settings under Settings > Social Metrics
+3. Review the plugin settings under Social Metrics > Settings
 
 If you do not see any statistics on the Social Metrics dashboard, make sure that you have some posts published and that wp-cron.php is working correctly. This plugin relies on the WordPress Cron system to fetch data updates. This plugin will not work on local or development servers where URLs are not publicly accessible.
 
@@ -83,6 +83,10 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.3.4 =
+* Update plugin to use Facebook API v2.0
+* IMPORTANT: As of April 30, 2015, versions of this plugin below 1.3.4 will fail to collect data from Facebook.
 
 = 1.3.3 =
 * Optimize reporting dashboard load speed
@@ -147,6 +151,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.3.4 =
+Important update to the Facebook API
 
 = 1.3.3 =
 Optimize pagination on reporting dashboard
