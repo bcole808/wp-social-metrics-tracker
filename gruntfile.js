@@ -53,7 +53,7 @@ module.exports = function(grunt) {
 		        }
 		    },
 		    php: {
-		    	files: ['src/**/*.php'],
+		    	files: ['src/**/*.php', 'tests/**/*.php'],
 		    	tasks: ['phpunit'],
 		    	options : {
 		    		spawn: false,

@@ -58,12 +58,12 @@ class SocialMetricsTracker {
 	public function init() {
 
 		// Set up options
-		$this->options = get_option('smt_settings');
+		$this->options = get_option('smt_settings', array());
 
-		// Ensure setup occurs when network activated
-		if ($this->options === false) $this->activate();
+		// Ensure setup occurs for each blog when network activated
+		if (empty($this->options)) $this->activate();
 
-		// Check if we can enable data syncing
+		// Development server notice
 		if ($this->is_development_server()) {
 			add_action('admin_notices', array($this, 'developmentServerNotice'));
 		}
@@ -214,9 +214,17 @@ class SocialMetricsTracker {
 		$installed_version = get_option( "smt_version" );
 
 		if( $installed_version != $this->version ) {
+
+			// **********************
+			// Perform upgrade tasks:
+
+			// 1: Update version number
 			update_option( "smt_version", $this->version );
 
-			// IF migrating from version below 1.3
+			// 2: Add any new settings
+			$this->add_missing_settings();
+
+			// 3: If migrating from version below 1.3 (not a clean install)
 			if ($installed_version !== false && version_compare($installed_version, '1.3', '<')) {
 				update_option( 'smt_last_full_sync', 1 );
 			}
@@ -224,28 +232,59 @@ class SocialMetricsTracker {
 		}
 	}
 
+	/***************************************************
+	* Runs at plugin activation;
+	* Also runs at initialization in event that option defaults have not been set for some reason
+	***************************************************/
 	public function activate() {
 
-		// Add default settings
-		if (get_option('smt_settings') === false) {
-
-			require('settings/smt-general.php');
-
-			global $wpsf_settings;
-
-			foreach ($wpsf_settings[0]['fields'] as $setting) {
-				$defaults['smt_options_'.$setting['id']] = $setting['std'];
-			}
-
-			// Track these post types by default
-			$defaults['smt_options_post_types_post'] = 'post';
-			$defaults['smt_options_post_types_page'] = 'page';
-
-			add_option('smt_settings', $defaults);
-		}
+		// Set default post types to track
+		$this->set_smt_option('post_types_post', 'post', false);
+		$this->set_smt_option('post_types_page', 'page', false);
+		$this->add_missing_settings(); // Also saves the two above
 
 		$this->version_check();
+	}
 
+	/***************************************************
+	* Checks all of the settings and if any are undefined, adds them from the defaults
+	***************************************************/
+	public function add_missing_settings() {
+		require('settings/smt-general.php');
+		global $wpsf_settings;
+
+		foreach ($wpsf_settings[0]['fields'] as $default) {
+			$key = $default['id'];
+
+			if ($this->get_smt_option($key) === false) {
+				$this->set_smt_option($key, $default['std'], false);
+			}
+		}
+
+		$this->save_smt_options();
+	}
+
+	/***************************************************
+	* Get plugin option with the specified key
+	***************************************************/
+	public function get_smt_option($key) {
+		return (array_key_exists('smt_options_'.$key, $this->options)) ? $this->options['smt_options_'.$key] : false;
+	}
+
+	/***************************************************
+	* Update and optionally save plugin option with the specified key/value
+	* (We might not want to save if we are bulk updating)
+	***************************************************/
+	public function set_smt_option($key, $val, $save = true) {
+		$this->options['smt_options_'.$key] = $val;
+		return ($save) ? $this->save_smt_options() : null;
+	}
+
+	/***************************************************
+	* Saves the settings to the DB
+	***************************************************/
+	private function save_smt_options() {
+		return update_option('smt_settings', $this->options);
 	}
 
 	public function deactivate() {
