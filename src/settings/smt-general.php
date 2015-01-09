@@ -68,6 +68,21 @@ $wpsf_settings[] = array(
 			)
 		),
 		array(
+			'id'    => 'ttl_hours_alt',
+			'title' => 'Data TTL for old/alt URLs',
+			'desc'  => 'Same as regular data TTL, except for old/alternate post URLs. This is only used if you have set up alternate URLs because of a domain migration, etc. It should be a very slow value since stats for old URLs should not be changing much at all.',
+			'type'  => 'select',
+			'std'   => '720',
+			'choices' => array(
+				'24'   => '24 Hours',
+				'168'  => '1 Week',
+				'720'  => '1 Month',
+				'2160' => '3 Months',
+				'4320' => '6 Months',
+				'8640' => '12 Months',
+			)
+		),
+		array(
 			'id'    => 'default_sort_column',
 			'title' => 'Default Sort Order',
 			'desc'  => 'Which column should be sorted by default?',
