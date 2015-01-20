@@ -35,12 +35,20 @@ abstract class HTTPResourceUpdater {
 		return $this;
 	}
 
-	/***************************************************
+	/**
+	***************************************************
 	* Update all the data for a given post
 	*
-	* Note: $post_url is required to be set explicilty because it might be filtered by the MetricsUpdater class.
+	* @param  integer   $post_id - The ID of the post to update
+	* @param  string    $post_url - The permalink to query social APIs with
+	* @param  boolean   $return_instead_of_save - When false, saves data to primary meta fields. When true, does NOT save to DB but instead returns meta fields as an associative array.
+	*
+	* @return (boolean | array)   When $return_instead_of_save = true, this will be the array of meta data OR false if the sync failed.
+	* @return (boolean)   When $return_instead_of_save = false, this will be true/false to indicate success/failure.
+	*
+	* Note: $post_url is required to be set explicitly because it might be filtered by the MetricsUpdater class.
 	***************************************************/
-	public function sync($post_id, $post_url) {
+	public function sync($post_id, $post_url, $return_instead_of_save=false) {
 
 		// Validation
 		if (!isset($post_id)  || !is_int($post_id))     return false;
@@ -52,9 +60,9 @@ abstract class HTTPResourceUpdater {
 		// Perform sync
 		$this->fetch();
 		$this->parse();
-		$this->save();
 
-		return $this->complete;
+		// Save OR return meta fields.
+		return ($return_instead_of_save) ? $this->getMetaFields() : $this->save();
 	}
 
 	/***************************************************
@@ -66,9 +74,10 @@ abstract class HTTPResourceUpdater {
 		$this->post_url = $post_url;
 		$this->post_id  = $post_id;
 
-		$this->complete = false;
-		$this->data     = null;
-		$this->meta     = array();
+		$this->complete   = false;
+		$this->http_error = null;
+		$this->data       = null;
+		$this->meta       = array();
 
 	}
 
@@ -142,16 +151,33 @@ abstract class HTTPResourceUpdater {
 	}
 
 	/***************************************************
-	* Writes post meta fields to database
+	* Return an array of post meta fields that need to be saved; filters invalid values.
 	***************************************************/
-	public function save() {
+	public function getMetaFields() {
 		if (!isset($this->meta) || count($this->meta) == 0) return false;
 
-		// Update each custom field
+		$fields = array();
+
 		foreach ($this->meta as $key => $value) {
 			if (!$value) continue;
 			if (is_numeric($value) && intval($value) <= 0) continue;
 
+			$fields[$key] = $value;
+		}
+
+		return (count($fields) > 0) ? $fields : false;
+	}
+
+	/***************************************************
+	* Writes post meta fields to database
+	***************************************************/
+	public function save() {
+
+		$fields = $this->getMetaFields();
+		if (!is_array($fields)) return false;
+
+		// Update each custom field
+		foreach ($fields as $key => $value) {
 			if (update_post_meta($this->post_id, $key, $value)) {
 				$this->complete = true;
 			}

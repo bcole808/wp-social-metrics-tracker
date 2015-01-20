@@ -152,14 +152,16 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$this->assertFalse($this->updater->sync('NotAnInteger', 'fooBar'));
 		$this->assertFalse($this->updater->sync(123, array('not_a_string')));
 
-		// 3. It should save correct meta field/values
-		$this->updater->sync($post_id, get_permalink($post_id));
+		// 3. It should not affect the DB if we set $return_instead_of_save
+		$this->updater->sync($post_id, get_permalink($post_id), true);
+		$this->assertEquals($original_meta, get_post_meta($post_id));
 
+		// 4. It should save correct meta field/values
+		$this->updater->sync($post_id, get_permalink($post_id));
 		$this->assertMatchingMetaProperty();
 
-		// 4. It should not affect existing social data if remote service is down
+		// 5. It should not affect existing social data if remote service is down
 		$this->offlineUpdater->sync($post_id, get_permalink($post_id));
-
 		$this->assertMatchingMetaProperty();
 
 	}
@@ -206,6 +208,33 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	}
 
 
+	/***************************************************
+	* Test getMetaFields()
+	***************************************************/
+	function test_getMetaFields() {
+		$post_id = $this->factory->post->create();
+
+		// 1. It should return false if the fetch failed
+		$this->offlineUpdater->setParams($post_id, get_permalink($post_id));
+		$this->offlineUpdater->fetch();
+		$this->offlineUpdater->parse();
+
+		$this->assertEquals(
+			$this->offlineUpdater->getMetaFields(),
+			false
+		);
+
+		// 2. It should return an array if the fetch worked
+		$this->updater->setParams($post_id, get_permalink($post_id));
+		$this->updater->fetch();
+		$this->updater->parse();
+
+		// There should be an array with four keys for Facebook
+		$this->assertTrue(
+			is_array($this->updater->getMetaFields()) &&
+			count($this->updater->getMetaFields()) == 4
+		);
+
+	}
 
 }
-
