@@ -157,8 +157,6 @@ class MetricsUpdater {
 
 		if ($this->smt->is_development_server()) return false;
 
-		$this->setupDataSources();
-
 		// Data validation
 		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
@@ -166,17 +164,17 @@ class MetricsUpdater {
 		// Remove secure protocol from URL
 		$permalink = str_replace("https://", "http://", get_permalink($post_id));
 
-		// Retrieve 3rd party data updates
+		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
 		// Social Network data
-		foreach ($this->sources as $HTTPResourceUpdater) {
+		foreach ($this->getSources() as $HTTPResourceUpdater) {
 			$HTTPResourceUpdater->sync($post_id, $permalink);
 		}
 
 		// Calculate new socialcount_TOTAL
 		$total = 0;
-		foreach ($this->sources as $HTTPResourceUpdater) {
+		foreach ($this->getSources() as $HTTPResourceUpdater) {
 			if ($HTTPResourceUpdater->complete) {
 				// If new total was just fetched
 				$total += $HTTPResourceUpdater->get_total();
