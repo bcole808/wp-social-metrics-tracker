@@ -167,45 +167,50 @@ class MetricsUpdater {
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
+		// Init meta fields to update
+		$post_meta = array('socialcount_TOTAL' => 0);
+
 		// Social Network data
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
-			$HTTPResourceUpdater->sync($post_id, $permalink);
-		}
 
-		// Calculate new socialcount_TOTAL
-		$total = 0;
-		foreach ($this->getSources() as $HTTPResourceUpdater) {
-			if ($HTTPResourceUpdater->complete) {
-				// If new total was just fetched
-				$total += $HTTPResourceUpdater->get_total();
+			if (false !== $HTTPResourceUpdater->sync($post_id, $permalink)) {
+				$post_meta = array_merge($post_meta, $HTTPResourceUpdater->getMetaFields());
+				$post_meta['socialcount_TOTAL'] += $HTTPResourceUpdater->get_total();
+
 			} else {
-				// If failure occured, use the previously saved value
-				$total += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+				// Failsafe in case a single social API is unavailable
+				// We still need to calculate the total from all networks,
+				// and we need to account for the currently offline social API.
+				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+
 			}
 		}
-
-		update_post_meta($post_id, 'socialcount_TOTAL', $total);
-
-		// Last updated time
-		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
 
 		// Get comment count from DB
 		$post = get_post($post_id);
 
 		// Calculate aggregate score.
 		$social_aggregate_score_detail = $this->calculateScoreAggregate(
-																	intval(get_post_meta($post_id, 'socialcount_TOTAL', true)),
-																	intval(get_post_meta($post_id, 'ga_pageviews', true)),
-																	intval($post->comment_count)
-																	);
+		                                    intval($post_meta['socialcount_TOTAL']),
+		                                    intval(get_post_meta($post_id, 'ga_pageviews', true)),
+		                                    intval($post->comment_count)
+		                                 );
 
 		// Calculate decayed score.
 		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 
-		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
-		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
-		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
+		$post_meta['social_aggregate_score']                      = $social_aggregate_score_detail['total'];
+		$post_meta['social_aggregate_score_detail']               = $social_aggregate_score_detail;
+		$post_meta['social_aggregate_score_decayed']              = $social_aggregate_score_decayed;
+		$post_meta['social_aggregate_score_decayed_last_updated'] = time();
+
+		// Last updated time
+		$post_meta['socialcount_LAST_UPDATED'] = time();
+
+		// Save all of the meta fields
+		foreach ($post_meta as $key => $value) {
+			update_post_meta($post_id, $key, $value);
+		}
 
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
 		$smt_stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;

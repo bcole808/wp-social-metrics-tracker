@@ -106,37 +106,6 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 
 
 	/***************************************************
-	* Test saving of data
-	***************************************************/
-	function test_save() {
-		$post_id = $this->factory->post->create();
-		$this->updater->setParams($post_id);
-
-		// 1. It should do nothing when there is nothing to save
-		$this->assertFalse($this->updater->save());
-
-		// 2. It should not save a field with a falsy value
-		$this->updater->meta['zero_value']     = 0;
-		$this->updater->meta['bad_boolean']    = false;
-		$this->updater->meta['empty_array']    = array();
-		$this->updater->meta['negative_value'] = -1;
-
-		$this->assertFalse($this->updater->save());
-
-		// 2. It should save all the meta fields
-		$this->updater->meta['my_yummy_value']   = 'pizza';
-		$this->updater->meta['my_numeric_value'] = 15;
-		$this->updater->save();
-
-		$this->assertEquals('pizza', get_post_meta($post_id, 'my_yummy_value', true));
-		$this->assertEquals(15,      get_post_meta($post_id, 'my_numeric_value', true));
-
-		// 4. It should set $this->complete to true if saving successfully
-		$this->assertTrue($this->updater->complete);
-	}
-
-
-	/***************************************************
 	* Test the most important thing; behavior of sync!
 	***************************************************/
 	function test_sync() {

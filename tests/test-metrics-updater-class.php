@@ -53,24 +53,42 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	function assert_correct_data($post_id) {
+	function assert_correct_data($post_id, $skip_facebook = false) {
 		// Facebook
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_facebook', true), 8450);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_comments', true), 331);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_shares', true), 7169);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_likes', true), 950);
+		if (!$skip_facebook) {
+			$this->assertEquals(8450, get_post_meta($post_id, 'socialcount_facebook', true));
+			$this->assertEquals(331,  get_post_meta($post_id, 'facebook_comments', true));
+			$this->assertEquals(7169, get_post_meta($post_id, 'facebook_shares', true));
+			$this->assertEquals(950,  get_post_meta($post_id, 'facebook_likes', true));
+		}
 
 		// Twitter
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_twitter', true), 6);
+		$this->assertEquals(6,    get_post_meta($post_id, 'socialcount_twitter', true));
 
 		// LinkedIn
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_linkedin', true), 1207);
+		$this->assertEquals(1207, get_post_meta($post_id, 'socialcount_linkedin', true));
 
 		// Totals
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_TOTAL', true), 9663);
+		if ($skip_facebook) {
+			$this->assertEquals(1213, get_post_meta($post_id, 'socialcount_TOTAL', true));
+		} else {
+			$this->assertEquals(9663, get_post_meta($post_id, 'socialcount_TOTAL', true));
+		}
 
 		// Timestamp / meta
 		$this->assertTrue(get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) >= time()-5);
+
+		// Aggregate data
+		$this->assertTrue(is_array(get_post_meta($post_id, 'social_aggregate_score_detail', true)));
+		$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed_last_updated', true) >= time()-5);
+
+		if ($skip_facebook) {
+			$this->assertEquals(1213, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 2420); // Estimate
+		} else {
+			$this->assertEquals(9663, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 19320); // Estimate
+		}
 	}
 
 
@@ -81,10 +99,28 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->updater->updatePostStats($post_id);
 		$this->assert_correct_data($post_id);
 
-		// 2. It shoudl accept a string as an input
+		// 2. It should accept a string as an input
 		$post_id_2 = $this->factory->post->create();
 		$this->updater->updatePostStats("$post_id_2");
 		$this->assert_correct_data($post_id_2);
+
+
+		// --------------------------------------------------
+		// TESTS FOR WHEN A SERVICE (FACEBOOK) IS UNAVAILABLE
+
+		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater->sources->FacebookUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue(false));
+
+		// 3. If a service is offline, the previously saved value should be retained and not set to zero
+		$this->updater->updatePostStats($post_id);
+		$this->assert_correct_data($post_id);
+
+		// 4. If a service is offline, the other services should still work
+		$post_id_3 = $this->factory->post->create();
+		$this->updater->updatePostStats($post_id_3);
+		$this->assert_correct_data($post_id_3, true);
 
 	}
 

@@ -41,14 +41,10 @@ abstract class HTTPResourceUpdater {
 	*
 	* @param  integer   $post_id - The ID of the post to update
 	* @param  string    $post_url - The permalink to query social APIs with
-	* @param  boolean   $return_instead_of_save - When false, saves data to primary meta fields. When true, does NOT save to DB but instead returns meta fields as an associative array.
 	*
-	* @return (boolean | array)   When $return_instead_of_save = true, this will be the array of meta data OR false if the sync failed.
-	* @return (boolean)   When $return_instead_of_save = false, this will be true/false to indicate success/failure.
-	*
-	* Note: $post_url is required to be set explicitly because it might be filtered by the MetricsUpdater class.
+	* @return (boolean | array) this will be the array of meta data OR false if the sync failed.
 	***************************************************/
-	public function sync($post_id, $post_url, $return_instead_of_save=false) {
+	public function sync($post_id, $post_url) {
 
 		// Validation
 		if (!isset($post_id)  || !is_int($post_id))     return false;
@@ -61,8 +57,7 @@ abstract class HTTPResourceUpdater {
 		$this->fetch();
 		$this->parse();
 
-		// Save OR return meta fields.
-		return ($return_instead_of_save) ? $this->getMetaFields() : $this->save();
+		return $this->getMetaFields();
 	}
 
 	/***************************************************
@@ -166,24 +161,6 @@ abstract class HTTPResourceUpdater {
 		}
 
 		return (count($fields) > 0) ? $fields : false;
-	}
-
-	/***************************************************
-	* Writes post meta fields to database
-	***************************************************/
-	public function save() {
-
-		$fields = $this->getMetaFields();
-		if (!is_array($fields)) return false;
-
-		// Update each custom field
-		foreach ($fields as $key => $value) {
-			if (update_post_meta($this->post_id, $key, $value)) {
-				$this->complete = true;
-			}
-		}
-
-		return $this->complete;
 	}
 
 	/***************************************************
