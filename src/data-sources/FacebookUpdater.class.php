@@ -25,6 +25,9 @@ class FacebookUpdater extends HTTPResourceUpdater {
 			// This FQL query will be URL encoded by http_build_query()
 			'q' => "SELECT url, share_count, like_count, comment_count, total_count, click_count FROM link_stat where url='$url'"
 		);
+
+		// Note: The final encoded URL should look a bit like this:
+		// https://graph.facebook.com/fql?q=SELECT%20url,%20share_count,%20like_count,%20comment_count,%20total_count,%20click_count%20FROM%20link_stat%20where%20url=%27http://www.wordpress.org%27
 	}
 
 	public function parse() {

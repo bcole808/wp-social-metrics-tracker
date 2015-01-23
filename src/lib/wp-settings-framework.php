@@ -26,7 +26,6 @@ if( !class_exists('WordPressSettingsFramework') ){
 			if( $option_group ) $this->option_group = $option_group;
 
 			add_action('admin_init', array(&$this, 'admin_init'));
-			add_action('admin_notices', array(&$this, 'admin_notices'));
 			add_action('admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts'));
 		}
 
@@ -47,14 +46,6 @@ if( !class_exists('WordPressSettingsFramework') ){
 		{
 			register_setting( $this->option_group, $this->option_group .'_settings', array(&$this, 'settings_validate') );
 			$this->process_settings();
-		}
-
-		/**
-		 * Displays any errors from the WordPress settings API
-		 */
-		function admin_notices()
-		{
-			settings_errors();
 		}
 
 		/**
