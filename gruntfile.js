@@ -29,7 +29,8 @@ module.exports = function(grunt) {
 		    options: {
 		        bin: 'phpunit --exclude-group external-http',
 		        bootstrap: 'tests/bootstrap.php',
-		        colors: true
+		        colors: true,
+		        failOnFailures: true // Allow grunt to continue watching on failure
 		    }
 		},
 
