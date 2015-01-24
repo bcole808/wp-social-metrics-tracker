@@ -32,7 +32,7 @@ class FacebookUpdater extends HTTPResourceUpdater {
 
 	public function parse() {
 		$updater = $this->updater;
-		if (!is_array($updater->data)) return false;
+		if (!is_array($updater->data) || !isset($updater->data['data'])) return false;
 
 		$updater->meta = array();
 		$updater->meta[$this->updater->meta_prefix.$this->updater->slug] = $this->get_total();
