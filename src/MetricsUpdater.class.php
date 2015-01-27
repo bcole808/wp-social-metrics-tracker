@@ -161,8 +161,11 @@ class MetricsUpdater {
 		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
+		$permalink = get_permalink($post_id);
+		if ($permalink === false) return false;
+
 		// Remove secure protocol from URL
-		$permalink = str_replace("https://", "http://", get_permalink($post_id));
+		$permalink = str_replace("https://", "http://", $permalink);
 
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
