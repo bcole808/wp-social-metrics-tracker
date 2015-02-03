@@ -147,6 +147,30 @@ class MetricsUpdater {
 
 	}
 
+
+	/**
+	* Ensure that all URLs match the protocol in configuration
+	*
+	* @param  string    $url  The URL to clean
+	* @return
+	*/
+	public function adjustProtocol($url) {
+		switch ($this->smt->get_smt_option('url_protocol')) {
+			case 'http':
+				return preg_replace("/^https:/i", "http:", $url);
+				break;
+
+			case 'https':
+				return preg_replace("/^http:/i", "https:", $url);
+				break;
+			
+			default:
+				return $url;
+				break;
+		}
+	}
+
+
 	/**
 	* Fetch new stats from remote services and update post social score.
 	*
@@ -165,7 +189,7 @@ class MetricsUpdater {
 		if ($permalink === false) return false;
 
 		// Remove secure protocol from URL
-		$permalink = str_replace("https://", "http://", $permalink);
+		$permalink = $this->adjustProtocol($permalink);
 
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);

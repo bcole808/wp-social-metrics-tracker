@@ -48,6 +48,21 @@ $wpsf_settings[] = array(
 			)
 		),
 		array(
+			'id'    => 'url_protocol',
+			'title' => 'URL Protocol',
+			'desc'  => 'Specifies what URLs should be used when looking up social shares. Some social networks track the sharing of http:// and https:// URLs seperately, so you should pick the one that most of your site visitors use. <hr />
+			            <b>Auto</b> - Let WordPress decide which protocol to use<br />
+			            <b>Always use http://</b> - Checks the http:// version for shares<br />
+			            <b>Always use https://</b> - Checks the https:// version for shares',
+			'type'  => 'select',
+			'std'   => 'auto',
+			'choices' => array(
+				'auto'    => 'Auto',
+				'http'    => 'Always use http://',
+				'https'   => 'Always use https://'
+			)
+		),
+		array(
 			'id'    => 'ttl_hours',
 			'title' => 'Data TTL',
 			'desc'  => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts.',
