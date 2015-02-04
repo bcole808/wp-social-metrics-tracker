@@ -49,6 +49,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
+		$this->updater->dataSourcesReady = true;
 	}
 
 	// DO AFTER ALL TESTS
