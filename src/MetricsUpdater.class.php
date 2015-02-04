@@ -174,10 +174,11 @@ class MetricsUpdater {
 	/**
 	* Fetch new stats from remote services and update post social score.
 	*
-	* @param  int    $post_id  The ID of the post to update
+	* @param  int    $post_id    The ID of the post to update
+	* @param  string $permalink  The primary permalink for the post (WARNING: only for use with phpunit automated tests)
 	* @return
 	*/
-	public function updatePostStats($post_id) {
+	public function updatePostStats($post_id, $permalink=false) {
 
 		if ($this->smt->is_development_server()) return false;
 
@@ -185,7 +186,7 @@ class MetricsUpdater {
 		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
-		$permalink = get_permalink($post_id);
+		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
 		if ($permalink === false) return false;
 
 		// Remove secure protocol from URL
@@ -197,21 +198,54 @@ class MetricsUpdater {
 		// Init meta fields to update
 		$post_meta = array('socialcount_TOTAL' => 0);
 
-		// Social Network data
+		// Init alt_url fields to check
+		$alt_data         = $this->filterAltMeta($post_id);
+		$alt_data_updated = $this->prepAltMeta($alt_data);
+
+
+		// = = = = = TO-DO = = = = = 
+		// 3. Auto-add other URL schemas that we want to track.
+		// = = = = = TO-DO = = = = = 
+
+
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
 
-			if (false !== $HTTPResourceUpdater->sync($post_id, $permalink)) {
-				$post_meta = array_merge($post_meta, $HTTPResourceUpdater->getMetaFields());
-				$post_meta['socialcount_TOTAL'] += $HTTPResourceUpdater->get_total();
+			$primary_result = $HTTPResourceUpdater->sync($post_id, $permalink);
 
-			} else {
-				// Failsafe in case a single social API is unavailable
-				// We still need to calculate the total from all networks,
-				// and we need to account for the currently offline social API.
-				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+
+			// = = = = = TO-DO = = = = = 
+			// Check a seperate TTL for secondary URL updates?
+			// = = = = = TO-DO = = = = = 
+
+
+			if ($primary_result !== false)
+			foreach ($alt_data_updated as $key => $val) {
+
+				$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
+
+				if ($result !== false) {
+					$alt_data_updated[$key] = array_merge($val, $result);
+					$alt_data_updated[$key]['socialcount_LAST_UPDATED'] = time();
+				}
 
 			}
+
+			if ($primary_result === false) {
+				// Primary request failed; use last saved value in total
+				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+			} else {
+				// Merge all the data we collected
+				$final_result = $this->mergeResults($primary_result, $alt_data_updated);
+
+				// Compute the total count total
+				$post_meta['socialcount_TOTAL'] += $final_result[$HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug];
+
+				// Merge fields
+				$post_meta = array_merge($post_meta, $final_result);
+			}
+
 		}
+
 
 		// Get comment count from DB
 		$post = get_post($post_id);
@@ -239,6 +273,11 @@ class MetricsUpdater {
 			update_post_meta($post_id, $key, $value);
 		}
 
+		// Save the socialcount_alt_data fields
+		for ($i = 0; $i < count($alt_data); ++$i) {
+			update_post_meta($post_id, 'socialcount_alt_data', $alt_data_updated[$i], $alt_data[$i]);
+		}
+
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
 		$smt_stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
 
@@ -247,6 +286,106 @@ class MetricsUpdater {
 
 		return;
 	} // end updatePostStats()
+
+	/**
+	* Add integers, excluding duplicate values
+	*
+	* @param  array  $nums  An array of integers
+	* @return int    The sum of all the unique integers
+	*/
+	private function sumUnique($nums) {
+		return (is_array($nums)) ? array_sum(array_unique($nums)) : false;
+	}
+
+	/**
+	* Merge all the alt URL results into the primary result
+	*
+	* This function iterates on the keys of $primary_result and merges any matching values from the alt data set. 
+	*
+	* @param  array   $primary_result    The primary meta keys we are going to store
+	* @param  array   $alt_data_updated  An array containing many sets of secondary keys we need to merge
+	* @return boolean        If the string is a valid URL
+	*/
+	private function mergeResults($primary_result, $alt_data_updated) {
+		foreach ($primary_result as $key => $val) {
+
+			$nums = array($val);
+
+			foreach ($alt_data_updated as $item) {
+				if (array_key_exists($key, $item)) $nums[] = $item[$key];
+			}
+
+			$primary_result[$key] = $this->sumUnique($nums);
+		}
+
+		return $primary_result;
+	}
+
+	/**
+	* Clean and get post meta entries for 'socialcount_alt_data'
+	*
+	* Removes anything that is an invalid or duplicate URL. 
+	*
+	* @param  int    $post_id  The Post ID to fetch
+	* @return array  The matching set of entries for 'socialcount_alt_data'
+	*/
+	private function filterAltMeta($post_id) {
+		$alt_data = get_post_meta($post_id, 'socialcount_alt_data');
+
+		$already_checked = array();
+
+		foreach ($alt_data as $alt) {
+			$url = (is_string($alt)) ? $alt : $alt['permalink'];
+
+			// Delete invalid URL strings
+			if (!$this->isValidURL($url)) {
+				delete_post_meta($post_id, 'socialcount_alt_data', $alt);
+			}
+
+			// Delete duplicate entries
+			if (in_array($url, $already_checked)) {
+				delete_post_meta($post_id, 'socialcount_alt_data', $alt);
+			}
+
+			$already_checked[] = $url;
+		}
+
+		return $alt_data;
+	}
+
+	/**
+	* Prepare socialcount_alt_urls for updates by converting string entries into arrays
+	*
+	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_alt_urls'
+	* @return array    $alt_data_updated An array of tweaked entries for postmeta
+	*/
+	private function prepAltMeta($alt_data) {
+		$alt_data_updated = $alt_data;
+		for ($i = 0; $i < count($alt_data); ++$i) {
+			$url = (is_string($alt_data[$i])) ? $alt_data[$i] : $alt_data[$i]['permalink'];
+
+			if (!is_array($alt_data_updated[$i])) {
+				$alt_data_updated[$i] = array();
+			}
+			$alt_data_updated[$i]['permalink'] = $url;
+		}
+		return $alt_data_updated;
+	}
+
+	/**
+	* Check if a string is a valid URL
+	*
+	* @param  string   $url  A string representing a URL
+	* @return boolean        If the string is a valid URL
+	*/
+	public function isValidURL($url) {
+		// return true;
+		return filter_var($url, FILTER_VALIDATE_URL);
+	}
+
+
+
+
 
 	/**
 	* Combine Social, Views, and Comments into one aggregate value

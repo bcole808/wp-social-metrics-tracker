@@ -154,8 +154,7 @@ abstract class HTTPResourceUpdater {
 		$fields = array();
 
 		foreach ($this->meta as $key => $value) {
-			if (!$value) continue;
-			if (is_numeric($value) && intval($value) <= 0) continue;
+			if (!is_numeric($value)) continue;
 
 			$fields[$key] = $value;
 		}
