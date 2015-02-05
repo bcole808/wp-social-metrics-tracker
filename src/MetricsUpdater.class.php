@@ -287,6 +287,7 @@ class MetricsUpdater {
 		return;
 	} // end updatePostStats()
 
+
 	/**
 	* Add integers, excluding duplicate values
 	*
@@ -296,6 +297,7 @@ class MetricsUpdater {
 	private function sumUnique($nums) {
 		return (is_array($nums)) ? array_sum(array_unique($nums)) : false;
 	}
+
 
 	/**
 	* Merge all the alt URL results into the primary result
@@ -321,10 +323,14 @@ class MetricsUpdater {
 		return $primary_result;
 	}
 
+
 	/**
 	* Clean and get post meta entries for 'socialcount_alt_data'
+	*     - Removes anything that is an invalid or duplicate URL. 
 	*
-	* Removes anything that is an invalid or duplicate URL. 
+	* Valid values for 'socialcount_alt_data' include: 
+	*     A) A string representing an alternate post URL for the current post
+	*     B) An array of social metrics data, with the key 'permalink' containing the alternate URL 
 	*
 	* @param  int    $post_id  The Post ID to fetch
 	* @return array  The matching set of entries for 'socialcount_alt_data'
@@ -334,17 +340,29 @@ class MetricsUpdater {
 
 		$already_checked = array();
 
-		foreach ($alt_data as $alt) {
-			$url = (is_string($alt)) ? $alt : $alt['permalink'];
+		foreach ($alt_data as $key => $val) {
+
+			// Check data type
+			if (is_string($val)) {
+				$url = $val;
+			} else if (array_key_exists('permalink', $val)) {
+				$url = $val['permalink'];
+			} else {
+				// No matching data type
+				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				unset($alt_data[$key]);
+			}
 
 			// Delete invalid URL strings
 			if (!$this->isValidURL($url)) {
-				delete_post_meta($post_id, 'socialcount_alt_data', $alt);
+				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				unset($alt_data[$key]);
 			}
 
 			// Delete duplicate entries
 			if (in_array($url, $already_checked)) {
-				delete_post_meta($post_id, 'socialcount_alt_data', $alt);
+				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				unset($alt_data[$key]);
 			}
 
 			$already_checked[] = $url;
@@ -352,6 +370,7 @@ class MetricsUpdater {
 
 		return $alt_data;
 	}
+
 
 	/**
 	* Prepare socialcount_alt_urls for updates by converting string entries into arrays
@@ -372,6 +391,7 @@ class MetricsUpdater {
 		return $alt_data_updated;
 	}
 
+
 	/**
 	* Check if a string is a valid URL
 	*
@@ -379,12 +399,8 @@ class MetricsUpdater {
 	* @return boolean        If the string is a valid URL
 	*/
 	public function isValidURL($url) {
-		// return true;
 		return filter_var($url, FILTER_VALIDATE_URL);
 	}
-
-
-
 
 
 	/**

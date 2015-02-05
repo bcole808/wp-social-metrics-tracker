@@ -213,8 +213,39 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	}
 
 	function test_data_validation() {
-		$post_id = $this->factory->post->create();
 
+		// Create an updater object without mocks for this test
+		// NOTE: This updater will likely fail any real updates because it does not have mock services. 
+		$smt = new SocialMetricsTracker();
+		$smt->init();
+		$this->updater = new MetricsUpdater($smt);
+
+		// MOCK HTTP-RESOURCE-UPDATERS
+		// =====================
+		$updater_classes = array('FacebookUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+
+		// Create a mock object for each of the desired updater classes. 
+		foreach ($updater_classes as $class_name) {
+			$this->updater->sources->{$class_name} = $this->getMock($class_name, array('getURL'));
+			$this->updater->sources->{$class_name}->expects($this->any())
+			    ->method('getURL')
+			    ->will($this->returnCallback(function() use ($class_name) {
+			    	$status = (is_array($this->available[$class_name])) ? array_shift($this->available[$class_name]) : $this->available[$class_name];
+			    	
+			    	if ($status === null) {
+			    		$status = true;
+			    		$this->available[$class_name] = true;
+			    	}
+
+			    	$path = str_replace('service', $this->updater->sources->{$class_name}->slug, $this->updater->sources->{$class_name}->post_url);
+			    	return ($status) ? $this->get_sample_data($path) : false;
+			    })
+			);
+		}
+
+		$this->updater->dataSourcesReady = true;
+
+		$post_id = $this->factory->post->create();
 
 		// 1. Validation: Bad input does not break things
 		$this->updater->updatePostStats(null);
@@ -225,14 +256,20 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 
 		// 2. Validation: Bad meta fields do not breka things
-		// add_post_meta($post_id, 'socialcount_alt_data', null);
-		// add_post_meta($post_id, 'socialcount_alt_data', true);
-		// add_post_meta($post_id, 'socialcount_alt_data', 99999);
-		// add_post_meta($post_id, 'socialcount_alt_data', 'fooBarBadData');
-		// add_post_meta($post_id, 'socialcount_alt_data', array(10, 20, 'foo'));
+		add_post_meta($post_id, 'socialcount_alt_data', null);
+		add_post_meta($post_id, 'socialcount_alt_data', true);
+		add_post_meta($post_id, 'socialcount_alt_data', false);
+		add_post_meta($post_id, 'socialcount_alt_data', 99999);
+		add_post_meta($post_id, 'socialcount_alt_data', -12.2);
+		add_post_meta($post_id, 'socialcount_alt_data', 'fooBarBadData');
+		add_post_meta($post_id, 'socialcount_alt_data', array(10, 20, 'foo'));
+		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-3.json'); // note: this should get filtered as an invalid URL in this test
 
-		// $this->updater->updatePostStats($post_id, 'canonical-set/service-3.json');
-		// $this->verify_correct_primary_data($post_id, 'canonical-set/service-3.json');
+		$this->updater->updatePostStats($post_id, 'canonical-set/service-3.json'); // note: this should be allowed in this test
+		$this->verify_correct_primary_data($post_id, 'canonical-set/service-3.json');
+
+		$meta = get_post_meta($post_id, 'socialcount_alt_data');
+		$this->assertEquals(0, count($meta), 'The following meta data should have been deleted: '.print_r($meta, true));
 
 	}
 
