@@ -140,11 +140,26 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	* Should return only the value we want contributed toward the total
 	***************************************************/
 	function test_get_total() {
+
+		$this->emptyResponseUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+
+		$this->emptyResponseUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue(file_get_contents(
+			dirname(__FILE__) .'/sample-data/graph.facebook.com-null-response.json'
+		)));
+
+
 		$post_id = $this->factory->post->create();
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
 		$this->assertEquals($this->updater->get_total(), 8450);
+
+		// 2. If Facebook returns a null response, we should return zero
+		$result = $this->emptyResponseUpdater->sync($post_id, get_permalink($post_id));
+		$this->assertTrue($result !== false);
+		$this->assertEquals($this->emptyResponseUpdater->get_total(), 0);
 	}
 
 

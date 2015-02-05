@@ -140,6 +140,7 @@ abstract class HTTPResourceUpdater {
 			return false;
 		} else if ($response['response']['code'] != 200) {
 			$this->http_error = "Received HTTP response code: <b>".$response['response']['code']." ".$response['response']['message']."</b>";
+			return false;
 		}
 
 		return wp_remote_retrieve_body($response);
