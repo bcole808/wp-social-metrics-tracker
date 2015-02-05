@@ -221,13 +221,22 @@ class SocialMetricsTracker {
 			// 1: Update version number
 			update_option( "smt_version", $this->version );
 
-			// 2: Add any new settings
-			$this->add_missing_settings();
-
-			// 3: If migrating from version below 1.3 (not a clean install)
+			// 2: If migrating from version below 1.3 (not a clean install)
 			if ($installed_version !== false && version_compare($installed_version, '1.3', '<')) {
+
+				// Do not require an initial full data sync for migrating users. 
 				update_option( 'smt_last_full_sync', 1 );
 			}
+
+			// 3: If migrating from version below 1.3.5 (not a clean install)
+			if ($installed_version !== false && version_compare($installed_version, '1.3.5', '<')) {
+
+				// Prior to 1.3.5, the system defaulted to http:// URLs
+				$this->set_smt_option('url_protocol', 'http');
+			}
+
+			// 4: Add any new settings
+			$this->add_missing_settings();
 
 		}
 	}

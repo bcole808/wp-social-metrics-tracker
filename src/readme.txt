@@ -86,6 +86,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.3.5 =
 * Fixed a bug which was causing "Settings saved" to be displayed more than once.
+* Added the option to check either the http:// or https:// version of post URLs for share data. 
 
 = 1.3.4 =
 * Update plugin to use Facebook API v2.0
