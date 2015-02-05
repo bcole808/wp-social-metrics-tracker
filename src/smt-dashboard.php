@@ -50,12 +50,37 @@ class SocialMetricsTable extends WP_List_Table {
 		$actions = array(
 			'edit'    => sprintf('<a href="post.php?post=%s&action=edit">Edit Post</a>',$item['ID']),
 			'update'  => '<a href="'.add_query_arg( 'smt_sync_now', $item['ID']).'">Update Stats</a>',
-			'info'    => sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
 		);
 
-		//Return the title contents
+		// Show details button if there is alt URL data
+		if (count($item['socialcount_alt_data']) > 0) {
+			$actions['details'] = '<a href="javascript:void(0);" onClick="jQuery(\'#stat-details-'.$item['ID'].'\').slideToggle();">Details</a>';
+		}
 
-		return '<a href="'.$item['permalink'].'"><b>'.$item['post_title'] . '</b></a>' . $this->row_actions($actions);
+		$actions['info'] = sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']));
+
+		//Return the title contents
+		$output = '<a href="'.$item['permalink'].'"><b>'.$item['post_title'] . '</b></a>' . $this->row_actions($actions);
+		
+		if (count($item['socialcount_alt_data']) > 0) {
+			$output .= $this->more_details($item);
+		}
+
+		return $output;
+	}
+
+	function more_details($item) {
+		$details = array(
+			'post_id' => $item['ID'],
+			'url_count' => count($item['socialcount_alt_data']) + 1,
+			'permalinks' => array($item['permalink'])
+		);
+
+		foreach ($item['socialcount_alt_data'] as $key => $val) {
+			$details['permalinks'][] = $val['permalink'];
+		}
+
+		return $this->smt->renderTemplate('stat-details', $details);
 	}
 
 	// Column for Social
@@ -260,6 +285,8 @@ class SocialMetricsTable extends WP_List_Table {
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
+
+			$item['socialcount_alt_data'] = get_post_meta($post->ID, "socialcount_alt_data");
 
 			foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
 				$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;

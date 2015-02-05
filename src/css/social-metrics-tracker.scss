@@ -442,3 +442,22 @@ button.smt-connection-item:hover {
 button.smt-connection-item:focus {
 	outline: none;
 }
+
+
+
+/* Stat Details Pane
+   ========================================================================== */
+.smt-stat-details {
+	// font-size: 12px;
+
+	ol {
+		margin-top:0;
+	}
+	li {
+		color: #999;
+		font-size: 11px;
+		margin-bottom: 0;
+	}
+}
+
+

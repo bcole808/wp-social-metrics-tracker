@@ -1,0 +1,10 @@
+<div id="stat-details-{{post_id}}" class="smt-stat-details">
+	<b>There are {{url_count}} URLs associated with this post:</b>
+
+	<ol>
+		{{# permalinks }}
+			<li>{{.}}</li>
+		{{/ permalinks }}
+	</ol>
+
+</div>
