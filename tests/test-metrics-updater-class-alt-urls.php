@@ -166,7 +166,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$expected_result = (is_array($data)) ? $data : $this->correct_alt_data[$data];
 
 		// Find the matching meta key
-		$alt_data = get_post_meta($post_id, 'socialcount_alt_data');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
 		$count = 0;
 		foreach ($alt_data as $item) {
 			if ($item['permalink'] == $expected_result['permalink']) {
@@ -202,11 +202,11 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	}
 
 	function remove_meta_by_url($post_id, $alt_url) {
-		$alt_data = get_post_meta($post_id, 'socialcount_alt_data');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
 
 		foreach ($alt_data as $item) {
 			if ($item['permalink'] == $alt_url) {
-				delete_post_meta($post_id, 'socialcount_alt_data', $item);
+				delete_post_meta($post_id, 'socialcount_url_data', $item);
 				break;
 			}
 		}
@@ -256,19 +256,19 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 
 		// 2. Validation: Bad meta fields do not breka things
-		add_post_meta($post_id, 'socialcount_alt_data', null);
-		add_post_meta($post_id, 'socialcount_alt_data', true);
-		add_post_meta($post_id, 'socialcount_alt_data', false);
-		add_post_meta($post_id, 'socialcount_alt_data', 99999);
-		add_post_meta($post_id, 'socialcount_alt_data', -12.2);
-		add_post_meta($post_id, 'socialcount_alt_data', 'fooBarBadData');
-		add_post_meta($post_id, 'socialcount_alt_data', array(10, 20, 'foo'));
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-3.json'); // note: this should get filtered as an invalid URL in this test
+		add_post_meta($post_id, 'socialcount_url_data', null);
+		add_post_meta($post_id, 'socialcount_url_data', true);
+		add_post_meta($post_id, 'socialcount_url_data', false);
+		add_post_meta($post_id, 'socialcount_url_data', 99999);
+		add_post_meta($post_id, 'socialcount_url_data', -12.2);
+		add_post_meta($post_id, 'socialcount_url_data', 'fooBarBadData');
+		add_post_meta($post_id, 'socialcount_url_data', array(10, 20, 'foo'));
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-3.json'); // note: this should get filtered as an invalid URL in this test
 
 		$this->updater->updatePostStats($post_id, 'canonical-set/service-3.json'); // note: this should be allowed in this test
 		$this->verify_correct_primary_data($post_id, 'canonical-set/service-3.json');
 
-		$meta = get_post_meta($post_id, 'socialcount_alt_data');
+		$meta = get_post_meta($post_id, 'socialcount_url_data');
 		$this->assertEquals(0, count($meta), 'The following meta data should have been deleted: '.print_r($meta, true));
 
 	}
@@ -307,7 +307,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 
 		// 1. Validation: Using the same URL as the primary URL does not break it
-		update_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-1.json');
+		update_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-1.json');
 		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
 
 		$this->verify_correct_alt_data($post_id, 'canonical-set/service-1.json');
@@ -317,10 +317,10 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		// 2. Numberes are added correctly
 		$post_id = $this->factory->post->create();
 
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-1.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-2.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-3.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-1.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-3.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-4.json');
 
 		$this->updater->updatePostStats($post_id, 'canonical-not-set/service-1.json');
 
@@ -344,13 +344,13 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		// 3. Validation: Duplicate meta fields do not break it
 		$post_id = $this->factory->post->create();
 
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-4.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-4.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
 		$this->updater->updatePostStats($post_id, 'canonical-set/service-4.json');
 
-		$this->assertTrue(count(get_post_meta($post_id, 'socialcount_alt_data')) === 1, 'too many fields saved');
+		$this->assertTrue(count(get_post_meta($post_id, 'socialcount_url_data')) === 1, 'too many fields saved');
 		$this->verify_correct_alt_data($post_id, 'canonical-set/service-4.json');
 
 	}
@@ -372,7 +372,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		// 1. If service is partially offline, it does not break
 		$this->available['FacebookUpdater'] = array(true, false);
 
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-2.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
 
 		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
 
@@ -391,9 +391,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		$this->available['TwitterUpdater'] = array(true, true, false, true);
 
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-2.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-3.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-3.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
 		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
 
@@ -439,9 +439,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		);
 
 		// 1. If I have a post with some extra URLs and remove one, the count is deducted
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-2.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-3.json');
-		add_post_meta($post_id, 'socialcount_alt_data', 'canonical-not-set/service-4.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-3.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-4.json');
 
 		$this->updater->updatePostStats($post_id, 'canonical-not-set/service-1.json');
 

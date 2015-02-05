@@ -273,9 +273,9 @@ class MetricsUpdater {
 			update_post_meta($post_id, $key, $value);
 		}
 
-		// Save the socialcount_alt_data fields
+		// Save the socialcount_url_data fields
 		for ($i = 0; $i < count($alt_data); ++$i) {
-			update_post_meta($post_id, 'socialcount_alt_data', $alt_data_updated[$i], $alt_data[$i]);
+			update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$i], $alt_data[$i]);
 		}
 
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
@@ -325,18 +325,18 @@ class MetricsUpdater {
 
 
 	/**
-	* Clean and get post meta entries for 'socialcount_alt_data'
+	* Clean and get post meta entries for 'socialcount_url_data'
 	*     - Removes anything that is an invalid or duplicate URL. 
 	*
-	* Valid values for 'socialcount_alt_data' include: 
+	* Valid values for 'socialcount_url_data' include: 
 	*     A) A string representing an alternate post URL for the current post
 	*     B) An array of social metrics data, with the key 'permalink' containing the alternate URL 
 	*
 	* @param  int    $post_id  The Post ID to fetch
-	* @return array  The matching set of entries for 'socialcount_alt_data'
+	* @return array  The matching set of entries for 'socialcount_url_data'
 	*/
 	private function filterAltMeta($post_id) {
-		$alt_data = get_post_meta($post_id, 'socialcount_alt_data');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
 
 		$already_checked = array();
 
@@ -349,19 +349,19 @@ class MetricsUpdater {
 				$url = $val['permalink'];
 			} else {
 				// No matching data type
-				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
 				unset($alt_data[$key]);
 			}
 
 			// Delete invalid URL strings
 			if (!$this->isValidURL($url)) {
-				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
 				unset($alt_data[$key]);
 			}
 
 			// Delete duplicate entries
 			if (in_array($url, $already_checked)) {
-				delete_post_meta($post_id, 'socialcount_alt_data', $val);
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
 				unset($alt_data[$key]);
 			}
 

@@ -53,7 +53,7 @@ class SocialMetricsTable extends WP_List_Table {
 		);
 
 		// Show details button if there is alt URL data
-		if (count($item['socialcount_alt_data']) > 0) {
+		if (count($item['socialcount_url_data']) > 0) {
 			$actions['details'] = '<a href="javascript:void(0);" onClick="jQuery(\'#stat-details-'.$item['ID'].'\').slideToggle();">Details</a>';
 		}
 
@@ -62,7 +62,7 @@ class SocialMetricsTable extends WP_List_Table {
 		//Return the title contents
 		$output = '<a href="'.$item['permalink'].'"><b>'.$item['post_title'] . '</b></a>' . $this->row_actions($actions);
 		
-		if (count($item['socialcount_alt_data']) > 0) {
+		if (count($item['socialcount_url_data']) > 0) {
 			$output .= $this->more_details($item);
 		}
 
@@ -72,11 +72,11 @@ class SocialMetricsTable extends WP_List_Table {
 	function more_details($item) {
 		$details = array(
 			'post_id' => $item['ID'],
-			'url_count' => count($item['socialcount_alt_data']) + 1,
+			'url_count' => count($item['socialcount_url_data']) + 1,
 			'permalinks' => array($item['permalink'])
 		);
 
-		foreach ($item['socialcount_alt_data'] as $key => $val) {
+		foreach ($item['socialcount_url_data'] as $key => $val) {
 			$details['permalinks'][] = $val['permalink'];
 		}
 
@@ -286,7 +286,7 @@ class SocialMetricsTable extends WP_List_Table {
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
 
-			$item['socialcount_alt_data'] = get_post_meta($post->ID, "socialcount_alt_data");
+			$item['socialcount_url_data'] = get_post_meta($post->ID, "socialcount_url_data");
 
 			foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
 				$meta_key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;

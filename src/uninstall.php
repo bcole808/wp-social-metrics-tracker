@@ -51,7 +51,7 @@ $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'social_aggr
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'social_aggregate_score_decayed_last_updated'" );
 
 // Social Metrics alternate source URLs
-$wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_alt_data'" );
+$wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_url_data'" );
 
 // Remove all scheduled cron tasks
 include_once('MetricsUpdater.class.php');
