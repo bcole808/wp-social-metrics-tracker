@@ -29,7 +29,11 @@ require_once('data-sources/google_analytics.php');
 include_once('SocialMetricsSettings.class.php');
 include_once('SocialMetricsTrackerWidget.class.php');
 include_once('SocialMetricsDebugger.class.php');
-require_once('lib/Mustache/Autoloader.php');
+
+// Handlebars Autoloader
+require_once('lib/Handlebars/Autoloader.php');
+Handlebars\Autoloader::register();
+use Handlebars\Handlebars;
 
 
 class SocialMetricsTracker {
@@ -79,18 +83,25 @@ class SocialMetricsTracker {
 	}
 
 	/***************************************************
-	* Renders a template using the Mustache Engine
+	* Renders a template using the Handlebars Engine
 	***************************************************/
 	public function renderTemplate($tpl, $data) {
 
-		if (!isset($this->mustache_engine)) {
-			Mustache_Autoloader::register();
-			$this->mustache_engine = new Mustache_Engine(array(
-			    'loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__).'/templates'),
+		if (!isset($this->template_engine)) {
+
+			$this->template_engine = new Handlebars(array(
+			    'loader' => new \Handlebars\Loader\FilesystemLoader(dirname(__FILE__).'/templates/'),
+			    'partials_loader' => new \Handlebars\Loader\FilesystemLoader(
+			        dirname(__FILE__).'/templates/',
+			        array(
+			            'prefix' => '_'
+			        )
+			    )
 			));
+
 		}
 
-		return $this->mustache_engine->render($tpl, $data);
+		return $this->template_engine->render($tpl, $data);
 	}
 
 	// Determines if we are on a development or staging environment
