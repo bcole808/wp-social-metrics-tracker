@@ -195,57 +195,11 @@ class MetricsUpdater {
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
-		// Init meta fields to update
-		$post_meta = array('socialcount_TOTAL' => 0);
-
-		// Init alt_url fields to check
-		$alt_data         = $this->filterAltMeta($post_id);
-		$alt_data_updated = $this->prepAltMeta($alt_data);
-
-
-		// = = = = = TO-DO = = = = = 
-		// 3. Auto-add other URL schemas that we want to track.
-		// = = = = = TO-DO = = = = = 
-
-
-		foreach ($this->getSources() as $HTTPResourceUpdater) {
-
-			$primary_result = $HTTPResourceUpdater->sync($post_id, $permalink);
-
-
-			// = = = = = TO-DO = = = = = 
-			// Check a seperate TTL for secondary URL updates?
-			// = = = = = TO-DO = = = = = 
-
-
-			if ($primary_result !== false)
-			foreach ($alt_data_updated as $key => $val) {
-
-				$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
-
-				if ($result !== false) {
-					$alt_data_updated[$key] = array_merge($val, $result);
-					$alt_data_updated[$key]['socialcount_LAST_UPDATED'] = time();
-				}
-
-			}
-
-			if ($primary_result === false) {
-				// Primary request failed; use last saved value in total
-				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
-			} else {
-				// Merge all the data we collected
-				$final_result = $this->mergeResults($primary_result, $alt_data_updated);
-
-				// Compute the total count total
-				$post_meta['socialcount_TOTAL'] += $final_result[$HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug];
-
-				// Merge fields
-				$post_meta = array_merge($post_meta, $final_result);
-			}
-
-		}
-
+		// Gather updated data from remote sources
+		$data             = $this->fetchPostStats($post_id, $permalink);
+		$post_meta        = $data['post_meta'];
+		$alt_data         = $data['alt_data'];
+		$alt_data_updated = $data['alt_data_updated'];
 
 		// Get comment count from DB
 		$post = get_post($post_id);
@@ -286,6 +240,91 @@ class MetricsUpdater {
 
 		return;
 	} // end updatePostStats()
+
+
+	/**
+	* Retrieve new data about a post and a URL, or return cached values if remote service unavailable
+	*
+	* @param  int    $post_id
+	* @param  string $permalink the primary permalink associated with a post
+	* @return array  The social data collected, or cached data
+	*/
+	public function fetchPostStats($post_id, $permalink) {
+
+		// Data validation
+		$post_id = intval($post_id);
+		if ($post_id <= 0) return false;
+
+		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
+		if ($permalink === false) return false;
+
+		// Setup
+		$network_failure = false;
+		$errors = array();
+
+		// Init meta fields to update
+		$post_meta = array('socialcount_TOTAL' => 0);
+
+		// Init alt_url fields to check
+		$alt_data         = $this->filterAltMeta($post_id);
+		$alt_data_updated = $this->prepAltMeta($alt_data);
+
+
+		// = = = = = TO-DO = = = = = 
+		// 3. Auto-add other URL schemas that we want to track.
+		// = = = = = TO-DO = = = = = 
+
+
+		foreach ($this->getSources() as $HTTPResourceUpdater) {
+
+			$primary_result = $HTTPResourceUpdater->sync($post_id, $permalink);
+
+
+			// = = = = = TO-DO = = = = = 
+			// Check a seperate TTL for secondary URL updates?
+			// = = = = = TO-DO = = = = = 
+
+
+			if ($primary_result !== false)
+			foreach ($alt_data_updated as $key => $val) {
+
+				$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
+
+				if ($result !== false) {
+					$alt_data_updated[$key] = array_merge($val, $result);
+					$alt_data_updated[$key]['socialcount_LAST_UPDATED'] = time();
+				} else {
+					$network_failure = true;
+					if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+				}
+
+			}
+
+			if ($primary_result === false) {
+				// Primary request failed; use last saved value in total
+				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+				$network_failure = true;
+				if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+			} else {
+				// Merge all the data we collected
+				$final_result = $this->mergeResults($primary_result, $alt_data_updated);
+
+				// Compute the total count total
+				$post_meta['socialcount_TOTAL'] += $final_result[$HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug];
+
+				// Merge fields
+				$post_meta = array_merge($post_meta, $final_result);
+			}
+		}
+
+		return array(
+			'post_meta'        => $post_meta,
+			'alt_data'         => $alt_data,
+			'alt_data_updated' => $alt_data_updated,
+			'network_failure'  => $network_failure,
+			'errors'           => $errors
+		);
+	}
 
 
 	/**

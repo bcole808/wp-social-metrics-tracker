@@ -424,6 +424,26 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 	}
 
+	function test_report_network_failure() {
+		$post_id = $this->factory->post->create();
+
+		// 1. Network failure should not be reported
+		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$this->assertFalse($result['network_failure']);
+
+		// 2. Network failure should be reported
+		$this->available['FacebookUpdater'] = false;
+		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$this->assertTrue($result['network_failure']);
+
+		// 3. A failure on a secondary request should be reported
+		$this->available['FacebookUpdater'] = array(true, false);
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
+
+		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$this->assertTrue($result['network_failure']);
+	}
+
 	function test_removal_of_urls() {
 		$post_id = $this->factory->post->create();
 
