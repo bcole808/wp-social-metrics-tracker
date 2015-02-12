@@ -17,7 +17,7 @@
 		<a href="javascript:void(0);" onClick="jQuery('#url_protocol_help').slideToggle();" class="more-info">(More Info)</a>
 
 		<blockquote id="url_protocol_help" style="display:none;">
-			<p>Specifies what URLs should be used when looking up social shares. Some social networks track the sharing of http:// and https:// URLs seperately, so you	should pick the one that most of your site visitors	use. </p>
+			<p>Specifies what URLs should be used when looking up social shares. Some social networks track the sharing of http:// and https:// URLs separately, so you	should pick the one that most of your site visitors	use. </p>
 
 			<p><b>"Auto"</b> will let WordPress decide which to use.</p>
 			<p><b>Choosing only one protocol</b> will tell the Social Metrics Tracker than it should always convert URLs to that protocol, regardless of how WordPress permalinks may be configured. </p>
@@ -31,7 +31,7 @@
 	<br />
 	<br />
 	<h2>Domain Migration</h2>
-	<p>This tool helps you retain your old social metric data when migrating between domains. You should first switch to your new domain name, then immediately configure this tool after the switch. To disable, just erase the fields and save.</p>
+	<p>This tool helps you retain your old social metric data when migrating between domains. You should first switch to your new domain name, then configure this tool after the switch. To disable, just erase the fields and save.</p>
 
 	<div class="box">
 		<h3>Configuration</h3>
@@ -43,6 +43,7 @@
 		<input type="text" id="rewrite_before_date" name="rewrite_before_date" value="{{rewrite_before_date}}" /> 
 		<blockquote id="rewrite_before_date_help" style="display:none;">
 			<p>Only posts published before this migration date will be checked for additional social share information from the old domain name. Any post with a publish date after this date will only be checked for shares with the current domain name.</p>
+			<p>If this is omitted, all posts will be checked regardless of publish date (not recommended).</p>
 		</blockquote>
 		<br />
 
@@ -53,7 +54,8 @@
 		<input type="text" id="rewrite_change_to" name="rewrite_change_to" class="smt-url-box" value="{{rewrite_change_to}}" /> 
 		<blockquote id="rewrite_change_to_help" style="display:none;">
 			<p>Type in the domain name, subdomain, and/or path that WordPress used to be hosted on. Social Metrics Tracker will check for data from the old domain by querying social networks twice for each post - once for the current domain, and a second time for the old domain - then it will combine the numbers.</p>
-			<p>The box above will turn green to indicate that the URL is valid, or red to indicate that it doesn't look right.</p>
+			<p>The box above will turn green to indicate that the URL appears valid, or red to indicate that something doesn't look right.</p>
+			<p>Make sure to verify that the preview below is correct as well.</p>
 		</blockquote>
 		<br />
 
@@ -104,7 +106,7 @@
 
 		<blockquote id="alt_url_ttl_multiplier_help" style="display:none;">
 			<p>On the fastest setting, the plugin will treat old and alternate post URLs the same as the current live URLs and always retrieve statistics for all URLs at the same rate.</p>
-			<p>On the "average" and "slow" settings, the plugin will wait and only check old and altnerate post URLs once in a while but it will continue to check the current live post URLs at the normal rate. </p>
+			<p>On the "average" and "slow" settings, the plugin will wait and only check old and alternate post URLs once in a while but it will continue to check the current live post URLs at the normal rate. </p>
 			<p>It is recommended to choose the slowest speed that works for your setup. However, if you think that users are still actively sharing and liking and tweeting your old or alternate post URLs then it may be worth choosing a faster rate.</p>
 		</blockquote>
 

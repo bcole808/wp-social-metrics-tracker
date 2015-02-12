@@ -163,12 +163,12 @@ class socialMetricsSettings {
 			),
 			array(
 				'key'   => 'http',
-				'label' => 'Always check the http:// version of URLs',
+				'label' => 'Check only http:// versions of URLs',
 				'selected' => ($url_protocol == 'http')
 			),
 			array(
 				'key'   => 'https',
-				'label' => 'Always check the https:// version of URLs',
+				'label' => 'Check only https:// versions of URLs',
 				'selected' => ($url_protocol == 'https')
 			),
 			array(
@@ -195,17 +195,17 @@ class socialMetricsSettings {
 		$args['alt_url_ttl_multiplier_options'] = array(
 			array(
 				'key'   => '1',
-				'label' => 'Fastest refresh rate (uses more network requests)',
+				'label' => 'Same as main URL refresh rate (uses more network requests)',
 				'selected' => ($current_alt_ttl_option == '1')
 			),
 			array(
 				'key'   => '5',
-				'label' => 'Average refresh rate',
+				'label' => 'Slightly slower refresh rate',
 				'selected' => ($current_alt_ttl_option == '5')
 			),
 			array(
 				'key'   => '10',
-				'label' => 'Slow refresh rate (better server performance)',
+				'label' => 'Much slower refresh rate (better server performance)',
 				'selected' => ($current_alt_ttl_option == '10')
 			)
 		);
