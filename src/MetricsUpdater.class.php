@@ -76,7 +76,7 @@ class MetricsUpdater {
 			$message = "You must wait at least 5 minutes before performing another update on this post. ";
 			printf( '<div class="error"> <p> %s </p> </div>', $message);
 		} else {
-			$this->updatePostStats($_REQUEST['smt_sync_now']);
+			$this->updatePostStats($_REQUEST['smt_sync_now'], true);
 			header("Location: ".add_query_arg(array('smt_sync_done' => $post_id), remove_query_arg('smt_sync_now')));
 		}
 
@@ -175,10 +175,11 @@ class MetricsUpdater {
 	* Fetch new stats from remote services and update post social score.
 	*
 	* @param  int    $post_id    The ID of the post to update
+	* @param  bool   $ignore_ttl If we should execute the update immediately, ignoring all TTL rules
 	* @param  string $permalink  The primary permalink for the post (WARNING: only for use with phpunit automated tests)
 	* @return
 	*/
-	public function updatePostStats($post_id, $permalink=false) {
+	public function updatePostStats($post_id, $ignore_ttl=false, $permalink=false) {
 
 		if ($this->smt->is_development_server()) return false;
 
@@ -196,7 +197,7 @@ class MetricsUpdater {
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
 		// Gather updated data from remote sources
-		$data             = $this->fetchPostStats($post_id, $permalink);
+		$data             = $this->fetchPostStats($post_id, $ignore_ttl, $permalink);
 		$post_meta        = $data['post_meta'];
 		$alt_data_cache   = $data['alt_data'];
 		$alt_data_updated = $data['alt_data_updated'];
@@ -246,10 +247,11 @@ class MetricsUpdater {
 	* Retrieve new data about a post and a URL, or return cached values if remote service unavailable
 	*
 	* @param  int    $post_id
+	* @param  bool   $ignore_ttl If we should execute the update immediately, ignoring all TTL rules
 	* @param  string $permalink the primary permalink associated with a post
 	* @return array  The social data collected, or cached data
 	*/
-	public function fetchPostStats($post_id, $permalink) {
+	public function fetchPostStats($post_id, $ignore_ttl=false, $permalink=false) {
 
 		// Data validation
 		$post_id = intval($post_id);

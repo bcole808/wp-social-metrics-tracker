@@ -265,7 +265,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', array(10, 20, 'foo'));
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-3.json'); // note: this should get filtered as an invalid URL in this test
 
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-3.json'); // note: this should be allowed in this test
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-3.json'); // note: this should be allowed in this test
 		$this->verify_correct_primary_data($post_id, 'canonical-set/service-3.json');
 
 		$meta = get_post_meta($post_id, 'socialcount_url_data');
@@ -308,7 +308,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// 1. Validation: Using the same URL as the primary URL does not break it
 		update_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-1.json');
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 
 		$this->verify_correct_alt_data($post_id, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, 'canonical-set/service-1.json');
@@ -322,7 +322,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-3.json');
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-4.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-not-set/service-1.json');
 
 		$this->verify_correct_alt_data($post_id, 'canonical-not-set/service-1.json');
 		$this->verify_correct_alt_data($post_id, 'canonical-not-set/service-2.json');
@@ -348,7 +348,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-4.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-4.json');
 
 		$this->assertTrue(count(get_post_meta($post_id, 'socialcount_url_data')) === 1, 'too many fields saved');
 		$this->verify_correct_alt_data($post_id, 'canonical-set/service-4.json');
@@ -374,7 +374,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 
 		$this->verify_correct_primary_data($post_id, array(
 			'permalink'                => 'canonical-set/service-1.json',
@@ -395,7 +395,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-3.json');
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 
 		$this->verify_correct_primary_data($post_id, array(
 			'permalink'                => 'canonical-set/service-1.json',
@@ -409,17 +409,17 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		));
 
 		// 3. Then later, the remaining data is added
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 4. When a service goes completely offline, no data is lost
 		$this->available['FacebookUpdater'] = false;
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 5. And if it is intermittent, no data is lost
 		$this->available['FacebookUpdater'] = array(true, false, false, false);
-		$this->updater->updatePostStats($post_id, 'canonical-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 	}
@@ -428,19 +428,19 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 
 		// 1. Network failure should not be reported
-		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
 		$this->assertFalse($result['network_failure']);
 
 		// 2. Network failure should be reported
 		$this->available['FacebookUpdater'] = false;
-		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 
 		// 3. A failure on a secondary request should be reported
 		$this->available['FacebookUpdater'] = array(true, false);
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
-		$result = $this->updater->fetchPostStats($post_id, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 	}
 
@@ -463,11 +463,11 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-3.json');
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-4.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-not-set/service-1.json');
 
 		$this->remove_meta_by_url($post_id, 'canonical-not-set/service-4.json');
 
-		$this->updater->updatePostStats($post_id, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, true, 'canonical-not-set/service-1.json');
 
 		$expected = $expected_total;
 		$expected['socialcount_twitter'] = 163132; // Minus service-4
