@@ -131,8 +131,10 @@ class SocialMetricsTracker {
 		wp_register_style( 'smt-css', plugins_url( 'css/social-metrics-tracker.min.css' , __FILE__ ), false, $this->version );
 		wp_enqueue_style( 'smt-css' );
 
-		wp_register_script( 'smt-js', plugins_url( 'js/social-metrics-tracker.min.js' , __FILE__ ), 'jquery', $this->version );
+		wp_register_script( 'smt-js', plugins_url( 'js/social-metrics-tracker.min.js' , __FILE__ ), array('jquery', 'jquery-ui-datepicker'), $this->version );
 		wp_enqueue_script( 'smt-js' );
+
+		wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
 	} // end adminHeaderScripts()
 

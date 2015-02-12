@@ -54,7 +54,7 @@ class SocialMetricsTable extends WP_List_Table {
 
 		// Show details button if there is alt URL data
 		if (count($item['socialcount_url_data']) > 0) {
-			$actions['details'] = '<a href="javascript:void(0);" onClick="jQuery(\'#stat-details-'.$item['ID'].'\').slideToggle();">Details</a>';
+			$actions['details'] = '<a href="javascript:void(0);" onClick="jQuery(\'#stat-details-'.$item['ID'].'\').slideToggle();">URL Details</a>';
 		}
 
 		$actions['info'] = sprintf('Updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']));
@@ -77,7 +77,7 @@ class SocialMetricsTable extends WP_List_Table {
 		);
 
 		foreach ($item['socialcount_url_data'] as $key => $val) {
-			$details['permalinks'][] = $val['permalink'];
+			$details['permalinks'][] = is_array($val) ? $val['permalink'] : $val;
 		}
 
 		return $this->smt->renderTemplate('stat-details', $details);

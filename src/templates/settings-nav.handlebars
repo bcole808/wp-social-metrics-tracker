@@ -1,0 +1,6 @@
+{{#each menu_items}}
+	{{#unless current}}<a href="{{url}}">{{/unless}}
+	{{label}}
+	{{#unless current}}</a>{{/unless}}
+	{{#unless @last}}|{{/unless}}
+{{/each}}

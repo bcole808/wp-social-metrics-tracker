@@ -198,7 +198,7 @@ class MetricsUpdater {
 		// Gather updated data from remote sources
 		$data             = $this->fetchPostStats($post_id, $permalink);
 		$post_meta        = $data['post_meta'];
-		$alt_data         = $data['alt_data'];
+		$alt_data_cache   = $data['alt_data'];
 		$alt_data_updated = $data['alt_data_updated'];
 
 		// Get comment count from DB
@@ -228,8 +228,8 @@ class MetricsUpdater {
 		}
 
 		// Save the socialcount_url_data fields
-		for ($i = 0; $i < count($alt_data); ++$i) {
-			update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$i], $alt_data[$i]);
+		for ($i = 0; $i < count($alt_data_cache); ++$i) {
+			update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$i], $alt_data_cache[$i]);
 		}
 
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
@@ -266,8 +266,8 @@ class MetricsUpdater {
 		$post_meta = array('socialcount_TOTAL' => 0);
 
 		// Init alt_url fields to check
-		$alt_data         = $this->filterAltMeta($post_id);
-		$alt_data_updated = $this->prepAltMeta($alt_data);
+		$alt_data_cache   = $this->filterAltMeta($post_id);
+		$alt_data_updated = $this->prepAltMeta($alt_data_cache);
 
 
 		// = = = = = TO-DO = = = = = 
@@ -318,9 +318,14 @@ class MetricsUpdater {
 		}
 
 		return array(
+			// Required
 			'post_meta'        => $post_meta,
-			'alt_data'         => $alt_data,
+			'alt_data'         => $alt_data_cache,
 			'alt_data_updated' => $alt_data_updated,
+
+			// Extras
+			'primary_url'      => $permalink,
+			'primary_result'   => $primary_result,
 			'network_failure'  => $network_failure,
 			'errors'           => $errors
 		);
