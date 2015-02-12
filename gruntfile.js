@@ -59,6 +59,9 @@ module.exports = function(grunt) {
 		    	options : {
 		    		spawn: false,
 		    	}
+		    },
+		    templates: {
+		    	files: ['src/**/*.handlebars']
 		    }
 		}
 
