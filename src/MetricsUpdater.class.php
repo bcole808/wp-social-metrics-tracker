@@ -179,11 +179,16 @@ class MetricsUpdater {
 	/**
 	* Ensure that all URLs match the protocol in configuration
 	*
-	* @param  string    $url  The URL to clean
+	* @param  string    $url       The URL to clean
+	* @param  string    $protocol  The protocol to conver to
 	* @return
 	*/
-	public function adjustProtocol($url) {
-		switch ($this->smt->get_smt_option('url_protocol')) {
+	public function adjustProtocol($url, $protocol=false) {
+		$protocol = ($protocol) ? $protocol : $this->smt->get_smt_option('url_protocol');
+
+		if ($protocol == 'both') $protocol = $this->primary_protocol();
+
+		switch ($protocol) {
 			case 'http':
 				return preg_replace("/^https:/i", "http:", $url);
 				break;
@@ -196,6 +201,23 @@ class MetricsUpdater {
 				return $url;
 				break;
 		}
+	}
+
+	private function getProtocol($url) {
+		return parse_url($url, PHP_URL_SCHEME);
+	}
+
+	// Returns the protocol in use by the home_url()
+	private function primary_protocol() {
+		$protocol = $this->getProtocol(get_home_url());
+		return ($protocol) ? $protocol : 'http';
+
+		// return $this->getProtocol(get_home_url());
+	}
+
+	// Returns the opposite of the protocol in use by the home_url();
+	private function secondary_protocol() {
+		return ($this->primary_protocol() == 'http') ? 'https' : 'http';
 	}
 
 
@@ -228,13 +250,13 @@ class MetricsUpdater {
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
 		// Will we re-check the alt_data?
-		$last_alt_check = get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true);
+		$last_alt_check = intval(get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true));
 		$incl_alt_data  = ($ignore_ttl || $this->hasPassedTTL($last_alt_check, true));
 
 		// Gather updated data from remote sources
 		$data             = $this->fetchPostStats($post_id, $incl_alt_data, $permalink);
 		$post_meta        = $data['post_meta'];
-		$alt_data_cache   = $data['alt_data'];
+		$alt_data_cache   = $data['alt_data_cache'];
 		$alt_data_updated = $data['alt_data_updated'];
 
 		// Get comment count from DB
@@ -257,7 +279,7 @@ class MetricsUpdater {
 
 		// Last updated time
 		$post_meta['socialcount_LAST_UPDATED'] = $this->getTime();
-		if ($incl_alt_data) {
+		if ($incl_alt_data && count($alt_data_updated) > 0) {
 			$post_meta['socialcount_alt_data_LAST_UPDATED'] = $this->getTime();
 		}
 
@@ -266,9 +288,13 @@ class MetricsUpdater {
 			update_post_meta($post_id, $key, $value);
 		}
 
-		// Save the socialcount_url_data fields
-		for ($i = 0; $i < count($alt_data_cache); ++$i) {
-			update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$i], $alt_data_cache[$i]);
+		// Save socialcount_url_data fields
+		foreach ($alt_data_updated as $key => $value) {
+			if (array_key_exists($key, $alt_data_cache)) {
+				update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$key], $alt_data_cache[$key]);
+			} else {
+				add_post_meta($post_id, 'socialcount_url_data', $value);
+			}
 		}
 
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
@@ -306,13 +332,8 @@ class MetricsUpdater {
 		$post_meta = array('socialcount_TOTAL' => 0);
 
 		// Init alt_url fields to check
-		$alt_data_cache   = $this->filterAltMeta($post_id);
-		$alt_data_updated = $this->prepAltMeta($alt_data_cache);
-
-
-		// = = = = = TO-DO = = = = = 
-		// 3. Auto-add other URL schemas that we want to track.
-		// = = = = = TO-DO = = = = = 
+		$alt_data_cache   = $this->filterAltMeta($post_id, $permalink);
+		$alt_data_updated = $this->prepAltMeta($alt_data_cache, $permalink);
 
 		
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
@@ -358,7 +379,7 @@ class MetricsUpdater {
 		return array(
 			// Required
 			'post_meta'        => $post_meta,
-			'alt_data'         => $alt_data_cache,
+			'alt_data_cache'   => $alt_data_cache,
 			'alt_data_updated' => $alt_data_updated,
 
 			// Extras
@@ -417,10 +438,21 @@ class MetricsUpdater {
 	* @param  int    $post_id  The Post ID to fetch
 	* @return array  The matching set of entries for 'socialcount_url_data'
 	*/
-	private function filterAltMeta($post_id) {
+	private function filterAltMeta($post_id, $permalink) {
 		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$protocol = $this->smt->get_smt_option('url_protocol');
 
-		$already_checked = array();
+		$delete_if_found = array();
+
+		// If filtering by protocol
+		if ($protocol == 'http' || $protocol == 'https') {
+			$delete_if_found[] = $this->adjustProtocol($permalink, 'https');
+			$delete_if_found[] = $this->adjustProtocol($permalink, 'http');
+		}
+
+		if ($protocol == 'both') {
+			$delete_if_found[] = $this->adjustProtocol($permalink, $this->primary_protocol());
+		}
 
 		foreach ($alt_data as $key => $val) {
 
@@ -441,13 +473,13 @@ class MetricsUpdater {
 				unset($alt_data[$key]);
 			}
 
-			// Delete duplicate entries
-			if (in_array($url, $already_checked)) {
+			// Delete duplicate entries or unwanted items
+			if (in_array($url, $delete_if_found)) {
 				delete_post_meta($post_id, 'socialcount_url_data', $val);
 				unset($alt_data[$key]);
 			}
 
-			$already_checked[] = $url;
+			$delete_if_found[] = $url;
 		}
 
 		return $alt_data;
@@ -455,12 +487,12 @@ class MetricsUpdater {
 
 
 	/**
-	* Prepare socialcount_alt_urls for updates by converting string entries into arrays
+	* Prepare socialcount_url_data for updates by converting string entries into arrays
 	*
-	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_alt_urls'
+	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
 	* @return array    $alt_data_updated An array of tweaked entries for postmeta
 	*/
-	private function prepAltMeta($alt_data) {
+	private function prepAltMeta($alt_data, $permalink) {
 		$alt_data_updated = $alt_data;
 		for ($i = 0; $i < count($alt_data); ++$i) {
 			$url = (is_string($alt_data[$i])) ? $alt_data[$i] : $alt_data[$i]['permalink'];
@@ -470,7 +502,45 @@ class MetricsUpdater {
 			}
 			$alt_data_updated[$i]['permalink'] = $url;
 		}
-		return $alt_data_updated;
+		return $this->addMissingAltURLs($alt_data_updated, $permalink);
+	}
+
+
+	/**
+	* Adds any missing URLs into alt_data
+	*
+	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
+	* @return array    $alt_data_updated An array of tweaked entries for postmeta
+	*/
+	private function addMissingAltURLs($alt_data, $permalink) {
+
+		$need_to_add = array();
+		$need_to_remove = array();
+
+		// Protocol
+		$protocol = $this->smt->get_smt_option('url_protocol');
+
+		if ($protocol == 'both') {
+			$need_to_add[] = $this->adjustProtocol($permalink, $this->secondary_protocol());
+		}
+		
+		// = = = = = TO-DO = = = = = 
+		// 3. Auto-add other URL schemas that we want to track.
+		// = = = = = TO-DO = = = = = 
+
+		foreach ($need_to_add as $url) {
+			if (!$this->hasURL($alt_data, $url))
+				$alt_data[] = array('permalink' => $url);
+		}
+
+		return $alt_data;
+	}
+
+	private function hasURL($alt_data, $url) {
+		foreach ($alt_data as $key => $val) {
+			if ($val['permalink'] == $url) return true;
+		}
+		return false;
 	}
 
 

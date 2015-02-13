@@ -12,6 +12,8 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	private $updater;
 	private $correct_alt_data;
 
+	private $override_all_sample_data = false;
+
 	// How to use: 
 	// A) Set value to true/false to set updater online/offline
 	// B) Set array (true, false, false, true) to indicate that updater should be online, then offline twice, then online. After fourth, Updater returns to regular online state. 
@@ -61,7 +63,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			    	}
 
 			    	$path = str_replace('service', $this->updater->sources->{$class_name}->slug, $this->updater->sources->{$class_name}->post_url);
-			    	return ($status) ? $this->get_sample_data($path) : false;
+			    	return ($status) ? $this->get_sample_data($path, $this->updater->sources->{$class_name}->slug) : false;
 			    })
 			);
 		}
@@ -171,8 +173,13 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	}
 
 	// Opens and returns the sample data file, or false
-	function get_sample_data($file) {
-		$result = @file_get_contents(dirname(__FILE__).'/sample-data/'.$file);
+	function get_sample_data($file, $slug) {
+		if ($this->override_all_sample_data) {
+			$result = @file_get_contents(dirname(__FILE__).'/sample-data/canonical-set/'.$slug.'-1.json');
+		} else {
+			$result = @file_get_contents(dirname(__FILE__).'/sample-data/'.$file);
+		}
+		
 		return ($result) ? $result : false;
 	}
 
@@ -253,7 +260,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			    	}
 
 			    	$path = str_replace('service', $this->updater->sources->{$class_name}->slug, $this->updater->sources->{$class_name}->post_url);
-			    	return ($status) ? $this->get_sample_data($path) : false;
+			    	return ($status) ? $this->get_sample_data($path, $this->updater->sources->{$class_name}->slug) : false;
 			    })
 			);
 		}
@@ -494,15 +501,111 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// When configured, plugin should automatically adjust url_data fields
 	function test_ssl_protocol_configuration() {
 
+		$this->override_all_sample_data = true;
+		$post_id = $this->factory->post->create();
+
+
 		// 0. Input validation
+		$this->smt->set_smt_option('url_protocol', 'foobar');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+		$this->assertEquals(0, count(get_post_meta($post_id, 'socialcount_url_data')));
+
+		$this->smt->set_smt_option('url_protocol', array('foo', 'bar'));
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+		$this->assertEquals(0, count(get_post_meta($post_id, 'socialcount_url_data')));
+
+		$this->smt->set_smt_option('url_protocol', array('foo', -9755));
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+		$this->assertEquals(0, count(get_post_meta($post_id, 'socialcount_url_data')));
+
+		$this->smt->set_smt_option('url_protocol', array('foo', true));
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+		$this->assertEquals(0, count(get_post_meta($post_id, 'socialcount_url_data')));
+
 
 		// 1. Auto should not affect the url_data fields
+		$this->smt->set_smt_option('url_protocol', 'auto');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
 
-		// 2. http should remove https url_data fields, and use http as primary
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(0, count($alt_data));
 
-		// 3. https should remove http url_data fields, and use https as primary
 
-		// 4. Both should prioritize the protocol that the home_url is on, and set the other as an alt field
+		// 2. Both should prioritize the protocol that the home_url is on, and set the other as an alt field
+		$this->smt->set_smt_option('url_protocol', 'both');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'https://www.wordpress.org');
+
+
+		// 2a. The other way should work too! 
+		update_option('siteurl','https://example.com');
+		update_option('home','https://example.com');
+
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://www.wordpress.org');
+
+
+		// 3. http should remove https url_data fields, and use http as primary
+		$this->smt->set_smt_option('url_protocol', 'http');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(0, count($alt_data));
+
+
+		// 4. https should remove http url_data fields, and use https as primary
+		$this->smt->set_smt_option('url_protocol', 'both');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$this->smt->set_smt_option('url_protocol', 'https');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(0, count($alt_data));
+
+
+		// 5. If configured for both, then the site protocol changes!
+		update_option('siteurl','http://example.com');
+		update_option('home','http://example.com');
+
+		$this->smt->set_smt_option('url_protocol', 'both');
+		$this->updater->updatePostStats($post_id, true, 'http://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'https://www.wordpress.org');
+
+		update_option('siteurl','https://example.com');
+		update_option('home','https://example.com');
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://www.wordpress.org');
+
+
+		// 6. It should not affect other fields
+		$this->smt->set_smt_option('url_protocol', 'http');
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org');
+
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-3.json');
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org');
+
+		$this->smt->set_smt_option('url_protocol', 'both');
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(3, count($alt_data), print_r($alt_data, true));
+
 	}
 
 	// When configured, plugin should automatically add url_data fields
@@ -520,7 +623,35 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 	// 0. Input validation
 	function test_performance_option_configuration_0() {
+		$this->smt->set_smt_option('alt_url_ttl_multiplier', 'something_invalid');
+
+		// This post has 2 URLs to check
 		$post_id = $this->factory->post->create();
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+
+		$this->updater->sources->FacebookUpdater->expects($this->exactly(6))->method('getURL');
+		$this->updater->sources->TwitterUpdater->expects($this->exactly(6))->method('getURL');
+		$this->updater->sources->LinkedInUpdater->expects($this->exactly(6))->method('getURL');
+
+		// Only one of these should go through
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 0 requests
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 0 requests
+
+		// Time travel to the future
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+		$new_time = $this->getTime() + ($ttl) + 1;
+		$this->setTime($new_time);
+
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests -- invalid value simply means regular TTL
+
+		// Time travel to the future
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+		$new_time = $this->getTime() + ($ttl * 4) + 1;
+		$this->setTime($new_time);
+
+		// Now try again, it should go through
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
 	}
 
 	// 1. When multiplier is set to 1, should always update if time elapsed
