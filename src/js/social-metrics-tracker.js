@@ -15,7 +15,9 @@ this.jQuery && (function ($) {
 		if ($('#smt-settings-url-page').length) {
 
 			// Datepicker
-			$('#rewrite_before_date').datepicker();
+			$('#rewrite_before_date').datepicker({
+				dateFormat: "yy-mm-dd"
+			});
 
 			var $rewrite_change_to  = $('#rewrite_change_to');
 			var $rewrite_match_from = $('#rewrite_match_from');

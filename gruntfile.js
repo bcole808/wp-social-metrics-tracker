@@ -27,10 +27,12 @@ module.exports = function(grunt) {
 		        dir: ''
 		    },
 		    options: {
-		        bin: 'phpunit --exclude-group external-http',
+		        bin: 'phpunit',
 		        bootstrap: 'tests/bootstrap.php',
 		        colors: true,
-		        failOnFailures: true // Allow grunt to continue watching on failure
+		        failOnFailures: true, // Allow grunt to continue watching on failure
+		        // coverageClover: true,
+		        excludeGroup: 'external-http'
 		    }
 		},
 

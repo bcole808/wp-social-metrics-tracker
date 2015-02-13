@@ -609,16 +609,143 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	}
 
 	// When configured, plugin should automatically add url_data fields
-	function test_domain_migration_configuration() {
+	function test_domain_migration_configuration_1() {
+		$this->override_all_sample_data = true;
+		$post_id = $this->factory->post->create();
 
-		// 0. Input validation
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'https://www.wordpress.org/',
+				'rewrite_change_to'   => 'http://old.domain.com/',
+				'rewrite_before_date' => ''
+			)
+		);
+
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
 
 		// 1. When there is no date, should add url_data field to all posts
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=1');
 
-		// 2. When there is a date, should only add url_data field for correct posts
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://old.domain.com/?p=1', print_r($alt_data, true));
 
-		// 3. When migrating multiple times, old url_data should not be erased
+		
+		// Input validation - it should ignore bad dates
+		$post_id = $this->factory->post->create();
 
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'https://www.wordpress.org/',
+				'rewrite_change_to'   => 'http://old.domain.com/',
+				'rewrite_before_date' => 'wrong date!!!'
+			)
+		);
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=1');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://old.domain.com/?p=1', print_r($alt_data, true));
+		
+
+		// Input validation - it should not attempt bad URLs
+		$post_id = $this->factory->post->create();
+
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'super crazy bad input',
+				'rewrite_change_to'   => 'http://old.domain.com/',
+				'rewrite_before_date' => 'wrong date'
+			)
+		);
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=1');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(0, count($alt_data), print_r($alt_data, true));
+
+
+		// Input validation - it should not attempt bad URLs
+		$post_id = $this->factory->post->create();
+
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'http://old.domain.com/',
+				'rewrite_change_to'   => 'super crazy bad input',
+				'rewrite_before_date' => 'wrong date'
+			)
+		);
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=1');
+
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$this->assertEquals(0, count($alt_data), print_r($alt_data, true));
+
+	}
+
+	// 2. When there is a date, should only add url_data field for correct posts
+	function test_domain_migration_configuration_2() {
+		
+		$this->override_all_sample_data = true;
+
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'https://www.wordpress.org/',
+				'rewrite_change_to'   => 'http://old.domain.com/',
+				'rewrite_before_date' => '2015-01-10' // must use slashes
+			)
+		);
+
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
+
+		// 2b. It should not add a newer post
+		$post_id = $this->factory->post->create();
+		$post = get_post($post_id);
+		$post->post_date = '2015-01-11 12:00:00';
+		wp_update_post($post);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=2');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+
+		$this->assertEquals(0, count($alt_data));
+
+
+		// 2a. It should add a post in the past
+		$post_id = $this->factory->post->create();
+		$post = get_post($post_id);
+		$post->post_date = '2015-01-09 12:00:00';
+		wp_update_post($post);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=2');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+
+		$this->assertEquals(1, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://old.domain.com/?p=2', print_r($alt_data, true));
+
+		
+		// 2c. When migrating multiple times, old url_data should not be erased
+		$url_rewrites = array(
+			array(
+				'rewrite_match_from'  => 'https://www.wordpress.org/',
+				'rewrite_change_to'   => 'http://super.old.domain.com/',
+				'rewrite_before_date' => '2015-01-10' // must use slashes
+			)
+		);
+
+		$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+
+		$this->updater->updatePostStats($post_id, true, 'https://www.wordpress.org/?p=2');
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+
+		$this->assertEquals(2, count($alt_data));
+		$this->assertTrue($alt_data[0]['permalink'] == 'http://old.domain.com/?p=2', print_r($alt_data, true));
+		$this->assertTrue($alt_data[1]['permalink'] == 'http://super.old.domain.com/?p=2', print_r($alt_data, true));
 	}
 
 	// 0. Input validation

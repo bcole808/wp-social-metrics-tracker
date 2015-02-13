@@ -249,18 +249,18 @@ class MetricsUpdater {
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
+		// Get post object
+		$post = get_post($post_id);
+
 		// Will we re-check the alt_data?
 		$last_alt_check = intval(get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true));
 		$incl_alt_data  = ($ignore_ttl || $this->hasPassedTTL($last_alt_check, true));
 
 		// Gather updated data from remote sources
-		$data             = $this->fetchPostStats($post_id, $incl_alt_data, $permalink);
+		$data             = $this->fetchPostStats($post_id, $incl_alt_data, $permalink, $post);
 		$post_meta        = $data['post_meta'];
 		$alt_data_cache   = $data['alt_data_cache'];
 		$alt_data_updated = $data['alt_data_updated'];
-
-		// Get comment count from DB
-		$post = get_post($post_id);
 
 		// Calculate aggregate score.
 		$social_aggregate_score_detail = $this->calculateScoreAggregate(
@@ -315,7 +315,7 @@ class MetricsUpdater {
 	* @param  string $permalink the primary permalink associated with a post
 	* @return array  The social data collected, or cached data
 	*/
-	public function fetchPostStats($post_id, $refresh_alt_data=false, $permalink=false) {
+	public function fetchPostStats($post_id, $refresh_alt_data=false, $permalink=false, $post=false) {
 
 		// Data validation
 		$post_id = intval($post_id);
@@ -333,7 +333,7 @@ class MetricsUpdater {
 
 		// Init alt_url fields to check
 		$alt_data_cache   = $this->filterAltMeta($post_id, $permalink);
-		$alt_data_updated = $this->prepAltMeta($alt_data_cache, $permalink);
+		$alt_data_updated = $this->prepAltMeta($alt_data_cache, $permalink, $post);
 
 		
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
@@ -492,7 +492,7 @@ class MetricsUpdater {
 	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
 	* @return array    $alt_data_updated An array of tweaked entries for postmeta
 	*/
-	private function prepAltMeta($alt_data, $permalink) {
+	private function prepAltMeta($alt_data, $permalink, $post) {
 		$alt_data_updated = $alt_data;
 		for ($i = 0; $i < count($alt_data); ++$i) {
 			$url = (is_string($alt_data[$i])) ? $alt_data[$i] : $alt_data[$i]['permalink'];
@@ -502,7 +502,7 @@ class MetricsUpdater {
 			}
 			$alt_data_updated[$i]['permalink'] = $url;
 		}
-		return $this->addMissingAltURLs($alt_data_updated, $permalink);
+		return $this->addMissingAltURLs($alt_data_updated, $permalink, $post);
 	}
 
 
@@ -512,7 +512,7 @@ class MetricsUpdater {
 	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
 	* @return array    $alt_data_updated An array of tweaked entries for postmeta
 	*/
-	private function addMissingAltURLs($alt_data, $permalink) {
+	private function addMissingAltURLs($alt_data, $permalink, $post) {
 
 		$need_to_add = array();
 		$need_to_remove = array();
@@ -523,11 +523,31 @@ class MetricsUpdater {
 		if ($protocol == 'both') {
 			$need_to_add[] = $this->adjustProtocol($permalink, $this->secondary_protocol());
 		}
-		
-		// = = = = = TO-DO = = = = = 
-		// 3. Auto-add other URL schemas that we want to track.
-		// = = = = = TO-DO = = = = = 
 
+		// Domain migration
+		$url_rewrites = $this->smt->get_smt_option('url_rewrites');
+
+		if ($url_rewrites) {
+			foreach ($url_rewrites as $rewrite) {
+
+				// Date comparison
+				$timestamp = strtotime($post->post_date);
+				$before    = strtotime($rewrite['rewrite_before_date']);
+
+				// Skip if published later than 'before' date
+				if ($timestamp !== false && $before !== false && $timestamp > $before)  continue;
+
+				// Do the replacement
+				$find    = $rewrite['rewrite_match_from'];
+				$replace = $rewrite['rewrite_change_to'];
+
+				$url = preg_replace("/^".preg_quote($find, '/')."/i", $replace, $permalink, 1, $count);
+
+				if ($this->isValidURL($url) && $count > 0) $need_to_add[] = $url;
+			}
+		}
+	
+		// Add to meta object
 		foreach ($need_to_add as $url) {
 			if (!$this->hasURL($alt_data, $url))
 				$alt_data[] = array('permalink' => $url);

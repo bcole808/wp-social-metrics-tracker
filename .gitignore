@@ -3,3 +3,4 @@
 /tests/coverage*
 node_modules/*
 .sass-cache/*
+build/logs/clover.xml
