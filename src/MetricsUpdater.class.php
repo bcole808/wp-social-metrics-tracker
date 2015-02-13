@@ -31,7 +31,7 @@ class MetricsUpdater {
 
 		// Set up event hooks
 		add_action( 'social_metrics_full_update', array( $this, 'scheduleFullDataSync' ) );
-		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
+		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 2 );
 
 		// Manual data update for a post
 		if (is_admin() && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
@@ -67,7 +67,7 @@ class MetricsUpdater {
 	}
 
 	// Get the current time
-	public function getTime() {
+	public function getLocalTime() {
 		return current_time( 'timestamp' );
 	}
 
@@ -85,7 +85,7 @@ class MetricsUpdater {
 			$ttl = $ttl * $multiplier;
 		}
 
-		return $last_timestamp + $ttl < $this->getTime();
+		return $last_timestamp + $ttl < $this->getLocalTime();
 	}
 
 	// Check if a post ID is ready to be scheduled for update
@@ -100,7 +100,7 @@ class MetricsUpdater {
 		$post_id = intval( $_REQUEST['smt_sync_now'] );
 		if (!$post_id) return false;
 
-		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > $this->getTime()-300) {
+		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > $this->getLocalTime()-300) {
 			add_action ( 'admin_notices', array($this, 'manualUpdateMustWait') );
 		} else {
 			$this->updatePostStats($_REQUEST['smt_sync_now'], true);
@@ -151,7 +151,7 @@ class MetricsUpdater {
 		if ($this->isPostReadyForNextUpdate($post_id)) {
 
 			// Schedule an update
-			wp_schedule_single_event( $this->getTime(), 'social_metrics_update_single_post', array( $post_id ) );
+			wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
 
 		}
 
@@ -275,12 +275,12 @@ class MetricsUpdater {
 		$post_meta['social_aggregate_score']                      = $social_aggregate_score_detail['total'];
 		$post_meta['social_aggregate_score_detail']               = $social_aggregate_score_detail;
 		$post_meta['social_aggregate_score_decayed']              = $social_aggregate_score_decayed;
-		$post_meta['social_aggregate_score_decayed_last_updated'] = $this->getTime();
+		$post_meta['social_aggregate_score_decayed_last_updated'] = $this->getLocalTime();
 
 		// Last updated time
-		$post_meta['socialcount_LAST_UPDATED'] = $this->getTime();
+		$post_meta['socialcount_LAST_UPDATED'] = $this->getLocalTime();
 		if ($incl_alt_data && count($alt_data_updated) > 0) {
-			$post_meta['socialcount_alt_data_LAST_UPDATED'] = $this->getTime();
+			$post_meta['socialcount_alt_data_LAST_UPDATED'] = $this->getLocalTime();
 		}
 
 		// Save all of the meta fields
@@ -613,7 +613,7 @@ class MetricsUpdater {
 	* Purpose: To lower the score of posts over time so that older posts do not display on top.
 	*
 	* @param  int  		$score  The original number
-	* @param  string  	$datePublished The date string of when the content was published; parsed with strto$this->getTime();
+	* @param  string  	$datePublished The date string of when the content was published; parsed with strto$this->getLocalTime();
 	* @return float The decayed score
 	*/
 	public function calculateScoreDecay($score, $datePublished) {
@@ -630,7 +630,7 @@ class MetricsUpdater {
 		if (!$timestamp) return false;
 		if ($score < 0 || $timestamp <= 0) return false;
 
-		$daysActive = ($this->getTime() - $timestamp) / $SECONDS_PER_DAY;
+		$daysActive = ($this->getLocalTime() - $timestamp) / $SECONDS_PER_DAY;
 
 		// If newer than 5 days, boost.
 		if ($daysActive < 5) {
@@ -692,7 +692,7 @@ class MetricsUpdater {
 			// Update decayed score.
 			$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 			update_post_meta($post->ID, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", $this->getTime());
+			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", $this->getLocalTime());
 
 			if ($print_output) {
 				echo "Updated ".$post->post_title.", total: <b>".$social_aggregate_score_detail['total'] . "</b> decayed: ".$social_aggregate_score_decayed."<br>";
@@ -727,7 +727,7 @@ class MetricsUpdater {
 	*/
 	public function scheduleFullDataSync($verbose = false) {
 
-		update_option( 'smt_last_full_sync', $this->getTime() );
+		update_option( 'smt_last_full_sync', $this->getLocalTime() );
 
 		$post_types = $this->get_post_types();
 		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
@@ -764,11 +764,11 @@ class MetricsUpdater {
 		$i = 1;
 		foreach ($q->posts as $post ) {
 			// We are going to stagger the updates so we do not overload the Wordpress cron.
-			$time = $this->getTime() + (5 * ($offset + $i++));
+			$time = time() + (5 * ($offset + $i++));
 
-			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID ) );
+			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID, true ) );
 			if ($next == false) {
-				wp_schedule_single_event( $time, 'social_metrics_update_single_post', array( $post->ID ) );
+				wp_schedule_single_event( $time, 'social_metrics_update_single_post', array( $post->ID, true ) );
 			}
 
 		}

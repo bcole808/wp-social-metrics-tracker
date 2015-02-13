@@ -31,7 +31,7 @@ module.exports = function(grunt) {
 		        bootstrap: 'tests/bootstrap.php',
 		        colors: true,
 		        failOnFailures: true, // Allow grunt to continue watching on failure
-		        // coverageClover: true,
+		        // coverageClover: 'build/logs/clover.xml',
 		        excludeGroup: 'external-http'
 		    }
 		},

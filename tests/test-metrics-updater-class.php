@@ -267,19 +267,19 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 		// 1: It runs without failing
 		$this->assertTrue(($this->updater->scheduleFullDataSync() == 2), 'Function failed to complete successfully.');
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It did not actually schedule a cron task!');
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($second_post_id)), 'It did not actually schedule a cron task!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'It did not actually schedule a cron task!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($second_post_id, true)), 'It did not actually schedule a cron task!');
 	}
 
 	function test_removeAllQueuedUpdates() {
 		// SETUP: Make a post
 		$post_id = $this->factory->post->create();
 		$this->updater->scheduleFullDataSync();
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'Setup for this test failed!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'Setup for this test failed!');
 
 		// 1: It removes scheduled tasks
 		$this->updater->removeAllQueuedUpdates();
-		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It failed to remove items from the cron queue!');
+		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'It failed to remove items from the cron queue!');
 	}
 
 	function test_adjustProtocol() {

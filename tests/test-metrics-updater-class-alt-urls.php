@@ -33,7 +33,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		$this->updater = $this->getMockBuilder('\MetricsUpdater')
 			->setConstructorArgs(array($this->smt))
-		    ->setMethods(array('isValidURL', 'getTime'))
+		    ->setMethods(array('isValidURL', 'getLocalTime'))
 		    ->getMock();
 
 		$this->updater->expects($this->any())
@@ -41,8 +41,8 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		    ->will($this->returnValue(true));
 
 		$this->updater->expects($this->any())
-		    ->method('getTime')
-		    ->will($this->returnCallback(array($this, 'getTime')));
+		    ->method('getLocalTime')
+		    ->will($this->returnCallback(array($this, 'getLocalTime')));
 
 
 		// MOCK HTTP-RESOURCE-UPDATERS
@@ -167,7 +167,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	}
 
 	// Get the time
-	function getTime() {
+	function getLocalTime() {
 		if (!isset($this->current_time)) $this->setTime(current_time( 'timestamp' ));
 		return $this->current_time;
 	}
@@ -767,14 +767,14 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// Time travel to the future
 		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
-		$new_time = $this->getTime() + ($ttl) + 1;
+		$new_time = $this->getLocalTime() + ($ttl) + 1;
 		$this->setTime($new_time);
 
 		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests -- invalid value simply means regular TTL
 
 		// Time travel to the future
 		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
-		$new_time = $this->getTime() + ($ttl * 4) + 1;
+		$new_time = $this->getLocalTime() + ($ttl * 4) + 1;
 		$this->setTime($new_time);
 
 		// Now try again, it should go through
@@ -799,7 +799,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// Time travel to the future
 		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
-		$new_time = $this->getTime() + ($ttl * 5) + 1;
+		$new_time = $this->getLocalTime() + ($ttl * 5) + 1;
 		$this->setTime($new_time);
 
 		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
@@ -848,14 +848,14 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// Time travel to the future
 		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
-		$new_time = $this->getTime() + ($ttl) + 1;
+		$new_time = $this->getLocalTime() + ($ttl) + 1;
 		$this->setTime($new_time);
 
 		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 1 requests
 
 		// Time travel to the future
 		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
-		$new_time = $this->getTime() + ($ttl * 4) + 1;
+		$new_time = $this->getLocalTime() + ($ttl * 4) + 1;
 		$this->setTime($new_time);
 
 		// Now try again, it should go through
