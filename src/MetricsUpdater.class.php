@@ -66,6 +66,34 @@ class MetricsUpdater {
 		return $this->sources;
 	}
 
+	// Get the current time
+	public function getTime() {
+		return current_time( 'timestamp' );
+	}
+
+	// Get the TTL in seconds
+	public function getTTL() {
+		return $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+	}
+
+	// Check if a timestamp has passed the TTL
+	public function hasPassedTTL($last_timestamp, $secondary=false) {
+		$ttl = $this->getTTL();
+
+		if ($secondary) {
+			$multiplier = max(1, intval($this->smt->get_smt_option('alt_url_ttl_multiplier')));
+			$ttl = $ttl * $multiplier;
+		}
+
+		return $last_timestamp + $ttl < $this->getTime();
+	}
+
+	// Check if a post ID is ready to be scheduled for update
+	public function isPostReadyForNextUpdate($post_id) {
+		$last_updated = intval(get_post_meta($post_id, "socialcount_LAST_UPDATED", true));
+		return $this->hasPassedTTL($last_updated);
+	}
+
 	// Manual data update for a post
 	public function manualUpdate() {
 
@@ -119,16 +147,11 @@ class MetricsUpdater {
 		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
-		// Check TTL timeout
-		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
-		$ttl = $this->smt->options['smt_options_ttl_hours'] * 3600;
-
-		// If no timeout
-		$temp = time() - $ttl;
-		if ($last_updated < $temp) {
+		// If TTL has elapsed
+		if ($this->isPostReadyForNextUpdate($post_id)) {
 
 			// Schedule an update
-			wp_schedule_single_event( time(), 'social_metrics_update_single_post', array( $post_id ) );
+			wp_schedule_single_event( $this->getTime(), 'social_metrics_update_single_post', array( $post_id ) );
 
 		}
 
@@ -195,14 +218,21 @@ class MetricsUpdater {
 		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
 		if ($permalink === false) return false;
 
+		// Stop if TTL not elapsed
+		if ($ignore_ttl === false && !$this->isPostReadyForNextUpdate($post_id)) return false;
+
 		// Remove secure protocol from URL
 		$permalink = $this->adjustProtocol($permalink);
 
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
+		// Will we re-check the alt_data?
+		$last_alt_check = get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true);
+		$incl_alt_data  = ($ignore_ttl || $this->hasPassedTTL($last_alt_check, true));
+
 		// Gather updated data from remote sources
-		$data             = $this->fetchPostStats($post_id, $ignore_ttl, $permalink);
+		$data             = $this->fetchPostStats($post_id, $incl_alt_data, $permalink);
 		$post_meta        = $data['post_meta'];
 		$alt_data_cache   = $data['alt_data'];
 		$alt_data_updated = $data['alt_data_updated'];
@@ -223,10 +253,13 @@ class MetricsUpdater {
 		$post_meta['social_aggregate_score']                      = $social_aggregate_score_detail['total'];
 		$post_meta['social_aggregate_score_detail']               = $social_aggregate_score_detail;
 		$post_meta['social_aggregate_score_decayed']              = $social_aggregate_score_decayed;
-		$post_meta['social_aggregate_score_decayed_last_updated'] = time();
+		$post_meta['social_aggregate_score_decayed_last_updated'] = $this->getTime();
 
 		// Last updated time
-		$post_meta['socialcount_LAST_UPDATED'] = time();
+		$post_meta['socialcount_LAST_UPDATED'] = $this->getTime();
+		if ($incl_alt_data) {
+			$post_meta['socialcount_alt_data_LAST_UPDATED'] = $this->getTime();
+		}
 
 		// Save all of the meta fields
 		foreach ($post_meta as $key => $value) {
@@ -252,11 +285,11 @@ class MetricsUpdater {
 	* Retrieve new data about a post and a URL, or return cached values if remote service unavailable
 	*
 	* @param  int    $post_id
-	* @param  bool   $ignore_ttl If we should execute the update immediately, ignoring all TTL rules
+	* @param  bool   $refresh_alt_data If we should execute the update immediately, ignoring all TTL rules
 	* @param  string $permalink the primary permalink associated with a post
 	* @return array  The social data collected, or cached data
 	*/
-	public function fetchPostStats($post_id, $ignore_ttl=false, $permalink=false) {
+	public function fetchPostStats($post_id, $refresh_alt_data=false, $permalink=false) {
 
 		// Data validation
 		$post_id = intval($post_id);
@@ -281,38 +314,36 @@ class MetricsUpdater {
 		// 3. Auto-add other URL schemas that we want to track.
 		// = = = = = TO-DO = = = = = 
 
-
+		
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
-
+			// EACH - API Resource
 			$primary_result = $HTTPResourceUpdater->sync($post_id, $permalink);
 
-
-			// = = = = = TO-DO = = = = = 
-			// Check a seperate TTL for secondary URL updates?
-			// = = = = = TO-DO = = = = = 
-
-
-			if ($primary_result !== false)
-			foreach ($alt_data_updated as $key => $val) {
-
-				$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
-
-				if ($result !== false) {
-					$alt_data_updated[$key] = array_merge($val, $result);
-					$alt_data_updated[$key]['socialcount_LAST_UPDATED'] = time();
-				} else {
-					$network_failure = true;
-					if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
-				}
-
-			}
-
 			if ($primary_result === false) {
-				// Primary request failed; use last saved value in total
-				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
 				$network_failure = true;
 				if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+
+				// Use last saved value in total
+				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+				
 			} else {
+
+				if ($refresh_alt_data) {
+					foreach ($alt_data_updated as $key => $val) {
+						// EACH - Alternate URL
+
+						$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
+
+						if ($result !== false) {
+							$alt_data_updated[$key] = array_merge($val, $result);
+						} else {
+							$network_failure = true;
+							if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+						}
+
+					}
+				}
+
 				// Merge all the data we collected
 				$final_result = $this->mergeResults($primary_result, $alt_data_updated);
 
@@ -492,7 +523,7 @@ class MetricsUpdater {
 	* Purpose: To lower the score of posts over time so that older posts do not display on top.
 	*
 	* @param  int  		$score  The original number
-	* @param  string  	$datePublished The date string of when the content was published; parsed with strtotime();
+	* @param  string  	$datePublished The date string of when the content was published; parsed with strto$this->getTime();
 	* @return float The decayed score
 	*/
 	public function calculateScoreDecay($score, $datePublished) {
@@ -509,7 +540,7 @@ class MetricsUpdater {
 		if (!$timestamp) return false;
 		if ($score < 0 || $timestamp <= 0) return false;
 
-		$daysActive = (time() - $timestamp) / $SECONDS_PER_DAY;
+		$daysActive = ($this->getTime() - $timestamp) / $SECONDS_PER_DAY;
 
 		// If newer than 5 days, boost.
 		if ($daysActive < 5) {
@@ -571,7 +602,7 @@ class MetricsUpdater {
 			// Update decayed score.
 			$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 			update_post_meta($post->ID, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", time());
+			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", $this->getTime());
 
 			if ($print_output) {
 				echo "Updated ".$post->post_title.", total: <b>".$social_aggregate_score_detail['total'] . "</b> decayed: ".$social_aggregate_score_decayed."<br>";
@@ -606,7 +637,7 @@ class MetricsUpdater {
 	*/
 	public function scheduleFullDataSync($verbose = false) {
 
-		update_option( 'smt_last_full_sync', time() );
+		update_option( 'smt_last_full_sync', $this->getTime() );
 
 		$post_types = $this->get_post_types();
 		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
@@ -643,7 +674,7 @@ class MetricsUpdater {
 		$i = 1;
 		foreach ($q->posts as $post ) {
 			// We are going to stagger the updates so we do not overload the Wordpress cron.
-			$time = time() + (5 * ($offset + $i++));
+			$time = $this->getTime() + (5 * ($offset + $i++));
 
 			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID ) );
 			if ($next == false) {

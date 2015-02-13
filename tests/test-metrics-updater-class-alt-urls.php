@@ -26,17 +26,21 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		parent::setUp();
 
 		// Create an updater object
-		$smt = new SocialMetricsTracker();
-		$smt->init();
+		$this->smt = new SocialMetricsTracker();
+		$this->smt->init();
 
 		$this->updater = $this->getMockBuilder('\MetricsUpdater')
-			->setConstructorArgs(array($smt))
-		    ->setMethods(array('isValidURL'))
+			->setConstructorArgs(array($this->smt))
+		    ->setMethods(array('isValidURL', 'getTime'))
 		    ->getMock();
 
 		$this->updater->expects($this->any())
 		    ->method('isValidURL')
 		    ->will($this->returnValue(true));
+
+		$this->updater->expects($this->any())
+		    ->method('getTime')
+		    ->will($this->returnCallback(array($this, 'getTime')));
 
 
 		// MOCK HTTP-RESOURCE-UPDATERS
@@ -153,6 +157,17 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// DO AFTER ALL TESTS
 	function tearDown() {
 		parent::tearDown();
+	}
+
+	// Set the time
+	function setTime($time) {
+		$this->current_time = $time;
+	}
+
+	// Get the time
+	function getTime() {
+		if (!isset($this->current_time)) $this->setTime(current_time( 'timestamp' ));
+		return $this->current_time;
 	}
 
 	// Opens and returns the sample data file, or false
@@ -428,19 +443,19 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 
 		// 1. Network failure should not be reported
-		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
 		$this->assertFalse($result['network_failure']);
 
 		// 2. Network failure should be reported
 		$this->available['FacebookUpdater'] = false;
-		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 
 		// 3. A failure on a secondary request should be reported
 		$this->available['FacebookUpdater'] = array(true, false);
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
-		$result = $this->updater->fetchPostStats($post_id, false, 'canonical-set/service-2.json');
+		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 	}
 
@@ -475,5 +490,124 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->verify_correct_primary_data($post_id, $expected);
 		
 	}
+
+	// When configured, plugin should automatically adjust url_data fields
+	function test_ssl_protocol_configuration() {
+
+		// 0. Input validation
+
+		// 1. Auto should not affect the url_data fields
+
+		// 2. http should remove https url_data fields, and use http as primary
+
+		// 3. https should remove http url_data fields, and use https as primary
+
+		// 4. Both should prioritize the protocol that the home_url is on, and set the other as an alt field
+	}
+
+	// When configured, plugin should automatically add url_data fields
+	function test_domain_migration_configuration() {
+
+		// 0. Input validation
+
+		// 1. When there is no date, should add url_data field to all posts
+
+		// 2. When there is a date, should only add url_data field for correct posts
+
+		// 3. When migrating multiple times, old url_data should not be erased
+
+	}
+
+	// 0. Input validation
+	function test_performance_option_configuration_0() {
+		$post_id = $this->factory->post->create();
+	}
+
+	// 1. When multiplier is set to 1, should always update if time elapsed
+	function test_performance_option_configuration_1() {
+
+		$this->smt->set_smt_option('alt_url_ttl_multiplier', '1');
+
+		// This post has 2 URLs to check
+		$post_id = $this->factory->post->create();
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+
+		$this->updater->sources->FacebookUpdater->expects($this->exactly(4))->method('getURL');
+		$this->updater->sources->TwitterUpdater->expects($this->exactly(4))->method('getURL');
+		$this->updater->sources->LinkedInUpdater->expects($this->exactly(4))->method('getURL');
+
+		// Fire update twice, should update total of 4 URLs
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
+
+		// Time travel to the future
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+		$new_time = $this->getTime() + ($ttl * 5) + 1;
+		$this->setTime($new_time);
+
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
+		
+	}
+
+	// 2. It should not allow consecutive calls
+	function test_performance_option_configuration_2() {
+		$this->smt->set_smt_option('alt_url_ttl_multiplier', '1');
+
+		// This post has 2 URLs to check
+		$post_id = $this->factory->post->create();
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+
+		$this->updater->sources->FacebookUpdater->expects($this->exactly(2))->method('getURL');
+		$this->updater->sources->TwitterUpdater->expects($this->exactly(2))->method('getURL');
+		$this->updater->sources->LinkedInUpdater->expects($this->exactly(2))->method('getURL');
+
+		// Fire update twice, should update total of 2 URLs because of TTL
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json');
+	}
+
+	
+
+	// 3. When set to 5, it should allow the call through after the amount of time has passed but not before
+	function test_performance_option_configuration_3() {
+		$this->smt->set_smt_option('alt_url_ttl_multiplier', '5');
+
+		// This post has 2 URLs to check
+		$post_id = $this->factory->post->create();
+		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
+
+		$this->updater->sources->FacebookUpdater->expects($this->exactly(5))->method('getURL');
+		$this->updater->sources->TwitterUpdater->expects($this->exactly(5))->method('getURL');
+		$this->updater->sources->LinkedInUpdater->expects($this->exactly(5))->method('getURL');
+
+		// Only one of these should go through
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 0 requests
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 0 requests
+
+		// Time travel to the future
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+		$new_time = $this->getTime() + ($ttl) + 1;
+		$this->setTime($new_time);
+
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 1 requests
+
+		// Time travel to the future
+		$ttl = $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+		$new_time = $this->getTime() + ($ttl * 4) + 1;
+		$this->setTime($new_time);
+
+		// Now try again, it should go through
+		$this->updater->updatePostStats($post_id, false, 'canonical-not-set/service-1.json'); // 2 requests
+	}	
+
+	// 4. Manual update should skip TTL. 
+	function test_performance_option_configuration_4() {
+		$post_id = $this->factory->post->create();
+	}
+
 
 }
