@@ -37,7 +37,7 @@ class MetricsUpdater {
 		if (is_admin() && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
 			add_action ( 'wp_loaded', array($this, 'manualUpdate') );
 		} else if (is_admin() && isset($_REQUEST['smt_sync_done']) && $_REQUEST['smt_sync_done']) {
-			add_action ( 'admin_notices', array($this, 'manualUpdateNotice') );
+			add_action ( 'admin_notices', array($this, 'manualUpdateSuccess') );
 		}
 
 	} // end constructor
@@ -72,9 +72,8 @@ class MetricsUpdater {
 		$post_id = intval( $_REQUEST['smt_sync_now'] );
 		if (!$post_id) return false;
 
-		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > time()-300) {
-			$message = "You must wait at least 5 minutes before performing another update on this post. ";
-			printf( '<div class="error"> <p> %s </p> </div>', $message);
+		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > $this->getTime()-300) {
+			add_action ( 'admin_notices', array($this, 'manualUpdateMustWait') );
 		} else {
 			$this->updatePostStats($_REQUEST['smt_sync_now'], true);
 			header("Location: ".add_query_arg(array('smt_sync_done' => $post_id), remove_query_arg('smt_sync_now')));
@@ -82,8 +81,14 @@ class MetricsUpdater {
 
 	}
 
+	// Display a notice that we did not update a post
+	public function manualUpdateMustWait() {
+		$message = "You must wait at least 5 minutes before performing another update on this post. ";
+		printf( '<div class="error"> <p> %s </p> </div>', $message);
+	}
+
 	// Display a notice that we updated a post
-	public function manualUpdateNotice() {
+	public function manualUpdateSuccess() {
 		$post_id = intval( $_REQUEST['smt_sync_done'] );
 		if (!$post_id) return false;
 
