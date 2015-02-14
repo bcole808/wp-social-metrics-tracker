@@ -75,12 +75,12 @@ class socialMetricsSettings {
 					'url'     => add_query_arg('section', 'urls'),
 					'current' => $this->section == 'urls'
 				),
-				array(
-					'slug'    => 'test',
-					'label'   => 'URL Debug / Test Tool',
-					'url'     => add_query_arg('section', 'test'),
-					'current' => $this->section == 'test'
-				)
+				// array(
+				// 	'slug'    => 'test',
+				// 	'label'   => 'URL Debug / Test Tool',
+				// 	'url'     => add_query_arg('section', 'test'),
+				// 	'current' => $this->section == 'test'
+				// )
 			)
 		);
 

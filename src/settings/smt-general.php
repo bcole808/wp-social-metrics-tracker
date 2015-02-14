@@ -110,13 +110,6 @@ $wpsf_settings[] = array(
 			)
 		),
 		array(
-			'id'    => 'debug_mode',
-			'title' => 'Enable Debug Mode',
-			'desc'  => 'Display additional debug information.',
-			'type'  => 'checkbox',
-			'std'   => 0
-		),
-		array(
 			'id'    => 'debug_report_visibility',
 			'title' => 'Debug Report Visibility',
 			'desc'  => 'The debug panel will be visible to users who have this capability.',
