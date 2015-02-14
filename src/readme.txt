@@ -71,6 +71,14 @@ Absolutely! This plugin was created with large-scale Multisite blog networks in 
 
 You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key.
 
+= What about canonical URLs? =
+
+Ah yes, sometimes you have more than one URL to a post. For example, with or without www or with http:// or https://.  There is a tool on the configuration page of the plugin to help you configure the checking of canonical URLs. 
+
+= What if I migrate to a new domain? =
+
+Most Social networks will NOT copy your old share numbers over to your new URLs. However, this plugin has a tool to continue to check and combine the numbers from your old domain name ULRs. 
+
 = Who created this? =
 
 This plugin was created by Ben Cole, as a member of the Chapman University web marketing team. Our use for the plugin is to track posts on social networks to see which stories students, alumni, and faculty are most interested in sharing.
@@ -84,9 +92,12 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
-= 1.3.5 =
+= 1.4.0 =
+* Added advanced Domain/URL setup options including:
+* -- The option to check either the http:// or https:// version of post URLs for share data.
+* -- A domain migration tool to keep checking for share data from old URLs/domains
 * Fixed a bug which was causing "Settings saved" to be displayed more than once.
-* Added the option to check either the http:// or https:// version of post URLs for share data. 
+* Removed the "Debug mode" option which did not do anything useful. 
 
 = 1.3.4 =
 * Update plugin to use Facebook API v2.0

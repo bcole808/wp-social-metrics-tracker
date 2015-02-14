@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.3.4
+Version: 1.4.0
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
@@ -38,7 +38,7 @@ use Handlebars\Handlebars;
 
 class SocialMetricsTracker {
 
-	public $version = '1.3.4'; // for db upgrade comparison
+	public $version = '1.4.0'; // for db upgrade comparison
 	public $updater;
 	public $options;
 
@@ -241,11 +241,14 @@ class SocialMetricsTracker {
 				update_option( 'smt_last_full_sync', 1 );
 			}
 
-			// 3: If migrating from version below 1.3.5 (not a clean install)
-			if ($installed_version !== false && version_compare($installed_version, '1.3.5', '<')) {
+			// 3: If migrating from version below 1.4.0 (not a clean install)
+			if ($installed_version !== false && version_compare($installed_version, '1.4.0', '<')) {
 
-				// Prior to 1.3.5, the system defaulted to http:// URLs
+				// Prior to 1.4.0, the system defaulted to http:// URLs
 				$this->set_smt_option('url_protocol', 'http');
+
+				// The debug option is no longer in use
+				$this->set_smt_option('debug_mode', null);
 			}
 
 			// 4: Add any new settings
