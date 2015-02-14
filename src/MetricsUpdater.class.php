@@ -209,10 +209,8 @@ class MetricsUpdater {
 
 	// Returns the protocol in use by the home_url()
 	private function primary_protocol() {
-		$protocol = $this->getProtocol(get_home_url());
+		$protocol = $this->getProtocol(get_option('home'));
 		return ($protocol) ? $protocol : 'http';
-
-		// return $this->getProtocol(get_home_url());
 	}
 
 	// Returns the opposite of the protocol in use by the home_url();
