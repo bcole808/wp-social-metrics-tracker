@@ -138,6 +138,8 @@ class socialMetricsSettings {
 			);
 
 			$this->smt->set_smt_option('url_rewrites', $url_rewrites);
+		} else {
+			$this->smt->delete_smt_option('url_rewrites');
 		}
 
 		// Performacne

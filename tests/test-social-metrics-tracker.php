@@ -129,7 +129,47 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 		$this->plugin->add_missing_settings();
 		$this->assertEquals(1, $this->plugin->get_smt_option('display_widget'));
 
+	}
 
+	/***************************************************
+	* It should save options to the DB
+	***************************************************/
+	function test_set_option() {
+		$this->plugin->set_smt_option('example-field', 100);
+
+		$db_options = get_option('smt_settings');
+		$this->assertEquals(100, $db_options['smt_options_example-field']);
+	}
+
+	/***************************************************
+	* It should retrieve options from the DB
+	***************************************************/
+	function test_get_option() {
+		$this->plugin->set_smt_option('example-field', 225);
+
+		// 1. Same plugin oboject
+		$this->assertFalse($this->plugin->get_smt_option('fake-field'));
+		$this->assertEquals(225, $this->plugin->get_smt_option('example-field'));
+
+		// 2. New plugin object
+		$new_plugin = new SocialMetricsTracker();
+		$new_plugin->init();
+
+		$this->assertFalse($new_plugin->get_smt_option('fake-field'));
+		$this->assertEquals(225, $new_plugin->get_smt_option('example-field'));
+	}
+
+	/***************************************************
+	* It should erase options from the DB
+	***************************************************/
+	function test_delete_option() {
+		$this->plugin->set_smt_option('example-field', 225);
+		$this->plugin->delete_smt_option('example-field');
+
+		$db_options = get_option('smt_settings');
+
+		$this->assertFalse(array_key_exists('smt_options_example-field', $this->plugin->options));
+		$this->assertFalse(array_key_exists('smt_options_example-field', $db_options));
 	}
 
 

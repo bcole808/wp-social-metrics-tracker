@@ -248,7 +248,7 @@ class SocialMetricsTracker {
 				$this->set_smt_option('url_protocol', 'http');
 
 				// The debug option is no longer in use
-				$this->set_smt_option('debug_mode', null);
+				$this->delete_smt_option('debug_mode');
 			}
 
 			// 4: Add any new settings
@@ -303,6 +303,14 @@ class SocialMetricsTracker {
 	public function set_smt_option($key, $val, $save = true) {
 		$this->options['smt_options_'.$key] = $val;
 		return ($save) ? $this->save_smt_options() : null;
+	}
+
+	/***************************************************
+	* Remove specified option
+	***************************************************/
+	public function delete_smt_option($key) {
+		unset($this->options['smt_options_'.$key]);
+		return $this->save_smt_options();
 	}
 
 	/***************************************************

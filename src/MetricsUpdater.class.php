@@ -23,7 +23,7 @@ class MetricsUpdater {
 	public $sources; // Object containing HTTPResourceUpdater instances
 
 	public function __construct($smt) {
-		$this->smt = $smt;
+		$this->smt = ($smt) ? $smt : new SocialMetricsTracker();
 		$this->sources = new stdClass();
 
 		// Check post on each page load
@@ -332,7 +332,6 @@ class MetricsUpdater {
 		// Init alt_url fields to check
 		$alt_data_cache   = $this->filterAltMeta($post_id, $permalink);
 		$alt_data_updated = $this->prepAltMeta($alt_data_cache, $permalink, $post);
-
 		
 		foreach ($this->getSources() as $HTTPResourceUpdater) {
 			// EACH - API Resource
