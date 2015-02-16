@@ -1,0 +1,66 @@
+
+<form method="post">
+	Post ID: <input type="text" name="smt-test-post-id" value="{{smt-test-post-id}}" />
+
+	<input type="submit" />
+
+</form>
+
+{{#if test-data.cached}}
+We tried to retreive live data, but had to rely on some cached values for some services. 
+
+{{else}}
+<p>Data was retrieved from the social networks just now.</p>
+{{/if}}
+
+
+<table border="1">
+	<thead>
+	<tr>
+		<th>URL</th>
+		<th>socialcount_facebook</th>
+		<th>socialcount_twitter</th>
+		<th>socialcount_linkedin</th>
+		<th>socialcount_googleplus</th>
+		<th>socialcount_pinterest</th>
+		<th>socialcount_stumbleupon</th>
+	</tr>
+	</thead>
+
+	<tr>
+		<td>{{test-data.primary_url}}</td>
+		
+		<td>{{test-data.primary_result.socialcount_facebook}}</td>
+		<td>{{test-data.primary_result.socialcount_twitter}}</td>
+		<td>{{test-data.primary_result.socialcount_linkedin}}</td>
+		<td>{{test-data.primary_result.socialcount_googleplus}}</td>
+		<td>{{test-data.primary_result.socialcount_pinterest}}</td>
+		<td>{{test-data.primary_result.socialcount_stumbleupon}}</td>
+	</tr>
+
+	{{#each test-data.alt_data_updated}}
+	<tr>
+		<td>{{this.permalink}}</td>
+		<td>{{this.socialcount_facebook}}</td>
+		<td>{{this.socialcount_twitter}}</td>
+		<td>{{this.socialcount_linkedin}}</td>
+		<td>{{this.socialcount_googleplus}}</td>
+		<td>{{this.socialcount_pinterest}}</td>
+		<td>{{this.socialcount_stumbleupon}}</td>
+	</tr>
+	{{/each}}
+
+	<tr>
+		<td>TOTAL</td>
+		
+		<td>{{test-data.post_meta.socialcount_facebook}}</td>
+		<td>{{test-data.post_meta.socialcount_twitter}}</td>
+		<td>{{test-data.post_meta.socialcount_linkedin}}</td>
+		<td>{{test-data.post_meta.socialcount_googleplus}}</td>
+		<td>{{test-data.post_meta.socialcount_pinterest}}</td>
+		<td>{{test-data.post_meta.socialcount_stumbleupon}}</td>
+	</tr>
+
+
+</table>
+

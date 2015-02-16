@@ -27,9 +27,12 @@ module.exports = function(grunt) {
 		        dir: ''
 		    },
 		    options: {
-		        bin: 'phpunit --exclude-group external-http',
+		        bin: 'phpunit',
 		        bootstrap: 'tests/bootstrap.php',
-		        colors: true
+		        colors: true,
+		        failOnFailures: true, // Allow grunt to continue watching on failure
+		        // coverageClover: 'build/logs/clover.xml',
+		        excludeGroup: 'external-http'
 		    }
 		},
 
@@ -53,17 +56,21 @@ module.exports = function(grunt) {
 		        }
 		    },
 		    php: {
-		    	files: ['src/**/*.php'],
-		    	tasks: ['phpunit'],
+		    	files: ['src/**/*.php', 'tests/**/*.php'],
+		    	tasks: ['clear', 'phpunit'],
 		    	options : {
 		    		spawn: false,
 		    	}
+		    },
+		    templates: {
+		    	files: ['src/**/*.handlebars']
 		    }
 		}
 
 	});
 
 	// 3. Where we tell Grunt we plan to use this plug-in.
+	grunt.loadNpmTasks('grunt-clear');
 	grunt.loadNpmTasks('grunt-contrib-sass');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');

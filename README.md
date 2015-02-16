@@ -4,7 +4,7 @@
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
 
-**Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. 
+**Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. The plugin is able to track data from multiple URLs, including differing protocols, subdomains, or other alternate post URLs. 
 
 ## Quick Start
 
@@ -44,6 +44,20 @@ LinkedIn | socialcount_linkedin
 Pinterest | socialcount_pinterest
 StumbleUpon | socialcount_stumbleupon
 Last Updated Timestamp | socialcount_LAST_UPDATED
+
+### Setting alternate URLs
+
+The plugin is able to associate multiple URLs with a single post (you would think canonical URLs would solve this sort of issue, but unfortunately social networks do not always or consistently obey canonical URL rules).  
+
+To add an additional URL to track, create a custom meta field for each post you want to track. Let's imagine your primary URL for a post is `http://www.mydomain.com/?p=1` and you wanted to track some canonical URLs. Here is how you would add the custom meta fields to each post: 
+
+Meta key  | value
+------------- | -------------
+socialcount_url_data | https://www.mydomain.com/?p=1
+socialcount_url_data | http://mydomain.com/?p=1
+socialcount_url_data | https://mydomain.com/?p=1
+
+There is a settings page to configure some of these rules automatically, but you can also manually add alternate URLs to posts with custom meta fields. 
 
 ### Action Hooks
 

@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.3.4
+Version: 1.4.0
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
@@ -29,12 +29,16 @@ require_once('data-sources/google_analytics.php');
 include_once('SocialMetricsSettings.class.php');
 include_once('SocialMetricsTrackerWidget.class.php');
 include_once('SocialMetricsDebugger.class.php');
-require_once('lib/Mustache/Autoloader.php');
+
+// Handlebars Autoloader
+require_once('lib/Handlebars/Autoloader.php');
+Handlebars\Autoloader::register();
+use Handlebars\Handlebars;
 
 
 class SocialMetricsTracker {
 
-	public $version = '1.3.4'; // for db upgrade comparison
+	public $version = '1.4.0'; // for db upgrade comparison
 	public $updater;
 	public $options;
 
@@ -58,12 +62,12 @@ class SocialMetricsTracker {
 	public function init() {
 
 		// Set up options
-		$this->options = get_option('smt_settings');
+		$this->options = get_option('smt_settings', array());
 
-		// Ensure setup occurs when network activated
-		if ($this->options === false) $this->activate();
+		// Ensure setup occurs for each blog when network activated
+		if (empty($this->options)) $this->activate();
 
-		// Check if we can enable data syncing
+		// Development server notice
 		if ($this->is_development_server()) {
 			add_action('admin_notices', array($this, 'developmentServerNotice'));
 		}
@@ -79,18 +83,25 @@ class SocialMetricsTracker {
 	}
 
 	/***************************************************
-	* Renders a template using the Mustache Engine
+	* Renders a template using the Handlebars Engine
 	***************************************************/
 	public function renderTemplate($tpl, $data) {
 
-		if (!isset($this->mustache_engine)) {
-			Mustache_Autoloader::register();
-			$this->mustache_engine = new Mustache_Engine(array(
-			    'loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__).'/templates'),
+		if (!isset($this->template_engine)) {
+
+			$this->template_engine = new Handlebars(array(
+			    'loader' => new \Handlebars\Loader\FilesystemLoader(dirname(__FILE__).'/templates/'),
+			    'partials_loader' => new \Handlebars\Loader\FilesystemLoader(
+			        dirname(__FILE__).'/templates/',
+			        array(
+			            'prefix' => '_'
+			        )
+			    )
 			));
+
 		}
 
-		return $this->mustache_engine->render($tpl, $data);
+		return $this->template_engine->render($tpl, $data);
 	}
 
 	// Determines if we are on a development or staging environment
@@ -120,8 +131,10 @@ class SocialMetricsTracker {
 		wp_register_style( 'smt-css', plugins_url( 'css/social-metrics-tracker.min.css' , __FILE__ ), false, $this->version );
 		wp_enqueue_style( 'smt-css' );
 
-		wp_register_script( 'smt-js', plugins_url( 'js/social-metrics-tracker.min.js' , __FILE__ ), 'jquery', $this->version );
+		wp_register_script( 'smt-js', plugins_url( 'js/social-metrics-tracker.min.js' , __FILE__ ), array('jquery', 'jquery-ui-datepicker'), $this->version );
 		wp_enqueue_script( 'smt-js' );
+
+		wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
 	} // end adminHeaderScripts()
 
@@ -172,7 +185,7 @@ class SocialMetricsTracker {
 		$periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
 		$lengths = array("60","60","24","7","4.35","12","10");
 
-		$now = time();
+		$now = current_time( 'timestamp' );
 
 			$difference     = $now - $time;
 			$tense         = "ago";
@@ -214,38 +227,97 @@ class SocialMetricsTracker {
 		$installed_version = get_option( "smt_version" );
 
 		if( $installed_version != $this->version ) {
+
+			// **********************
+			// Perform upgrade tasks:
+
+			// 1: Update version number
 			update_option( "smt_version", $this->version );
 
-			// IF migrating from version below 1.3
+			// 2: If migrating from version below 1.3 (not a clean install)
 			if ($installed_version !== false && version_compare($installed_version, '1.3', '<')) {
+
+				// Do not require an initial full data sync for migrating users. 
 				update_option( 'smt_last_full_sync', 1 );
 			}
+
+			// 3: If migrating from version below 1.4.0 (not a clean install)
+			if ($installed_version !== false && version_compare($installed_version, '1.4.0', '<')) {
+
+				// Prior to 1.4.0, the system defaulted to http:// URLs
+				$this->set_smt_option('url_protocol', 'http');
+
+				// The debug option is no longer in use
+				$this->delete_smt_option('debug_mode');
+			}
+
+			// 4: Add any new settings
+			$this->add_missing_settings();
 
 		}
 	}
 
+	/***************************************************
+	* Runs at plugin activation;
+	* Also runs at initialization in event that option defaults have not been set for some reason
+	***************************************************/
 	public function activate() {
 
-		// Add default settings
-		if (get_option('smt_settings') === false) {
-
-			require('settings/smt-general.php');
-
-			global $wpsf_settings;
-
-			foreach ($wpsf_settings[0]['fields'] as $setting) {
-				$defaults['smt_options_'.$setting['id']] = $setting['std'];
-			}
-
-			// Track these post types by default
-			$defaults['smt_options_post_types_post'] = 'post';
-			$defaults['smt_options_post_types_page'] = 'page';
-
-			add_option('smt_settings', $defaults);
-		}
+		// Set default post types to track
+		$this->set_smt_option('post_types_post', 'post', false);
+		$this->set_smt_option('post_types_page', 'page', false);
+		$this->add_missing_settings(); // Also saves the two above
 
 		$this->version_check();
+	}
 
+	/***************************************************
+	* Checks all of the settings and if any are undefined, adds them from the defaults
+	***************************************************/
+	public function add_missing_settings() {
+		require('settings/smt-general.php');
+		global $wpsf_settings;
+
+		foreach ($wpsf_settings[0]['fields'] as $default) {
+			$key = $default['id'];
+
+			if ($this->get_smt_option($key) === false) {
+				$this->set_smt_option($key, $default['std'], false);
+			}
+		}
+
+		$this->save_smt_options();
+	}
+
+	/***************************************************
+	* Get plugin option with the specified key
+	***************************************************/
+	public function get_smt_option($key) {
+		return (array_key_exists('smt_options_'.$key, $this->options)) ? $this->options['smt_options_'.$key] : false;
+	}
+
+	/***************************************************
+	* Update and optionally save plugin option with the specified key/value
+	* (We might not want to save if we are bulk updating)
+	***************************************************/
+	public function set_smt_option($key, $val, $save = true) {
+		$this->options['smt_options_'.$key] = $val;
+		return ($save) ? $this->save_smt_options() : null;
+	}
+
+	/***************************************************
+	* Remove specified option
+	***************************************************/
+	public function delete_smt_option($key) {
+		unset($this->options['smt_options_'.$key]);
+		return $this->save_smt_options();
+	}
+
+	/***************************************************
+	* Saves the settings to the DB
+	***************************************************/
+	private function save_smt_options() {
+		return update_option('smt_settings', $this->options);
 	}
 
 	public function deactivate() {

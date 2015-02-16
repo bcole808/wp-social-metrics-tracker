@@ -35,10 +35,14 @@ abstract class HTTPResourceUpdater {
 		return $this;
 	}
 
-	/***************************************************
+	/**
+	***************************************************
 	* Update all the data for a given post
 	*
-	* Note: $post_url is required to be set explicilty because it might be filtered by the MetricsUpdater class.
+	* @param  integer   $post_id - The ID of the post to update
+	* @param  string    $post_url - The permalink to query social APIs with
+	*
+	* @return (boolean | array) this will be the array of meta data OR false if the sync failed.
 	***************************************************/
 	public function sync($post_id, $post_url) {
 
@@ -52,9 +56,8 @@ abstract class HTTPResourceUpdater {
 		// Perform sync
 		$this->fetch();
 		$this->parse();
-		$this->save();
 
-		return $this->complete;
+		return $this->getMetaFields();
 	}
 
 	/***************************************************
@@ -66,9 +69,10 @@ abstract class HTTPResourceUpdater {
 		$this->post_url = $post_url;
 		$this->post_id  = $post_id;
 
-		$this->complete = false;
-		$this->data     = null;
-		$this->meta     = array();
+		$this->complete   = false;
+		$this->http_error = null;
+		$this->data       = null;
+		$this->meta       = array();
 
 	}
 
@@ -136,28 +140,27 @@ abstract class HTTPResourceUpdater {
 			return false;
 		} else if ($response['response']['code'] != 200) {
 			$this->http_error = "Received HTTP response code: <b>".$response['response']['code']." ".$response['response']['message']."</b>";
+			return false;
 		}
 
 		return wp_remote_retrieve_body($response);
 	}
 
 	/***************************************************
-	* Writes post meta fields to database
+	* Return an array of post meta fields that need to be saved; filters invalid values.
 	***************************************************/
-	public function save() {
+	public function getMetaFields() {
 		if (!isset($this->meta) || count($this->meta) == 0) return false;
 
-		// Update each custom field
-		foreach ($this->meta as $key => $value) {
-			if (!$value) continue;
-			if (is_numeric($value) && intval($value) <= 0) continue;
+		$fields = array();
 
-			if (update_post_meta($this->post_id, $key, $value)) {
-				$this->complete = true;
-			}
+		foreach ($this->meta as $key => $value) {
+			if (!is_numeric($value)) continue;
+
+			$fields[$key] = $value;
 		}
 
-		return $this->complete;
+		return (count($fields) > 0) ? $fields : false;
 	}
 
 	/***************************************************

@@ -442,3 +442,118 @@ button.smt-connection-item:hover {
 button.smt-connection-item:focus {
 	outline: none;
 }
+
+
+
+/* Stat Details Pane
+   ========================================================================== */
+.toplevel_page_social-metrics-tracker {
+	.smt-stat-details {
+
+		ol {
+			margin-top:0;
+		}
+		li {
+			color: #999;
+			font-size: 11px;
+			margin-bottom: 0;
+		}
+
+		.detail-heading {
+			font-weight: bold;
+			margin: 12px 0 6px 0;
+		}
+
+		.smt-url-box {
+			cursor: text;
+			font-size: 11px;
+			border: 1px solid #E7E7E7;
+			background: #FFFFFF;
+			width: 50%;
+		}
+
+		.info {
+			margin-left: 6px;
+			color: #ddd;
+		}
+
+		.more-info {
+			margin-left: 6px;
+			color: #CCC;
+			&:hover {
+				color: #2ea2cc;
+			}
+		}
+
+		.smt-stat-row {
+			margin-bottom: 15px;
+		}
+	}
+}
+
+
+/* Stat Details Pane
+   ========================================================================== */
+.social-metrics_page_social-metrics-tracker-settings {
+	.smt-url-box {
+		color: #333;
+		width: 90%;
+	}
+
+	.more-info {
+		margin-left: 6px;
+		color: #CCC;
+		&:hover {
+			color: #2ea2cc;
+		}
+	}
+
+	.box {
+		background: #f9f9f9;
+		border: 1px solid #e1e1e1;
+		padding: 30px;
+
+		label {
+			display: block;
+			color: #999;
+			margin-top:8px;
+		}
+
+		h1:first-child,
+		h2:first-child,
+		h3:first-child,
+		h4:first-child,
+		h5:first-child,
+		h6:first-child,
+		p:first-child {
+			margin-top: 0;
+		}
+
+		h1:last-child,
+		h2:last-child,
+		h3:last-child,
+		h4:last-child,
+		h5:last-child,
+		h6:last-child,
+		p:last-child {
+			margin-bottom: 0;
+		}
+
+		blockquote {
+			border-left: 5px solid #DDD;
+			margin-left: 0;
+			padding: 11px;
+			background: #F2F2F2;
+			color: #626262;
+		}
+
+	}
+
+	.invalid {
+		background: #FFF0F0;
+	}
+
+	.valid {
+		background: #F0FFF0;
+	}
+}

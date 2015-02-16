@@ -23,7 +23,7 @@ class MetricsUpdater {
 	public $sources; // Object containing HTTPResourceUpdater instances
 
 	public function __construct($smt) {
-		$this->smt = $smt;
+		$this->smt = ($smt) ? $smt : new SocialMetricsTracker();
 		$this->sources = new stdClass();
 
 		// Check post on each page load
@@ -31,13 +31,13 @@ class MetricsUpdater {
 
 		// Set up event hooks
 		add_action( 'social_metrics_full_update', array( $this, 'scheduleFullDataSync' ) );
-		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 1 );
+		add_action( 'social_metrics_update_single_post', array( $this, 'updatePostStats' ), 10, 2 );
 
 		// Manual data update for a post
 		if (is_admin() && isset($_REQUEST['smt_sync_now']) && $_REQUEST['smt_sync_now']) {
 			add_action ( 'wp_loaded', array($this, 'manualUpdate') );
 		} else if (is_admin() && isset($_REQUEST['smt_sync_done']) && $_REQUEST['smt_sync_done']) {
-			add_action ( 'admin_notices', array($this, 'manualUpdateNotice') );
+			add_action ( 'admin_notices', array($this, 'manualUpdateSuccess') );
 		}
 
 	} // end constructor
@@ -66,24 +66,57 @@ class MetricsUpdater {
 		return $this->sources;
 	}
 
+	// Get the current time
+	public function getLocalTime() {
+		return current_time( 'timestamp' );
+	}
+
+	// Get the TTL in seconds
+	public function getTTL() {
+		return $this->smt->options['smt_options_ttl_hours'] * HOUR_IN_SECONDS;
+	}
+
+	// Check if a timestamp has passed the TTL
+	public function hasPassedTTL($last_timestamp, $secondary=false) {
+		$ttl = $this->getTTL();
+
+		if ($secondary) {
+			$multiplier = max(1, intval($this->smt->get_smt_option('alt_url_ttl_multiplier')));
+			$ttl = $ttl * $multiplier;
+		}
+
+		return $last_timestamp + $ttl < $this->getLocalTime();
+	}
+
+	// Check if a post ID is ready to be scheduled for update
+	public function isPostReadyForNextUpdate($post_id) {
+		$last_updated = intval(get_post_meta($post_id, "socialcount_LAST_UPDATED", true));
+		return $this->hasPassedTTL($last_updated);
+	}
+
 	// Manual data update for a post
 	public function manualUpdate() {
 
 		$post_id = intval( $_REQUEST['smt_sync_now'] );
 		if (!$post_id) return false;
 
-		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > time()-300) {
-			$message = "You must wait at least 5 minutes before performing another update on this post. ";
-			printf( '<div class="error"> <p> %s </p> </div>', $message);
+		if (get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) > $this->getLocalTime()-300) {
+			add_action ( 'admin_notices', array($this, 'manualUpdateMustWait') );
 		} else {
-			$this->updatePostStats($_REQUEST['smt_sync_now']);
+			$this->updatePostStats($_REQUEST['smt_sync_now'], true);
 			header("Location: ".add_query_arg(array('smt_sync_done' => $post_id), remove_query_arg('smt_sync_now')));
 		}
 
 	}
 
+	// Display a notice that we did not update a post
+	public function manualUpdateMustWait() {
+		$message = "You must wait at least 5 minutes before performing another update on this post. ";
+		printf( '<div class="error"> <p> %s </p> </div>', $message);
+	}
+
 	// Display a notice that we updated a post
-	public function manualUpdateNotice() {
+	public function manualUpdateSuccess() {
 		$post_id = intval( $_REQUEST['smt_sync_done'] );
 		if (!$post_id) return false;
 
@@ -114,16 +147,11 @@ class MetricsUpdater {
 		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
-		// Check TTL timeout
-		$last_updated = get_post_meta($post_id, "socialcount_LAST_UPDATED", true);
-		$ttl = $this->smt->options['smt_options_ttl_hours'] * 3600;
-
-		// If no timeout
-		$temp = time() - $ttl;
-		if ($last_updated < $temp) {
+		// If TTL has elapsed
+		if ($this->isPostReadyForNextUpdate($post_id)) {
 
 			// Schedule an update
-			wp_schedule_single_event( time(), 'social_metrics_update_single_post', array( $post_id ) );
+			wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
 
 		}
 
@@ -147,67 +175,125 @@ class MetricsUpdater {
 
 	}
 
+
+	/**
+	* Ensure that all URLs match the protocol in configuration
+	*
+	* @param  string    $url       The URL to clean
+	* @param  string    $protocol  The protocol to conver to
+	* @return
+	*/
+	public function adjustProtocol($url, $protocol=false) {
+		$protocol = ($protocol) ? $protocol : $this->smt->get_smt_option('url_protocol');
+
+		if ($protocol == 'both') $protocol = $this->primary_protocol();
+
+		switch ($protocol) {
+			case 'http':
+				return preg_replace("/^https:/i", "http:", $url);
+				break;
+
+			case 'https':
+				return preg_replace("/^http:/i", "https:", $url);
+				break;
+			
+			default:
+				return $url;
+				break;
+		}
+	}
+
+	private function getProtocol($url) {
+		return parse_url($url, PHP_URL_SCHEME);
+	}
+
+	// Returns the protocol in use by the home_url()
+	private function primary_protocol() {
+		$protocol = $this->getProtocol(get_option('home'));
+		return ($protocol) ? $protocol : 'http';
+	}
+
+	// Returns the opposite of the protocol in use by the home_url();
+	private function secondary_protocol() {
+		return ($this->primary_protocol() == 'http') ? 'https' : 'http';
+	}
+
+
 	/**
 	* Fetch new stats from remote services and update post social score.
 	*
-	* @param  int    $post_id  The ID of the post to update
+	* @param  int    $post_id    The ID of the post to update
+	* @param  bool   $ignore_ttl If we should execute the update immediately, ignoring all TTL rules
+	* @param  string $permalink  The primary permalink for the post (WARNING: only for use with phpunit automated tests)
 	* @return
 	*/
-	public function updatePostStats($post_id) {
+	public function updatePostStats($post_id, $ignore_ttl=false, $permalink=false) {
 
 		if ($this->smt->is_development_server()) return false;
-
-		$this->setupDataSources();
 
 		// Data validation
 		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
-		// Remove secure protocol from URL
-		$permalink = str_replace("https://", "http://", get_permalink($post_id));
+		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
+		if ($permalink === false) return false;
 
-		// Retrieve 3rd party data updates
+		// Stop if TTL not elapsed
+		if ($ignore_ttl === false && !$this->isPostReadyForNextUpdate($post_id)) return false;
+
+		// Remove secure protocol from URL
+		$permalink = $this->adjustProtocol($permalink);
+
+		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
-		// Social Network data
-		foreach ($this->sources as $HTTPResourceUpdater) {
-			$HTTPResourceUpdater->sync($post_id, $permalink);
-		}
-
-		// Calculate new socialcount_TOTAL
-		$total = 0;
-		foreach ($this->sources as $HTTPResourceUpdater) {
-			if ($HTTPResourceUpdater->complete) {
-				// If new total was just fetched
-				$total += $HTTPResourceUpdater->get_total();
-			} else {
-				// If failure occured, use the previously saved value
-				$total += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
-			}
-		}
-
-		update_post_meta($post_id, 'socialcount_TOTAL', $total);
-
-		// Last updated time
-		update_post_meta($post_id, "socialcount_LAST_UPDATED", time());
-
-		// Get comment count from DB
+		// Get post object
 		$post = get_post($post_id);
+
+		// Will we re-check the alt_data?
+		$last_alt_check = intval(get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true));
+		$incl_alt_data  = ($ignore_ttl || $this->hasPassedTTL($last_alt_check, true));
+
+		// Gather updated data from remote sources
+		$data             = $this->fetchPostStats($post_id, $incl_alt_data, $permalink, $post);
+		$post_meta        = $data['post_meta'];
+		$alt_data_cache   = $data['alt_data_cache'];
+		$alt_data_updated = $data['alt_data_updated'];
 
 		// Calculate aggregate score.
 		$social_aggregate_score_detail = $this->calculateScoreAggregate(
-																	intval(get_post_meta($post_id, 'socialcount_TOTAL', true)),
-																	intval(get_post_meta($post_id, 'ga_pageviews', true)),
-																	intval($post->comment_count)
-																	);
+		                                    intval($post_meta['socialcount_TOTAL']),
+		                                    intval(get_post_meta($post_id, 'ga_pageviews', true)),
+		                                    intval($post->comment_count)
+		                                 );
 
 		// Calculate decayed score.
 		$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 
-		update_post_meta($post_id, "social_aggregate_score", $social_aggregate_score_detail['total']);
-		update_post_meta($post_id, "social_aggregate_score_detail", $social_aggregate_score_detail);
-		update_post_meta($post_id, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-		update_post_meta($post_id, "social_aggregate_score_decayed_last_updated", time());
+		$post_meta['social_aggregate_score']                      = $social_aggregate_score_detail['total'];
+		$post_meta['social_aggregate_score_detail']               = $social_aggregate_score_detail;
+		$post_meta['social_aggregate_score_decayed']              = $social_aggregate_score_decayed;
+		$post_meta['social_aggregate_score_decayed_last_updated'] = $this->getLocalTime();
+
+		// Last updated time
+		$post_meta['socialcount_LAST_UPDATED'] = $this->getLocalTime();
+		if ($incl_alt_data && count($alt_data_updated) > 0) {
+			$post_meta['socialcount_alt_data_LAST_UPDATED'] = $this->getLocalTime();
+		}
+
+		// Save all of the meta fields
+		foreach ($post_meta as $key => $value) {
+			update_post_meta($post_id, $key, $value);
+		}
+
+		// Save socialcount_url_data fields
+		foreach ($alt_data_updated as $key => $value) {
+			if (array_key_exists($key, $alt_data_cache)) {
+				update_post_meta($post_id, 'socialcount_url_data', $alt_data_updated[$key], $alt_data_cache[$key]);
+			} else {
+				add_post_meta($post_id, 'socialcount_url_data', $value);
+			}
+		}
 
 		$smt_stats['social_aggregate_score'] = $social_aggregate_score_detail['total'];
 		$smt_stats['social_aggregate_score_decayed'] = $social_aggregate_score_decayed;
@@ -217,6 +303,274 @@ class MetricsUpdater {
 
 		return;
 	} // end updatePostStats()
+
+
+	/**
+	* Retrieve new data about a post and a URL, or return cached values if remote service unavailable
+	*
+	* @param  int    $post_id
+	* @param  bool   $refresh_alt_data If we should execute the update immediately, ignoring all TTL rules
+	* @param  string $permalink the primary permalink associated with a post
+	* @return array  The social data collected, or cached data
+	*/
+	public function fetchPostStats($post_id, $refresh_alt_data=false, $permalink=false, $post=false) {
+
+		// Data validation
+		$post_id = intval($post_id);
+		if ($post_id <= 0) return false;
+
+		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
+		if ($permalink === false) return false;
+
+		// Setup
+		$network_failure = false;
+		$errors = array();
+
+		// Init meta fields to update
+		$post_meta = array('socialcount_TOTAL' => 0);
+
+		// Init alt_url fields to check
+		$alt_data_cache   = $this->filterAltMeta($post_id, $permalink);
+		$alt_data_updated = $this->prepAltMeta($alt_data_cache, $permalink, $post);
+		
+		foreach ($this->getSources() as $HTTPResourceUpdater) {
+			// EACH - API Resource
+			$primary_result = $HTTPResourceUpdater->sync($post_id, $permalink);
+
+			if ($primary_result === false) {
+				$network_failure = true;
+				if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+
+				// Use last saved value in total
+				$post_meta['socialcount_TOTAL'] += intval(get_post_meta($post_id, $HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug, true));
+				
+			} else {
+
+				if ($refresh_alt_data) {
+					foreach ($alt_data_updated as $key => $val) {
+						// EACH - Alternate URL
+
+						$result = $HTTPResourceUpdater->sync($post_id, $val['permalink']);
+
+						if ($result !== false) {
+							$alt_data_updated[$key] = array_merge($val, $result);
+						} else {
+							$network_failure = true;
+							if ($HTTPResourceUpdater->http_error) $errors[] = $HTTPResourceUpdater->http_error;
+						}
+
+					}
+				}
+
+				// Merge all the data we collected
+				$final_result = $this->mergeResults($primary_result, $alt_data_updated);
+
+				// Compute the total count total
+				$post_meta['socialcount_TOTAL'] += $final_result[$HTTPResourceUpdater->meta_prefix.$HTTPResourceUpdater->slug];
+
+				// Merge fields
+				$post_meta = array_merge($post_meta, $final_result);
+			}
+		}
+
+		return array(
+			// Required
+			'post_meta'        => $post_meta,
+			'alt_data_cache'   => $alt_data_cache,
+			'alt_data_updated' => $alt_data_updated,
+
+			// Extras
+			'primary_url'      => $permalink,
+			'primary_result'   => $primary_result,
+			'network_failure'  => $network_failure,
+			'errors'           => $errors
+		);
+	}
+
+
+	/**
+	* Add integers, excluding duplicate values
+	*
+	* @param  array  $nums  An array of integers
+	* @return int    The sum of all the unique integers
+	*/
+	private function sumUnique($nums) {
+		return (is_array($nums)) ? array_sum(array_unique($nums)) : false;
+	}
+
+
+	/**
+	* Merge all the alt URL results into the primary result
+	*
+	* This function iterates on the keys of $primary_result and merges any matching values from the alt data set. 
+	*
+	* @param  array   $primary_result    The primary meta keys we are going to store
+	* @param  array   $alt_data_updated  An array containing many sets of secondary keys we need to merge
+	* @return boolean        If the string is a valid URL
+	*/
+	private function mergeResults($primary_result, $alt_data_updated) {
+		foreach ($primary_result as $key => $val) {
+
+			$nums = array($val);
+
+			foreach ($alt_data_updated as $item) {
+				if (array_key_exists($key, $item)) $nums[] = $item[$key];
+			}
+
+			$primary_result[$key] = $this->sumUnique($nums);
+		}
+
+		return $primary_result;
+	}
+
+
+	/**
+	* Clean and get post meta entries for 'socialcount_url_data'
+	*     - Removes anything that is an invalid or duplicate URL. 
+	*
+	* Valid values for 'socialcount_url_data' include: 
+	*     A) A string representing an alternate post URL for the current post
+	*     B) An array of social metrics data, with the key 'permalink' containing the alternate URL 
+	*
+	* @param  int    $post_id  The Post ID to fetch
+	* @return array  The matching set of entries for 'socialcount_url_data'
+	*/
+	private function filterAltMeta($post_id, $permalink) {
+		$alt_data = get_post_meta($post_id, 'socialcount_url_data');
+		$protocol = $this->smt->get_smt_option('url_protocol');
+
+		$delete_if_found = array();
+
+		// If filtering by protocol
+		if ($protocol == 'http' || $protocol == 'https') {
+			$delete_if_found[] = $this->adjustProtocol($permalink, 'https');
+			$delete_if_found[] = $this->adjustProtocol($permalink, 'http');
+		}
+
+		if ($protocol == 'both') {
+			$delete_if_found[] = $this->adjustProtocol($permalink, $this->primary_protocol());
+		}
+
+		foreach ($alt_data as $key => $val) {
+
+			// Check data type
+			if (is_string($val)) {
+				$url = $val;
+			} else if (array_key_exists('permalink', $val)) {
+				$url = $val['permalink'];
+			} else {
+				// No matching data type
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
+				unset($alt_data[$key]);
+			}
+
+			// Delete invalid URL strings
+			if (!$this->isValidURL($url)) {
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
+				unset($alt_data[$key]);
+			}
+
+			// Delete duplicate entries or unwanted items
+			if (in_array($url, $delete_if_found)) {
+				delete_post_meta($post_id, 'socialcount_url_data', $val);
+				unset($alt_data[$key]);
+			}
+
+			$delete_if_found[] = $url;
+		}
+
+		return $alt_data;
+	}
+
+
+	/**
+	* Prepare socialcount_url_data for updates by converting string entries into arrays
+	*
+	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
+	* @return array    $alt_data_updated An array of tweaked entries for postmeta
+	*/
+	private function prepAltMeta($alt_data, $permalink, $post) {
+		$alt_data_updated = $alt_data;
+		for ($i = 0; $i < count($alt_data); ++$i) {
+			$url = (is_string($alt_data[$i])) ? $alt_data[$i] : $alt_data[$i]['permalink'];
+
+			if (!is_array($alt_data_updated[$i])) {
+				$alt_data_updated[$i] = array();
+			}
+			$alt_data_updated[$i]['permalink'] = $url;
+		}
+		return $this->addMissingAltURLs($alt_data_updated, $permalink, $post);
+	}
+
+
+	/**
+	* Adds any missing URLs into alt_data
+	*
+	* @param  array    $alt_data  An array of entries for postmeta 'socialcount_url_data'
+	* @return array    $alt_data_updated An array of tweaked entries for postmeta
+	*/
+	private function addMissingAltURLs($alt_data, $permalink, $post) {
+
+		$need_to_add = array();
+		$need_to_remove = array();
+
+		// Protocol
+		$protocol = $this->smt->get_smt_option('url_protocol');
+
+		if ($protocol == 'both') {
+			$need_to_add[] = $this->adjustProtocol($permalink, $this->secondary_protocol());
+		}
+
+		// Domain migration
+		$url_rewrites = $this->smt->get_smt_option('url_rewrites');
+
+		if ($url_rewrites) {
+			foreach ($url_rewrites as $rewrite) {
+
+				// Date comparison
+				$timestamp = strtotime($post->post_date);
+				$before    = strtotime($rewrite['rewrite_before_date']);
+
+				// Skip if published later than 'before' date
+				if ($timestamp !== false && $before !== false && $timestamp > $before)  continue;
+
+				// Do the replacement
+				$find    = $rewrite['rewrite_match_from'];
+				$replace = $rewrite['rewrite_change_to'];
+
+				$url = preg_replace("/^".preg_quote($find, '/')."/i", $replace, $permalink, 1, $count);
+
+				if ($this->isValidURL($url) && $count > 0) $need_to_add[] = $url;
+			}
+		}
+	
+		// Add to meta object
+		foreach ($need_to_add as $url) {
+			if (!$this->hasURL($alt_data, $url))
+				$alt_data[] = array('permalink' => $url);
+		}
+
+		return $alt_data;
+	}
+
+	private function hasURL($alt_data, $url) {
+		foreach ($alt_data as $key => $val) {
+			if ($val['permalink'] == $url) return true;
+		}
+		return false;
+	}
+
+
+	/**
+	* Check if a string is a valid URL
+	*
+	* @param  string   $url  A string representing a URL
+	* @return boolean        If the string is a valid URL
+	*/
+	public function isValidURL($url) {
+		return filter_var($url, FILTER_VALIDATE_URL);
+	}
+
 
 	/**
 	* Combine Social, Views, and Comments into one aggregate value
@@ -256,7 +610,7 @@ class MetricsUpdater {
 	* Purpose: To lower the score of posts over time so that older posts do not display on top.
 	*
 	* @param  int  		$score  The original number
-	* @param  string  	$datePublished The date string of when the content was published; parsed with strtotime();
+	* @param  string  	$datePublished The date string of when the content was published; parsed with strto$this->getLocalTime();
 	* @return float The decayed score
 	*/
 	public function calculateScoreDecay($score, $datePublished) {
@@ -273,7 +627,7 @@ class MetricsUpdater {
 		if (!$timestamp) return false;
 		if ($score < 0 || $timestamp <= 0) return false;
 
-		$daysActive = (time() - $timestamp) / $SECONDS_PER_DAY;
+		$daysActive = ($this->getLocalTime() - $timestamp) / $SECONDS_PER_DAY;
 
 		// If newer than 5 days, boost.
 		if ($daysActive < 5) {
@@ -335,7 +689,7 @@ class MetricsUpdater {
 			// Update decayed score.
 			$social_aggregate_score_decayed = $this->calculateScoreDecay($social_aggregate_score_detail['total'], $post->post_date);
 			update_post_meta($post->ID, "social_aggregate_score_decayed", $social_aggregate_score_decayed);
-			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", time());
+			update_post_meta($post->ID, "social_aggregate_score_decayed_last_updated", $this->getLocalTime());
 
 			if ($print_output) {
 				echo "Updated ".$post->post_title.", total: <b>".$social_aggregate_score_detail['total'] . "</b> decayed: ".$social_aggregate_score_decayed."<br>";
@@ -370,7 +724,7 @@ class MetricsUpdater {
 	*/
 	public function scheduleFullDataSync($verbose = false) {
 
-		update_option( 'smt_last_full_sync', time() );
+		update_option( 'smt_last_full_sync', $this->getLocalTime() );
 
 		$post_types = $this->get_post_types();
 		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
@@ -409,9 +763,9 @@ class MetricsUpdater {
 			// We are going to stagger the updates so we do not overload the Wordpress cron.
 			$time = time() + (5 * ($offset + $i++));
 
-			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID ) );
+			$next = wp_next_scheduled( 'social_metrics_update_single_post', array( $post->ID, true ) );
 			if ($next == false) {
-				wp_schedule_single_event( $time, 'social_metrics_update_single_post', array( $post->ID ) );
+				wp_schedule_single_event( $time, 'social_metrics_update_single_post', array( $post->ID, true ) );
 			}
 
 		}

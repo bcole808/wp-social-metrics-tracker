@@ -1,0 +1,27 @@
+<div id="stat-details-{{post_id}}" class="smt-stat-details" style="display:none;">
+
+	<p class="detail-heading">There are {{url_count}} URLs associated with this post:</p>
+
+	<ol>
+		{{# permalinks }}
+			<li>
+				<input value="{{full-url}}" class="smt-url-box" disabled />
+				{{#if timeago}}
+					<span class="info" title="{{details.num}} out of {{../../total_score}} points attributed to this URL.">{{details.percent}} of social score</span>
+				{{/if}}
+				<a href="javascript:void(0);" onClick="jQuery('#stat-detail-row-{{../post_id}}-{{@index}}').slideToggle();" class="more-info">[Details]</a>
+
+				<div id="stat-detail-row-{{../post_id}}-{{@index}}" style="display:none;" class="smt-stat-row">
+					Last checked {{timeago}}. 
+					<br />
+
+					{{# details.sources}}
+						<b>{{name}}:</b>&nbsp;{{num}} {{#unless @last}} | {{/unless}}
+					{{/ details.sources}}
+
+				</div>
+			</li>
+		{{/ permalinks }}
+	</ol>
+
+</div>

@@ -1,0 +1,125 @@
+
+<form method="post" id="smt-settings-url-page">
+	<br />
+	<br />
+	<h2>SSL Protocol</h2>
+	<p>This tool helps collect data if you have traffic on both secure and non-secure URL protocols. </p>
+
+	<div class="box">
+
+		<label>What URL scheme should the plugin check?</label>
+		<select id="url_protocol" name="url_protocol">
+			{{#each protocol_options}}
+			<option value="{{key}}" {{#if selected}} selected="selected" {{/if}}>{{label}}</option>
+			{{/each}}
+		</select>
+
+		<a href="javascript:void(0);" onClick="jQuery('#url_protocol_help').slideToggle();" class="more-info">(More Info)</a>
+
+		<blockquote id="url_protocol_help" style="display:none;">
+			<p>Specifies what URLs should be used when looking up social shares. Some social networks track the sharing of http:// and https:// URLs separately, so you	should pick the one that most of your site visitors	use. </p>
+
+			<p><b>"Auto"</b> will let WordPress decide which to use.</p>
+			<p><b>Choosing only one protocol</b> will tell the Social Metrics Tracker than it should always convert URLs to that protocol, regardless of how WordPress permalinks may be configured. </p>
+			<p><b>Checking both http:// and https://</b> will tell the Social Metrics Tracker to make two requests to the social network APIs for each post in order to collect data for both possible permalinks.</p>
+
+			<p>Note that this does not affect how visitors access your posts; this only affects what URL this plugin will reference when looking up share data from the social networks.</p>
+		</blockquote>
+
+	</div>
+
+	<br />
+	<br />
+	<h2>Domain Migration</h2>
+	<p>This tool helps you retain your old social metric data when migrating between domains. You should first switch to your new domain name, then configure this tool after the switch. To disable, just erase the fields and save.</p>
+
+	<div class="box">
+		<h3>Configuration</h3>
+
+		<label>
+			Migration Date
+			<a href="javascript:void(0);" onClick="jQuery('#rewrite_before_date_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+		<input type="text" id="rewrite_before_date" name="rewrite_before_date" value="{{rewrite_before_date}}" /> 
+		<blockquote id="rewrite_before_date_help" style="display:none;">
+			<p>Only posts published before this migration date will be checked for additional social share information from the old domain name. Any post with a publish date after this date will only be checked for shares with the current domain name.</p>
+			<p>If this is omitted, all posts will be checked regardless of publish date (not recommended).</p>
+		</blockquote>
+		<br />
+
+		<label>
+			Old Base URL
+			<a href="javascript:void(0);" onClick="jQuery('#rewrite_change_to_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+		<input type="text" id="rewrite_change_to" name="rewrite_change_to" class="smt-url-box" value="{{rewrite_change_to}}" /> 
+		<blockquote id="rewrite_change_to_help" style="display:none;">
+			<p>Type in the domain name, subdomain, and/or path that WordPress used to be hosted on. Social Metrics Tracker will check for data from the old domain by querying social networks twice for each post - once for the current domain, and a second time for the old domain - then it will combine the numbers.</p>
+			<p>The box above will turn green to indicate that the URL appears valid, or red to indicate that something doesn't look right.</p>
+			<p>Make sure to verify that the preview below is correct as well.</p>
+		</blockquote>
+		<br />
+
+
+		<h3>Preview</h3>
+		<label>
+			Current live post URL:
+			<a href="javascript:void(0);" onClick="jQuery('#preview_match_from_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+		<input type="text" id="preview_match_from" class="smt-url-box" value="{{example_match_from}}" disabled /> 
+		<blockquote id="preview_match_from_help" style="display:none;">
+			<p>This is a URL to one of your posts on the currently active domain name. </p>
+			<p>The base URL which we are going to replace is: <b>{{rewrite_match_from}}</b></p>
+			<p>The box below will show a preview of what the corresponding URL on the old domain name we will try to match up data for.</p>
+		</blockquote>
+
+		<label>
+			Matching URL from old domain:
+			<a href="javascript:void(0);" onClick="jQuery('#preview_change_to_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+		<input type="text" id="preview_change_to" class="smt-url-box" value="" disabled /> 
+		<blockquote id="preview_change_to_help" style="display:none;">
+			<p>The URL displayed in this box should match exactly with what the old URL for this post should have been on your old domain name or base URL path. Social Metrics Tracker will fetch share stats for the URL displayed here and add those numbers to the total. </p>
+		</blockquote>
+
+		<input type="hidden" id="rewrite_match_from" name="rewrite_match_from" class="smt-url-box" value="{{rewrite_match_from}}" disabled />
+
+	</div>
+
+	<br />
+	<br />
+	<h2>Performance Options</h2>
+
+	<p>This tool tells the Social Metrics Tracker how often it should fetch data for old or alternate URLs, such as old domain names or http:// or https:// versions of the URLs.</p>
+
+	<div class="box">
+		<h3>Update rate for alternate URLs</h3>
+		
+
+		<label>How often should we check for social data?</label>
+		<select id="alt_url_ttl_multiplier" name="alt_url_ttl_multiplier">
+			{{#each alt_url_ttl_multiplier_options}}
+			<option value="{{key}}" {{#if selected}} selected="selected" {{/if}}>{{label}}</option>
+			{{/each}}
+		</select>
+
+		<a href="javascript:void(0);" onClick="jQuery('#alt_url_ttl_multiplier_help').slideToggle();" class="more-info">(More Info)</a>
+
+		<blockquote id="alt_url_ttl_multiplier_help" style="display:none;">
+			<p>On the fastest setting, the plugin will treat old and alternate post URLs the same as the current live URLs and always retrieve statistics for all URLs at the same rate.</p>
+			<p>On the "average" and "slow" settings, the plugin will wait and only check old and alternate post URLs once in a while but it will continue to check the current live post URLs at the normal rate. </p>
+			<p>It is recommended to choose the slowest speed that works for your setup. However, if you think that users are still actively sharing and liking and tweeting your old or alternate post URLs then it may be worth choosing a faster rate.</p>
+		</blockquote>
+
+
+	</div>
+
+
+	<br />
+	<br />
+	<input type="submit" class="button-primary" value="Save Changes" />
+
+	<p><i>Note: After updating the settings on this page, you must either perform a full-sync or just wait for each post to update itself which can take many hours or days depending on your TTL settings. In otherwords, you won't notice an immediate change in the data reports after you click "Save". </i></p>
+
+
+
+</form>

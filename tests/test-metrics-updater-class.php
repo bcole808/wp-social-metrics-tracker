@@ -8,7 +8,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function setUp() {
 		parent::setUp();
 
-		$this->updater = new MetricsUpdater(new SocialMetricsTracker());
+		// Create an updater object
+		$smt = new SocialMetricsTracker();
+		$smt->init();
+		$this->updater = new MetricsUpdater($smt);
 
 		// MOCK FACEBOOK
 		// =====================
@@ -46,6 +49,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
+		$this->updater->dataSourcesReady = true;
 	}
 
 	// DO AFTER ALL TESTS
@@ -53,24 +57,42 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	function assert_correct_data($post_id) {
+	function assert_correct_data($post_id, $skip_facebook = false) {
 		// Facebook
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_facebook', true), 8450);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_comments', true), 331);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_shares', true), 7169);
-		$this->assertEquals(get_post_meta($post_id, 'facebook_likes', true), 950);
+		if (!$skip_facebook) {
+			$this->assertEquals(8450, get_post_meta($post_id, 'socialcount_facebook', true));
+			$this->assertEquals(331,  get_post_meta($post_id, 'facebook_comments', true));
+			$this->assertEquals(7169, get_post_meta($post_id, 'facebook_shares', true));
+			$this->assertEquals(950,  get_post_meta($post_id, 'facebook_likes', true));
+		}
 
 		// Twitter
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_twitter', true), 6);
+		$this->assertEquals(6,    get_post_meta($post_id, 'socialcount_twitter', true));
 
 		// LinkedIn
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_linkedin', true), 1207);
+		$this->assertEquals(1207, get_post_meta($post_id, 'socialcount_linkedin', true));
 
 		// Totals
-		$this->assertEquals(get_post_meta($post_id, 'socialcount_TOTAL', true), 9663);
+		if ($skip_facebook) {
+			$this->assertEquals(1213, get_post_meta($post_id, 'socialcount_TOTAL', true));
+		} else {
+			$this->assertEquals(9663, get_post_meta($post_id, 'socialcount_TOTAL', true));
+		}
 
 		// Timestamp / meta
 		$this->assertTrue(get_post_meta($post_id, 'socialcount_LAST_UPDATED', true) >= time()-5);
+
+		// Aggregate data
+		$this->assertTrue(is_array(get_post_meta($post_id, 'social_aggregate_score_detail', true)));
+		$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed_last_updated', true) >= time()-5);
+
+		if ($skip_facebook) {
+			$this->assertEquals(1213, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 2420); // Estimate
+		} else {
+			$this->assertEquals(9663, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 19320); // Estimate
+		}
 	}
 
 
@@ -81,10 +103,28 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->updater->updatePostStats($post_id);
 		$this->assert_correct_data($post_id);
 
-		// 2. It shoudl accept a string as an input
+		// 2. It should accept a string as an input
 		$post_id_2 = $this->factory->post->create();
 		$this->updater->updatePostStats("$post_id_2");
 		$this->assert_correct_data($post_id_2);
+
+
+		// --------------------------------------------------
+		// TESTS FOR WHEN A SERVICE (FACEBOOK) IS UNAVAILABLE
+
+		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater->sources->FacebookUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue(false));
+
+		// 3. If a service is offline, the previously saved value should be retained and not set to zero
+		$this->updater->updatePostStats($post_id);
+		$this->assert_correct_data($post_id);
+
+		// 4. If a service is offline, the other services should still work
+		$post_id_3 = $this->factory->post->create();
+		$this->updater->updatePostStats($post_id_3);
+		$this->assert_correct_data($post_id_3, true);
 
 	}
 
@@ -227,19 +267,51 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 		// 1: It runs without failing
 		$this->assertTrue(($this->updater->scheduleFullDataSync() == 2), 'Function failed to complete successfully.');
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It did not actually schedule a cron task!');
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($second_post_id)), 'It did not actually schedule a cron task!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'It did not actually schedule a cron task!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($second_post_id, true)), 'It did not actually schedule a cron task!');
 	}
 
 	function test_removeAllQueuedUpdates() {
 		// SETUP: Make a post
 		$post_id = $this->factory->post->create();
 		$this->updater->scheduleFullDataSync();
-		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'Setup for this test failed!');
+		$this->assertGreaterThan(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'Setup for this test failed!');
 
 		// 1: It removes scheduled tasks
 		$this->updater->removeAllQueuedUpdates();
-		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id)), 'It failed to remove items from the cron queue!');
+		$this->assertEquals(0, wp_next_scheduled('social_metrics_update_single_post', array($post_id, true)), 'It failed to remove items from the cron queue!');
+	}
+
+	function test_adjustProtocol() {
+
+		$url_http  = 'http://www.wordpress.org';
+		$url_https = 'https://www.wordpress.org';
+		$url_no_protocol = '//www.wordpress.org';
+
+		// 1. It should return the input when not configured
+		$result = $this->updater->adjustProtocol($url_http);
+		$this->assertEquals($url_http, $result);
+
+		// 2. It should force SSL
+		$this->updater->smt->set_smt_option('url_protocol', 'https');
+		$result = $this->updater->adjustProtocol($url_http);
+		$this->assertEquals($url_https, $result);
+
+		// 3. It should force non-SSL
+		$this->updater->smt->set_smt_option('url_protocol', 'http');
+		$result = $this->updater->adjustProtocol($url_https);
+		$this->assertEquals($url_http, $result);
+
+		// 4. It should not mess up weird URLs
+		$this->updater->smt->set_smt_option('url_protocol', 'http');
+		$result = $this->updater->adjustProtocol('https://www.google.com/?q=https://www.wordpress.org');
+		$this->assertEquals('http://www.google.com/?q=https://www.wordpress.org', $result);
+
+		// 5. It should not mess up weird URLs
+		$this->updater->smt->set_smt_option('url_protocol', 'http');
+		$result = $this->updater->adjustProtocol('http://www.google.com/?q=https://www.wordpress.org');
+		$this->assertEquals('http://www.google.com/?q=https://www.wordpress.org', $result);
+
 	}
 
 

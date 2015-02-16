@@ -106,37 +106,6 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 
 
 	/***************************************************
-	* Test saving of data
-	***************************************************/
-	function test_save() {
-		$post_id = $this->factory->post->create();
-		$this->updater->setParams($post_id);
-
-		// 1. It should do nothing when there is nothing to save
-		$this->assertFalse($this->updater->save());
-
-		// 2. It should not save a field with a falsy value
-		$this->updater->meta['zero_value']     = 0;
-		$this->updater->meta['bad_boolean']    = false;
-		$this->updater->meta['empty_array']    = array();
-		$this->updater->meta['negative_value'] = -1;
-
-		$this->assertFalse($this->updater->save());
-
-		// 2. It should save all the meta fields
-		$this->updater->meta['my_yummy_value']   = 'pizza';
-		$this->updater->meta['my_numeric_value'] = 15;
-		$this->updater->save();
-
-		$this->assertEquals('pizza', get_post_meta($post_id, 'my_yummy_value', true));
-		$this->assertEquals(15,      get_post_meta($post_id, 'my_numeric_value', true));
-
-		// 4. It should set $this->complete to true if saving successfully
-		$this->assertTrue($this->updater->complete);
-	}
-
-
-	/***************************************************
 	* Test the most important thing; behavior of sync!
 	***************************************************/
 	function test_sync() {
@@ -152,14 +121,16 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$this->assertFalse($this->updater->sync('NotAnInteger', 'fooBar'));
 		$this->assertFalse($this->updater->sync(123, array('not_a_string')));
 
-		// 3. It should save correct meta field/values
-		$this->updater->sync($post_id, get_permalink($post_id));
+		// 3. It should not affect the DB if we set $return_instead_of_save
+		$this->updater->sync($post_id, get_permalink($post_id), true);
+		$this->assertEquals($original_meta, get_post_meta($post_id));
 
+		// 4. It should save correct meta field/values
+		$this->updater->sync($post_id, get_permalink($post_id));
 		$this->assertMatchingMetaProperty();
 
-		// 4. It should not affect existing social data if remote service is down
+		// 5. It should not affect existing social data if remote service is down
 		$this->offlineUpdater->sync($post_id, get_permalink($post_id));
-
 		$this->assertMatchingMetaProperty();
 
 	}
@@ -169,11 +140,26 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	* Should return only the value we want contributed toward the total
 	***************************************************/
 	function test_get_total() {
+
+		$this->emptyResponseUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+
+		$this->emptyResponseUpdater->expects($this->any())
+		    ->method('getURL')
+		    ->will($this->returnValue(file_get_contents(
+			dirname(__FILE__) .'/sample-data/graph.facebook.com-null-response.json'
+		)));
+
+
 		$post_id = $this->factory->post->create();
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
 		$this->assertEquals($this->updater->get_total(), 8450);
+
+		// 2. If Facebook returns a null response, we should return zero
+		$result = $this->emptyResponseUpdater->sync($post_id, get_permalink($post_id));
+		$this->assertTrue($result !== false);
+		$this->assertEquals($this->emptyResponseUpdater->get_total(), 0);
 	}
 
 
@@ -206,6 +192,33 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	}
 
 
+	/***************************************************
+	* Test getMetaFields()
+	***************************************************/
+	function test_getMetaFields() {
+		$post_id = $this->factory->post->create();
+
+		// 1. It should return false if the fetch failed
+		$this->offlineUpdater->setParams($post_id, get_permalink($post_id));
+		$this->offlineUpdater->fetch();
+		$this->offlineUpdater->parse();
+
+		$this->assertEquals(
+			$this->offlineUpdater->getMetaFields(),
+			false
+		);
+
+		// 2. It should return an array if the fetch worked
+		$this->updater->setParams($post_id, get_permalink($post_id));
+		$this->updater->fetch();
+		$this->updater->parse();
+
+		// There should be an array with four keys for Facebook
+		$this->assertTrue(
+			is_array($this->updater->getMetaFields()) &&
+			count($this->updater->getMetaFields()) == 4
+		);
+
+	}
 
 }
-
