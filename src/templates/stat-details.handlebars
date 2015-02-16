@@ -7,7 +7,7 @@
 			<li>
 				<input value="{{full-url}}" class="smt-url-box" disabled />
 				{{#if timeago}}
-					<span class="info">{{details.percent}} of social score</span>
+					<span class="info" title="{{details.num}} out of {{../../total_score}} points attributed to this URL.">{{details.percent}} of social score</span>
 				{{/if}}
 				<a href="javascript:void(0);" onClick="jQuery('#stat-detail-row-{{../post_id}}-{{@index}}').slideToggle();" class="more-info">[Details]</a>
 

@@ -71,15 +71,16 @@ class SocialMetricsTable extends WP_List_Table {
 
 	function more_details($item) {
 		$details = array(
-			'post_id' => $item['ID'],
-			'url_count' => count($item['socialcount_url_data']) + 1,
-			'permalinks' => array()
+			'post_id'     => $item['ID'],
+			'total_score' => number_format($item['socialcount_total'], 0, '.', ','),
+			'url_count'   => count($item['socialcount_url_data']) + 1,
+			'permalinks'  => array()
 		);
 
 		$details['permalinks'][] = array(
 			'full-url' => $item['permalink'],
-			'timeago' => $this->smt->timeago($item['socialcount_LAST_UPDATED']),
-			'details' => $this->breakdown_details($item, $item['socialcount_total'])
+			'timeago'  => $this->smt->timeago($item['socialcount_LAST_UPDATED']),
+			'details'  => $this->breakdown_details($item, $item['socialcount_total'])
 		);
 
 		foreach ($item['socialcount_url_data'] as $key => $val) {
