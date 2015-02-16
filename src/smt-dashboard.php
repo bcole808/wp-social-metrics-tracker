@@ -73,14 +73,78 @@ class SocialMetricsTable extends WP_List_Table {
 		$details = array(
 			'post_id' => $item['ID'],
 			'url_count' => count($item['socialcount_url_data']) + 1,
-			'permalinks' => array($item['permalink'])
+			'permalinks' => array()
+		);
+
+		$details['permalinks'][] = array(
+			'full-url' => $item['permalink'],
+			'timeago' => $this->smt->timeago($item['socialcount_LAST_UPDATED']),
+			'details' => $this->breakdown_details($item, $item['socialcount_total'])
 		);
 
 		foreach ($item['socialcount_url_data'] as $key => $val) {
-			$details['permalinks'][] = is_array($val) ? $val['permalink'] : $val;
+			$url = is_array($val) ? $val['permalink'] : $val;
+
+			$entry = array(
+				'full-url' => $url,
+				'details' => $this->breakdown_details($val, $item['socialcount_total'])
+			);
+
+			if (array_key_exists('socialcount_alt_data_LAST_UPDATED', $item))
+				$entry['timeago'] = $this->smt->timeago($item['socialcount_alt_data_LAST_UPDATED']);
+
+			$details['permalinks'][] = $entry;
 		}
 
 		return $this->smt->renderTemplate('stat-details', $details);
+	}
+
+	function breakdown_details($obj, $total) {
+
+		$sources = array();
+
+		$sum = 0;
+		foreach ($this->smt->updater->getSources() as $HTTPResourceUpdater) {
+
+			$key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
+
+			if (!array_key_exists($key, $obj)) continue;
+
+			$sum += $obj[$key];
+
+			$source = array(
+				'name' => $HTTPResourceUpdater->name,
+				'num' => $obj[$key]
+			);
+
+			// Subtract other values if is parent
+			if (array_key_exists('socialcount_url_data', $obj)) {
+				foreach ($obj['socialcount_url_data'] as $child) {
+					if (!array_key_exists($key, $child)) continue;
+					$sum -= $child[$key];
+					$source['num'] -= $child[$key];
+				}
+			}
+
+			// Only if some shares for this service
+			if ($source['num'] > 0) {
+				$source['num'] = number_format($source['num'], 0, '.', ',');
+				$sources[] = $source;
+			}
+
+		}
+
+		// Get percent: Ensure smallest possible percent of 0.01 if there is at least one share
+		$percent  = ($total > 0 && $sum > 0) ? max($sum / $total * 100, 0.01) : 0;
+
+		// Use two decimal places if percent between 0 and 1
+		$decimals = ($percent < 1 && $percent > 0) ? 2 : 0;
+
+		return array(
+			'num' => number_format($sum, 0, '.', ','),
+			'sources' => $sources,
+			'percent' => ($total > 0) ? number_format( $percent, $decimals ) . '%' : '0%'
+		);
 	}
 
 	// Column for Social
@@ -283,6 +347,7 @@ class SocialMetricsTable extends WP_List_Table {
 			$item['comment_count'] = $post->comment_count;
 			$item['socialcount_total'] = (get_post_meta($post->ID, "socialcount_TOTAL", true)) ? get_post_meta($post->ID, "socialcount_TOTAL", true) : 0;
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
+			$item['socialcount_alt_data_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_alt_data_LAST_UPDATED", true);
 			$item['views'] = (get_post_meta($post->ID, "ga_pageviews", true)) ? get_post_meta($post->ID, "ga_pageviews", true) : 0;
 			$item['permalink'] = get_permalink($post->ID);
 

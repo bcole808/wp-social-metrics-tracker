@@ -458,6 +458,36 @@ button.smt-connection-item:focus {
 			font-size: 11px;
 			margin-bottom: 0;
 		}
+
+		.detail-heading {
+			font-weight: bold;
+			margin: 12px 0 6px 0;
+		}
+
+		.smt-url-box {
+			cursor: text;
+			font-size: 11px;
+			border: 1px solid #E7E7E7;
+			background: #FFFFFF;
+			width: 50%;
+		}
+
+		.info {
+			margin-left: 6px;
+			color: #ddd;
+		}
+
+		.more-info {
+			margin-left: 6px;
+			color: #CCC;
+			&:hover {
+				color: #2ea2cc;
+			}
+		}
+
+		.smt-stat-row {
+			margin-bottom: 15px;
+		}
 	}
 }
 
