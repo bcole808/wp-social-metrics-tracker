@@ -7,6 +7,9 @@
 * And then it will fetch that data when running the test. 
 *************************************/
 
+/**
+* @requires PHP 5.4
+*/
 class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 	private $updater;
