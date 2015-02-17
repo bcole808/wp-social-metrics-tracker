@@ -252,6 +252,9 @@ class SocialMetricsTable extends WP_List_Table {
 	 */
 	function handle_dashboard_sorting($query) {
 
+		// Compatibility filters with other plugins:
+		remove_filter('posts_orderby', 'postMash_orderPosts');
+
 		// get order
 		// this should be taken care of by default but something is interfering
 		// If no order, default is DESC

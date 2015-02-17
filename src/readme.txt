@@ -98,6 +98,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * -- A domain migration tool to keep checking for share data from old URLs/domains
 * Fixed a bug which was causing "Settings saved" to be displayed more than once.
 * Removed the "Debug mode" option which did not do anything useful. 
+* Compatibility fix with the plugin "postMash orderby" for sort order
 
 = 1.3.4 =
 * Update plugin to use Facebook API v2.0
