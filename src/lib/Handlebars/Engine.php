@@ -1,28 +1,23 @@
 <?php
 /**
  * This file is part of Handlebars-php
- * Based on mustache-php https://github.com/bobthecow/mustache.php
+ * Base on mustache-php https://github.com/bobthecow/mustache.php
  *
  * PHP version 5.3
  *
  * @category  Xamin
  * @package   Handlebars
  * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @author    Behrooz Shabani <everplays@gmail.com>
- * @copyright 2010-2012 (c) Justin Hileman
  * @copyright 2012 (c) ParsPooyesh Co
- * @copyright 2013 (c) Behrooz Shabani
  * @license   MIT <http://opensource.org/licenses/MIT>
  * @version   GIT: $Id$
  * @link      http://xamin.ir
  */
 
-namespace Handlebars;
-use Handlebars\Loader\StringLoader;
-use Handlebars\Cache\Dummy;
 
 /**
- * Handlebars template engine, based on mustache.
+ * Handlebars parser (infact its a mustache parser)
+ * This class is responsible for turning raw template source into a set of Mustache tokens.
  *
  * @category  Xamin
  * @package   Handlebars
@@ -33,85 +28,63 @@ use Handlebars\Cache\Dummy;
  * @link      http://xamin.ir
  */
 
-class Handlebars
+class Handlebars_Engine
 {
-    private static $_instance = false;
     const VERSION = '1.0.0';
 
     /**
-     * factory method
-     *
-     * @param array $options see __construct's options parameter
-     *
-     * @return Handlebars
-     */
-    public static function factory($options = array())
-    {
-        if (self::$_instance === false) {
-            self::$_instance = new Handlebars($options);
-        }
-
-        return self::$_instance;
-    }
-
-    /**
-     * @var Tokenizer
+     * @var Handlebars_Tokenizer
      */
     private $_tokenizer;
 
     /**
-     * @var Parser
+     * @var Handlebars_Parser
      */
     private $_parser;
-
     /**
-     * @var Helpers
+     * @var Handlebars_Helpers
      */
     private $_helpers;
 
     /**
-     * @var Loader
+     * @var Handlebars_Loader
      */
     private $_loader;
 
     /**
-     * @var Loader
+     * @var Handlebars_Loader
      */
     private $_partialsLoader;
 
     /**
-     * @var Cache
+     * @var Handlebars_Cache
      */
     private $_cache;
-
     /**
      * @var callable escape function to use
      */
     private $_escape = 'htmlspecialchars';
 
     /**
-     * @var array parametes to pass to escape function
+     * @var array parametes to pass to escape function, script prepend string to this array
      */
-    private $_escapeArgs = array(
+    private $_escapeArgs = array (
         ENT_COMPAT,
         'UTF-8'
-    );
+        );
 
     private $_aliases = array();
-
     /**
      * Handlebars engine constructor
      * $options array can contain :
-     * helpers        => Helpers object
+     * helpers        => Handlebars_Helpers object
      * escape         => a callable function to escape values
      * escapeArgs     => array to pass as extra parameter to escape function
-     * loader         => Loader object
-     * partials_loader => Loader object
-     * cache          => Cache object
+     * loader         => Handlebars_Loader object
+     * partials_loader => Handlebars_Loader object
+     * cache          => Handlebars_Cache object
      *
      * @param array $options array of options to set
-     *
-     * @throws \InvalidArgumentException
      */
     public function __construct(array $options = array())
     {
@@ -133,9 +106,7 @@ class Handlebars
 
         if (isset($options['escape'])) {
             if (!is_callable($options['escape'])) {
-                throw new \InvalidArgumentException(
-                    'Handlebars Constructor "escape" option must be callable'
-                );
+                throw new InvalidArgumentException('Handlebars Constructor "escape" option must be callable');
             }
 
             $this->_escape = $options['escape'];
@@ -165,8 +136,8 @@ class Handlebars
      * @param mixed  $data     data to use as context
      *
      * @return string Rendered template
-     * @see Handlebars::loadTemplate
-     * @see Template::render
+     * @see Handlebars_Engine::loadTemplate
+     * @see Handlebars_Template::render
      */
     public function render($template, $data)
     {
@@ -176,11 +147,11 @@ class Handlebars
     /**
      * Set helpers for current enfine
      *
-     * @param Helpers $helpers handlebars helper
+     * @param Handlebars_Helpers $helpers handlebars helper
      *
      * @return void
      */
-    public function setHelpers(Helpers $helpers)
+    public function setHelpers(Handlebars_Helpers $helpers)
     {
         $this->_helpers = $helpers;
     }
@@ -188,14 +159,13 @@ class Handlebars
     /**
      * Get helpers, or create new one if ther is no helper
      *
-     * @return Helpers
+     * @return Handlebars_Helpers
      */
     public function getHelpers()
     {
         if (!isset($this->_helpers)) {
-            $this->_helpers = new Helpers();
+            $this->_helpers = new Handlebars_Helpers();
         }
-
         return $this->_helpers;
     }
 
@@ -221,7 +191,7 @@ class Handlebars
      */
     public function getHelper($name)
     {
-        return $this->getHelpers()->__get($name);
+        return $this->getHelpers()->get($name);
     }
 
     /**
@@ -251,11 +221,11 @@ class Handlebars
     /**
      * Set current loader
      *
-     * @param Loader $loader handlebars loader
+     * @param Handlebars_Loader $loader handlebars loader
      *
      * @return void
      */
-    public function setLoader(Loader $loader)
+    public function setLoader(Handlebars_Loader $loader)
     {
         $this->_loader = $loader;
     }
@@ -263,25 +233,24 @@ class Handlebars
     /**
      * get current loader
      *
-     * @return Loader
+     * @return Handlebars_Loader
      */
     public function getLoader()
     {
         if (!isset($this->_loader)) {
-            $this->_loader = new StringLoader();
+            $this->_loader = new Handlebars_Loader_StringLoader();
         }
-
         return $this->_loader;
     }
 
     /**
      * Set current partials loader
      *
-     * @param Loader $loader handlebars loader
+     * @param Handlebars_Loader $loader handlebars loader
      *
      * @return void
      */
-    public function setPartialsLoader(Loader $loader)
+    public function setPartialsLoader(Handlebars_Loader $loader)
     {
         $this->_partialsLoader = $loader;
     }
@@ -289,25 +258,24 @@ class Handlebars
     /**
      * get current partials loader
      *
-     * @return Loader
+     * @return Handlebars_Loader
      */
     public function getPartialsLoader()
     {
         if (!isset($this->_partialsLoader)) {
-            $this->_partialsLoader = new StringLoader();
+            $this->_partialsLoader = new Handlebars_Loader_StringLoader();
         }
-
         return $this->_partialsLoader;
     }
 
     /**
      * Set cache  for current engine
      *
-     * @param Cache $cache handlebars cache
+     * @param Handlebars_cache $cache handlebars cache
      *
      * @return void
      */
-    public function setCache(Cache $cache)
+    public function setCache(Handlebars_Cache $cache)
     {
         $this->_cache = $cache;
     }
@@ -315,17 +283,15 @@ class Handlebars
     /**
      * Get cache
      *
-     * @return Cache
+     * @return Handlebars_Cache
      */
     public function getCache()
     {
         if (!isset($this->_cache)) {
-            $this->_cache = new Dummy();
+            $this->_cache = new Handlebars_Cache_Dummy();
         }
-
         return $this->_cache;
     }
-
     /**
      * Get current escape function
      *
@@ -337,19 +303,16 @@ class Handlebars
     }
 
     /**
-     * Set current escape function
+     * Set current escpae function
      *
      * @param callable $escape function
      *
-     * @throws \InvalidArgumentException
      * @return void
      */
     public function setEscape($escape)
     {
         if (!is_callable($escape)) {
-            throw new \InvalidArgumentException(
-                'Escape function must be a callable'
-            );
+            throw new InvalidArgumentException('Escape function must be a callable');
         }
         $this->_escape = $escape;
     }
@@ -357,7 +320,7 @@ class Handlebars
     /**
      * Get current escape function
      *
-     * @return array
+     * @return callable
      */
     public function getEscapeArgs()
     {
@@ -365,7 +328,7 @@ class Handlebars
     }
 
     /**
-     * Set current escape function
+     * Set current escpae function
      *
      * @param array $escapeArgs arguments to pass as extra arg to function
      *
@@ -383,11 +346,11 @@ class Handlebars
     /**
      * Set the Handlebars Tokenizer instance.
      *
-     * @param Tokenizer $tokenizer tokenizer
+     * @param Handlebars_Tokenizer $tokenizer tokenizer
      *
      * @return void
      */
-    public function setTokenizer(Tokenizer $tokenizer)
+    public function setTokenizer(Handlebars_Tokenizer $tokenizer)
     {
         $this->_tokenizer = $tokenizer;
     }
@@ -395,28 +358,26 @@ class Handlebars
     /**
      * Get the current Handlebars Tokenizer instance.
      *
-     * If no Tokenizer instance has been explicitly specified, this method will
-     * instantiate and return a new one.
+     * If no Tokenizer instance has been explicitly specified, this method will instantiate and return a new one.
      *
-     * @return Tokenizer
+     * @return Handlebars_Tokenizer
      */
     public function getTokenizer()
     {
         if (!isset($this->_tokenizer)) {
-            $this->_tokenizer = new Tokenizer();
+            $this->_tokenizer = new Handlebars_Tokenizer();
         }
 
         return $this->_tokenizer;
     }
-
     /**
      * Set the Handlebars Parser instance.
      *
-     * @param Parser $parser parser object
+     * @param Handlebars_Parser $parser parser object
      *
      * @return void
      */
-    public function setParser(Parser $parser)
+    public function setParser(Handlebars_Parser $parser)
     {
         $this->_parser = $parser;
     }
@@ -424,33 +385,30 @@ class Handlebars
     /**
      * Get the current Handlebars Parser instance.
      *
-     * If no Parser instance has been explicitly specified, this method will
-     * instantiate and return a new one.
+     * If no Parser instance has been explicitly specified, this method will instantiate and return a new one.
      *
-     * @return Parser
+     * @return Handlebars_Parser
      */
     public function getParser()
     {
         if (!isset($this->_parser)) {
-            $this->_parser = new Parser();
+            $this->_parser = new Handlebars_Parser();
         }
 
         return $this->_parser;
     }
-
     /**
      * Load a template by name with current template loader
      *
      * @param string $name template name
      *
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadTemplate($name)
     {
         $source = $this->getLoader()->load($name);
         $tree = $this->_tokenize($source);
-
-        return new Template($this, $tree, $source);
+        return new Handlebars_Template($this, $tree, $source);
     }
 
     /**
@@ -458,7 +416,7 @@ class Handlebars
      *
      * @param string $name partial name
      *
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadPartial($name)
     {
@@ -467,8 +425,7 @@ class Handlebars
         }
         $source = $this->getPartialsLoader()->load($name);
         $tree = $this->_tokenize($source);
-
-        return new Template($this, $tree, $source);
+        return new Handlebars_Template($this, $tree, $source);
     }
 
     /**
@@ -503,13 +460,12 @@ class Handlebars
      *
      * @param string $source string to load
      *
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadString($source)
     {
         $tree = $this->_tokenize($source);
-
-        return new Template($this, $tree, $source);
+        return new Handlebars_Template($this, $tree, $source);
     }
 
     /**
@@ -528,8 +484,6 @@ class Handlebars
             $tree = $this->getParser()->parse($tokens);
             $this->getCache()->set($hash, $tree);
         }
-
         return $tree;
     }
-
 }

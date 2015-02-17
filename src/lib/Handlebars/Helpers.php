@@ -2,31 +2,25 @@
 /**
  * This file is part of Handlebars-php
  * Base on mustache-php https://github.com/bobthecow/mustache.php
- *
+ * 
  * PHP version 5.3
- *
+ * 
  * @category  Xamin
  * @package   Handlebars
  * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @author    Behrooz Shabani <everplays@gmail.com>
- * @author    Dmitriy Simushev <simushevds@gmail.com>
- * @author    Jeff Turcotte <jeff.turcotte@gmail.com>
  * @copyright 2012 (c) ParsPooyesh Co
- * @copyright 2013 (c) Behrooz Shabani
  * @license   MIT <http://opensource.org/licenses/MIT>
  * @version   GIT: $Id$
  * @link      http://xamin.ir
  */
 
-namespace Handlebars;
-
 /**
- * Handlebars helpers
+ * Handlebars helpers 
  *
- * a collection of helper function. normally a function like
- * function ($sender, $name, $arguments) $arguments is unscaped arguments and
- * is a string, not array
- *
+ * a collection of helper function. normally a function like 
+ * function ($sender, $name, $arguments) $arguments is unscaped arguments and is a string, not array
+ * TODO: Add support for an interface with an execute method
+ * 
  * @category  Xamin
  * @package   Handlebars
  * @author    fzerorubigd <fzerorubigd@gmail.com>
@@ -36,7 +30,7 @@ namespace Handlebars;
  * @link      http://xamin.ir
  */
 
-class Helpers
+class Handlebars_Helpers
 {
     /**
      * @var array array of helpers
@@ -46,96 +40,205 @@ class Helpers
     /**
      * Create new helper container class
      *
-     * @param array      $helpers  array of name=>$value helpers
-     * @param array|bool $defaults add defaults helper
-     *          (if, unless, each,with, bindAttr)
+     * @param array $helpers  array of name=>$value helpers
+     * @param array $defaults add defaults helper (if, unless, each,with)
      *
-     * @throws \InvalidArgumentException when $helpers is not an array
-     * (or traversable) or helper is not a callable
+     * @throw InvalidArgumentException when $helpers is not an array (or traversable) or helper is not a caallable
      */
     public function __construct($helpers = null, $defaults = true)
     {
         if ($defaults) {
             $this->addDefaultHelpers();
-        }
+        }            
         if ($helpers != null) {
-            if (!is_array($helpers) && !$helpers instanceof \Traversable) {
-                throw new \InvalidArgumentException(
-                    'HelperCollection constructor expects an array of helpers'
-                );
-            }
+            if (!is_array($helpers) && !$helpers instanceof Traversable) {
+                throw new InvalidArgumentException('HelperCollection constructor expects an array of helpers');
+            }                
             foreach ($helpers as $name => $helper) {
-                $this->add($name, $helper);
+                $this->add($name, $helpers);
             }
-        }
+        }            
     }
 
+	/**
+	 * Create handler for the 'if' helper.
+	 * Needed for compatibility with PHP 5.2 since it doesn't support anonymous functions.
+	 *
+	 * @param $template
+	 * @param $context
+	 * @param $args
+	 * @param $source
+	 *
+	 * @return mixed
+	 */
+	public static function _helper_if($template, $context, $args, $source) {
+		$tmp = $context->get($args);
+		$buffer = '';
+
+		if ($tmp) {
+			$template->setStopToken('else');
+			$buffer = $template->render($context);
+			$template->setStopToken(false);
+			$template->discard($context);
+		} else {
+			$template->setStopToken('else');
+			$template->discard($context);
+			$template->setStopToken(false);
+			$buffer = $template->render($context);
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Create handler for the 'each' helper.
+	 * Needed for compatibility with PHP 5.2 since it doesn't support anonymous functions.
+	 *
+	 * @param $template
+	 * @param $context
+	 * @param $args
+	 * @param $source
+	 *
+	 * @return mixed
+	 */
+	public static function _helper_each($template, $context, $args, $source) {
+		$tmp = $context->get($args);
+		$buffer = '';
+		if (is_array($tmp) || $tmp instanceof Traversable) {
+			$islist = ( array_keys($tmp) == range(0, count($tmp) - 1) );
+
+			$index = 0;
+			foreach ($tmp as $key => $var) {
+
+				$var['@first'] = (!array_key_exists('@first', $var)) ? ($index === 0) : $var['@first'];
+				$var['@last']  = (!array_key_exists('@last', $var))  ? ($index === count($tmp)-1) : $var['@last'];
+				$index++;
+
+				if( $islist ) {
+					$context->pushIndex($key);
+				} else {
+					$context->pushKey($key);
+				}
+				$context->push($var);
+				$buffer .= $template->render($context);
+				$context->pop();
+				if( $islist ) {
+					$context->popIndex();
+				} else {
+					$context->popKey();
+				}
+			}
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Create handler for the 'unless' helper.
+	 * Needed for compatibility with PHP 5.2 since it doesn't support anonymous functions.
+	 *
+	 * @param $template
+	 * @param $context
+	 * @param $args
+	 * @param $source
+	 *
+	 * @return mixed
+	 */
+	public static function _helper_unless($template, $context, $args, $source) {
+		$tmp = $context->get($args);
+		$buffer = '';
+		if (!$tmp) {
+			$buffer = $template->render($context);
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Create handler for the 'with' helper.
+	 * Needed for compatibility with PHP 5.2 since it doesn't support anonymous functions.
+	 *
+	 * @param $template
+	 * @param $context
+	 * @param $args
+	 * @param $source
+	 *
+	 * @return mixed
+	 */
+	public static function _helper_with($template, $context, $args, $source) {
+		$tmp = $context->get($args);
+		$context->push($tmp);
+		$buffer = $template->render($context);
+		$context->pop();
+		return $buffer;
+	}
+
+	/**
+	 * Create handler for the 'bindAttr' helper.
+	 * Needed for compatibility with PHP 5.2 since it doesn't support anonymous functions.
+	 *
+	 * @param $template
+	 * @param $context
+	 * @param $args
+	 * @param $source
+	 *
+	 * @return mixed
+	 */
+	public static function _helper_bindAttr($template, $context, $args, $source) {
+		return $args;
+	}
 
     /**
      * Add default helpers (if unless each with bindAttr)
-     *
+     * 
      * @return void
      */
     protected function addDefaultHelpers()
     {
-        $this->add('if', new Helper\IfHelper());
-        $this->add('each', new Helper\EachHelper());
-        $this->add('unless', new Helper\UnlessHelper());
-        $this->add('with', new Helper\WithHelper());
+        $this->add(
+            'if',
+	        array('Handlebars_Helpers', '_helper_if')
+        );
+
+        $this->add(
+            'each',
+	        array('Handlebars_Helpers', '_helper_each')
+        );
+
+        $this->add(
+            'unless',
+	        array('Handlebars_Helpers', '_helper_unless')
+        );
+
+        $this->add(
+            'with',
+	        array('Handlebars_Helpers', '_helper_with')
+        );
 
         //Just for compatibility with ember
-        $this->add('bindAttr', new Helper\BindAttrHelper());
+        $this->add(
+            'bindAttr',
+	        array('Handlebars_Helpers', '_helper_bindAttr')
+        );
     }
 
     /**
-     * Add a new helper to helpers
+     * Add a new helper to helpers 
+     * 
+     * @param string   $name   helper name
+     * @param callable $helper a function as a helper
      *
-     * @param string $name   helper name
-     * @param mixed  $helper a callable or Helper implementation as a helper
-     *
-     * @throws \InvalidArgumentException if $helper is not a callable
      * @return void
+     * @throw InvalidArgumentException if $helper is not a callable
      */
-    public function add($name, $helper)
+    public function add($name ,$helper) 
     {
-        if (!is_callable($helper) && ! $helper instanceof Helper) {
-            throw new \InvalidArgumentException(
-                "$name Helper is not a callable or doesn't implement the Helper interface."
-            );
-        }
+        if (!is_callable($helper)) {
+            throw new InvalidArgumentException("$name Helper is not a callable.");
+        }            
         $this->helpers[$name] = $helper;
     }
-
-    /**
-     * Calls a helper, whether it be a Closure or Helper instance
-     *
-     * @param string               $name     The name of the helper
-     * @param \Handlebars\Template $template The template instance
-     * @param \Handlebars\Context  $context  The current context
-     * @param array                $args     The arguments passed the the helper
-     * @param string               $source   The source
-     *
-     * @throws \InvalidArgumentException
-     * @return mixed The helper return value
-     */
-    public function call($name, Template $template, Context $context, $args, $source)
-    {
-        if (!$this->has($name)) {
-            throw new \InvalidArgumentException('Unknown helper: ' . $name);
-        }
-
-        if ($this->helpers[$name] instanceof Helper) {
-            return $this->helpers[$name]->execute(
-                $template, $context, $args, $source
-            );
-        }
-
-        return call_user_func($this->helpers[$name], $template, $context, $args, $source);
-    }
-
+    
     /**
      * Check if $name helper is available
-     *
+     * 
      * @param string $name helper name
      *
      * @return boolean
@@ -146,25 +249,24 @@ class Helpers
     }
 
     /**
-     * Get a helper. __magic__ method :)
-     *
+     * Get a helper. __magic__ method :) 
+     * 
      * @param string $name helper name
      *
-     * @throws \InvalidArgumentException if $name is not available
      * @return callable helper function
+     * @throw InvalidArgumentException if $name is not available
      */
     public function __get($name)
     {
         if (!$this->has($name)) {
-            throw new \InvalidArgumentException('Unknown helper :' . $name);
-        }
-
+            throw new InvalidArgumentException('Unknow helper :' . $name);
+        }            
         return $this->helpers[$name];
     }
 
     /**
-     * Check if $name helper is available __magic__ method :)
-     *
+     * Check if $name helper is available __magic__ method :) 
+     * 
      * @param string $name helper name
      *
      * @return boolean
@@ -176,28 +278,30 @@ class Helpers
     }
 
     /**
-     * Add a new helper to helpers __magic__ method :)
-     *
+     * Add a new helper to helpers __magic__ method :) 
+     * 
      * @param string   $name   helper name
      * @param callable $helper a function as a helper
      *
      * @return void
+     * @throw InvalidArgumentException if $helper is not a callable
      */
-    public function __set($name, $helper)
+    public function __set($name ,$helper)
     {
-        $this->add($name, $helper);
-    }
+        $this->add($name, $helpers);
+    }        
+
 
     /**
      * Unset a helper
+     * 
+     * @param string $name helpername to remove
      *
-     * @param string $name helper name to remove
-     *
-     * @return void
+     * @return void 
      */
     public function __unset($name)
     {
-        $this->remove($name);
+        unset($this->helpers[$name]);
     }
 
     /**
@@ -205,13 +309,13 @@ class Helpers
      *
      * @param string $name helper name
      *
-     * @throws \InvalidArgumentException if the requested helper is not present.
      * @return void
+     * @throws InvalidArgumentException if the requested helper is not present.
      */
     public function remove($name)
     {
         if (!$this->has($name)) {
-            throw new \InvalidArgumentException('Unknown helper: ' . $name);
+            throw new InvalidArgumentException('Unknown helper: ' . $name);
         }
 
         unset($this->helpers[$name]);
@@ -238,4 +342,5 @@ class Helpers
     {
         return empty($this->helpers);
     }
-}
+    
+}    

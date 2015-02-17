@@ -8,16 +8,12 @@
  * @category  Xamin
  * @package   Handlebars
  * @author    Alex Soncodi <alex@brokerloop.com>
- * @author    Behrooz Shabani <everplays@gmail.com>
  * @copyright 2013 (c) Brokerloop, Inc.
- * @copyright 2013 (c) Behrooz Shabani
  * @license   MIT <http://opensource.org/licenses/MIT>
  * @version   GIT: $Id$
  * @link      http://xamin.ir
  */
 
-namespace Handlebars\Cache;
-use Handlebars\Cache;
 
 /**
  * A flat-file filesystem cache.
@@ -31,9 +27,8 @@ use Handlebars\Cache;
  * @link      http://xamin.ir
  */
 
-class Disk implements Cache
+class Handlebars_Cache_Disk implements Handlebars_Cache
 {
-
     private $_path = '';
     private $_prefix = '';
     private $_suffix = '';
@@ -41,22 +36,20 @@ class Disk implements Cache
     /**
      * Construct the disk cache.
      *
-     * @param string $path   Filesystem path to the disk cache location
+     * @param string $path Filesystem path to the disk cache location
      * @param string $prefix optional file prefix, defaults to empty string
      * @param string $suffix optional file extension, defaults to empty string
-     *
-     * @throws \RuntimeException
-     * @throws \InvalidArgumentException
      */
     public function __construct($path, $prefix = '', $suffix = '')
     {
         if (empty($path)) {
-            throw new \InvalidArgumentException('Must specify disk cache path');
-        } elseif (!is_dir($path)) {
+            throw new InvalidArgumentException('Must specify disk cache path');
+        }
+        else if (!is_dir($path)) {
             @mkdir($path, 0777, true);
 
             if (!is_dir($path)) {
-                throw new \RuntimeException('Could not create cache file path');
+                throw new RuntimeException('Could not create cache file path');
             }
         }
 
@@ -71,10 +64,8 @@ class Disk implements Cache
      * and optional extension.
      *
      * @param string $name Name of the cache item
-     *
-     * @return string full disk path of cached item
      */
-    private function _getPath($name)
+    private function getPath($name)
     {
         return $this->_path . DIRECTORY_SEPARATOR .
             $this->_prefix . $name . $this->_suffix;
@@ -85,11 +76,11 @@ class Disk implements Cache
      *
      * @param string $name Cache id
      *
-     * @return mixed data on hit, boolean false on cache not found
+     * @return data on hit, boolean false on cache not found
      */
     public function get($name)
     {
-        $path = $this->_getPath($name);
+        $path = $this->getPath($name);
 
         return (file_exists($path)) ?
             unserialize(file_get_contents($path)) : false;
@@ -105,7 +96,7 @@ class Disk implements Cache
      */
     public function set($name, $value)
     {
-        $path = $this->_getPath($name);
+        $path = $this->getPath($name);
 
         file_put_contents($path, serialize($value));
     }
@@ -119,9 +110,8 @@ class Disk implements Cache
      */
     public function remove($name)
     {
-        $path = $this->_getPath($name);
+        $path = $this->getPath($name);
 
         unlink($path);
     }
-
 }

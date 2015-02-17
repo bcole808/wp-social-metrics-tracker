@@ -3,7 +3,7 @@
 	<p class="detail-heading">There are {{url_count}} URLs associated with this post:</p>
 
 	<ol>
-		{{# permalinks }}
+		{{#each permalinks}}
 			<li>
 				<input value="{{full-url}}" class="smt-url-box" disabled />
 				{{#if timeago}}
@@ -15,13 +15,13 @@
 					Last checked {{timeago}}. 
 					<br />
 
-					{{# details.sources}}
+					{{#each details.sources}}
 						<b>{{name}}:</b>&nbsp;{{num}} {{#unless @last}} | {{/unless}}
-					{{/ details.sources}}
+					{{/each}}
 
 				</div>
 			</li>
-		{{/ permalinks }}
+		{{/each}}
 	</ol>
 
 </div>

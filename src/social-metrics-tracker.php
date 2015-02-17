@@ -32,8 +32,8 @@ include_once('SocialMetricsDebugger.class.php');
 
 // Handlebars Autoloader
 require_once('lib/Handlebars/Autoloader.php');
-Handlebars\Autoloader::register();
-use Handlebars\Handlebars;
+Handlebars_Autoloader::register();
+// use Handlebars\Handlebars;
 
 
 class SocialMetricsTracker {
@@ -89,9 +89,9 @@ class SocialMetricsTracker {
 
 		if (!isset($this->template_engine)) {
 
-			$this->template_engine = new Handlebars(array(
-			    'loader' => new \Handlebars\Loader\FilesystemLoader(dirname(__FILE__).'/templates/'),
-			    'partials_loader' => new \Handlebars\Loader\FilesystemLoader(
+			$this->template_engine = new Handlebars_Engine(array(
+			    'loader' => new Handlebars_Loader_FilesystemLoader(dirname(__FILE__).'/templates/'),
+			    'partials_loader' => new Handlebars_Loader_FilesystemLoader(
 			        dirname(__FILE__).'/templates/',
 			        array(
 			            'prefix' => '_'

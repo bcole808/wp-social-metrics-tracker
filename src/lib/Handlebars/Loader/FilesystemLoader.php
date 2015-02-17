@@ -9,21 +9,11 @@
  * @category  Xamin
  * @package   Handlebars
  * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @author    Behrooz Shabani <everplays@gmail.com>
- * @author    Craig Bass <craig@clearbooks.co.uk>
- * @author    ^^         <craig@devls.co.uk>
- * @copyright 2010-2012 (c) Justin Hileman
  * @copyright 2012 (c) ParsPooyesh Co
- * @copyright 2013 (c) Behrooz Shabani
  * @license   MIT <http://opensource.org/licenses/MIT>
  * @version   GIT: $Id$
  * @link      http://xamin.ir
  */
-
-namespace Handlebars\Loader;
-
-use Handlebars\Loader;
-use Handlebars\String;
 
 /**
  * Handlebars Template filesystem Loader implementation.
@@ -31,14 +21,13 @@ use Handlebars\String;
  * @category  Xamin
  * @package   Handlebars
  * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @copyright 2010-2012 (c) Justin Hileman
  * @copyright 2012 (c) ParsPooyesh Co
  * @license   MIT <http://opensource.org/licenses/MIT>
  * @version   Release: @package_version@
  * @link      http://xamin.ir *
+ * @implements Loader
  */
-
-class FilesystemLoader implements Loader
+class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
 {
     private $_baseDir;
     private $_extension = '.handlebars';
@@ -48,17 +37,17 @@ class FilesystemLoader implements Loader
     /**
      * Handlebars filesystem Loader constructor.
      *
-     * $options array allows overriding certain Loader options during instantiation:
+     * Passing an $options array allows overriding certain Loader options during instantiation:
      *
      *     $options = array(
-     *         // extension used for Handlebars templates. Defaults to '.handlebars'
+     *         // The filename extension used for Handlebars templates. Defaults to '.handlebars'
      *         'extension' => '.other',
      *     );
      *
      * @param string|array $baseDirs A path contain template files or array of paths
      * @param array        $options  Array of Loader options (default: array())
      *
-     * @throws \RuntimeException if $baseDir does not exist.
+     * @throws RuntimeException if $baseDir does not exist.
      */
     public function __construct($baseDirs, array $options = array())
     {
@@ -66,18 +55,15 @@ class FilesystemLoader implements Loader
             $baseDirs = array(rtrim(realpath($baseDirs), '/'));
         } else {
             foreach ($baseDirs as &$dir) {
-                $dir = rtrim(realpath($dir), '/');
+                $dir = array(rtrim(realpath($dir), '/'));
             }
-            unset($dir);
         }
 
         $this->_baseDir = $baseDirs;
 
         foreach ($this->_baseDir as $dir) {
             if (!is_dir($dir)) {
-                throw new \RuntimeException(
-                    'FilesystemLoader baseDir must be a directory: ' . $dir
-                );
+                throw new RuntimeException('FilesystemLoader baseDir must be a directory: ' . $dir);
             }
         }
 
@@ -94,20 +80,18 @@ class FilesystemLoader implements Loader
      * Load a Template by name.
      *
      *     $loader = new FilesystemLoader(dirname(__FILE__).'/views');
-     *     // loads "./views/admin/dashboard.handlebars";
-     *     $loader->load('admin/dashboard');
+     *     $loader->load('admin/dashboard'); // loads "./views/admin/dashboard.handlebars";
      *
      * @param string $name template name
      *
-     * @return String Handlebars Template source
+     * @return Handlebars_String Handlebars Template source
      */
     public function load($name)
     {
         if (!isset($this->_templates[$name])) {
             $this->_templates[$name] = $this->loadFile($name);
         }
-
-        return new String($this->_templates[$name]);
+        return new Handlebars_String($this->_templates[$name]);
     }
 
     /**
@@ -115,15 +99,15 @@ class FilesystemLoader implements Loader
      *
      * @param string $name template name
      *
-     * @throws \InvalidArgumentException if a template file is not found.
      * @return string Handlebars Template source
+     * @throws InvalidArgumentException if a template file is not found.
      */
     protected function loadFile($name)
     {
         $fileName = $this->getFileName($name);
 
         if ($fileName === false) {
-            throw new \InvalidArgumentException('Template ' . $name . ' not found.');
+            throw new InvalidArgumentException('Template ' . $name . ' not found.');
         }
 
         return file_get_contents($fileName);
@@ -149,17 +133,15 @@ class FilesystemLoader implements Loader
 
             $fileParts[] = $file;
             $fileName .= implode('/', $fileParts);
-            $lastCharacters = substr($fileName, 0 - strlen($this->_extension));
 
-            if ($lastCharacters !== $this->_extension) {
+            if (substr($fileName, 0 - strlen($this->_extension)) !== $this->_extension) {
                 $fileName .= $this->_extension;
             }
             if (file_exists($fileName)) {
-                return $fileName;
+                break;
             }
+            $fileName = false;
         }
-
-        return false;
+        return $fileName;
     }
-
 }

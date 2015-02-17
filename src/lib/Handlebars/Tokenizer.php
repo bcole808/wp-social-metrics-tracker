@@ -11,20 +11,17 @@
  * @package   Handlebars
  * @author    Justin Hileman <dontknow@example.org>
  * @author    fzerorubigd <fzerorubigd@gmail.com>
- * @author    Behrooz Shabani <everplays@gmail.com>
- * @author    Dmitriy Simushev <simushevds@gmail.com>
- * @copyright 2010-2012 (c) Justin Hileman
- * @copyright 2012 (c) ParsPooyesh Co
- * @copyright 2013 (c) Behrooz Shabani
+ * @copyright 2012 Justin Hileman
  * @license   MIT <http://opensource.org/licenses/mit-license.php>
  * @version   GIT: $Id$
  * @link      http://xamin.ir
  */
 
-namespace Handlebars;
 
 /**
- * Handlebars tokenizer (based on mustache)
+ * Handlebars parser (infact its a mustache parser)
+ * This class is responsible for turning raw template source into a set of Mustache tokens.
+ * Some minor changes to handle Handlebars instead of Mustache
  *
  * @category  Xamin
  * @package   Handlebars
@@ -35,136 +32,100 @@ namespace Handlebars;
  * @version   Release: @package_version@
  * @link      http://xamin.ir
  */
-
-class Tokenizer
+class Handlebars_Tokenizer
 {
 
     // Finite state machine states
-    const IN_TEXT = 0;
+    const IN_TEXT     = 0;
     const IN_TAG_TYPE = 1;
-    const IN_TAG = 2;
+    const IN_TAG      = 2;
 
     // Token types
-    const T_SECTION = '#';
-    const T_INVERTED = '^';
-    const T_END_SECTION = '/';
-    const T_COMMENT = '!';
-    // XXX: remove partials support from tokenizer and make it a helper?
-    const T_PARTIAL = '>';
-    const T_PARTIAL_2 = '<';
+    const T_SECTION      = '#';
+    const T_INVERTED     = '^';
+    const T_END_SECTION  = '/';
+    const T_COMMENT      = '!';
+    const T_PARTIAL      = '>'; //Maybe remove this partials and replace them with helpers
+    const T_PARTIAL_2    = '<';
     const T_DELIM_CHANGE = '=';
-    const T_ESCAPED = '_v';
-    const T_UNESCAPED = '{';
-    const T_UNESCAPED_2 = '&';
-    const T_TEXT = '_t';
-    const T_ESCAPE = "\\";
-    const T_SINGLE_Q = "'";
-    const T_DOUBLE_Q = "\"";
-    const T_TRIM = "~";
+    const T_ESCAPED      = '_v';
+    const T_UNESCAPED    = '{';
+    const T_UNESCAPED_2  = '&';
+    const T_TEXT         = '_t';
 
     // Valid token types
     private static $_tagTypes = array(
-        self::T_SECTION => true,
-        self::T_INVERTED => true,
-        self::T_END_SECTION => true,
-        self::T_COMMENT => true,
-        self::T_PARTIAL => true,
-        self::T_PARTIAL_2 => true,
+        self::T_SECTION      => true,
+        self::T_INVERTED     => true,
+        self::T_END_SECTION  => true,
+        self::T_COMMENT      => true,
+        self::T_PARTIAL      => true,
+        self::T_PARTIAL_2    => true,
         self::T_DELIM_CHANGE => true,
-        self::T_ESCAPED => true,
-        self::T_UNESCAPED => true,
-        self::T_UNESCAPED_2 => true,
+        self::T_ESCAPED      => true,
+        self::T_UNESCAPED    => true,
+        self::T_UNESCAPED_2  => true,
     );
 
     // Interpolated tags
     private static $_interpolatedTags = array(
-        self::T_ESCAPED => true,
-        self::T_UNESCAPED => true,
-        self::T_UNESCAPED_2 => true,
+        self::T_ESCAPED      => true,
+        self::T_UNESCAPED    => true,
+        self::T_UNESCAPED_2  => true,
     );
 
     // Token properties
-    const TYPE = 'type';
-    const NAME = 'name';
-    const OTAG = 'otag';
-    const CTAG = 'ctag';
-    const INDEX = 'index';
-    const END = 'end';
+    const TYPE   = 'type';
+    const NAME   = 'name';
+    const OTAG   = 'otag';
+    const CTAG   = 'ctag';
+    const INDEX  = 'index';
+    const END    = 'end';
     const INDENT = 'indent';
-    const NODES = 'nodes';
-    const VALUE = 'value';
-    const ARGS = 'args';
-    const TRIM_LEFT = 'tleft';
-    const TRIM_RIGHT = 'tright';
+    const NODES  = 'nodes';
+    const VALUE  = 'value';
+    const ARGS   = 'args';
 
     protected $state;
     protected $tagType;
     protected $tag;
-    protected $buffer = '';
+    protected $buffer;
     protected $tokens;
     protected $seenTag;
     protected $lineStart;
     protected $otag;
     protected $ctag;
-    protected $escaped;
-    protected $escaping;
-    protected $trimLeft;
-    protected $trimRight;
 
     /**
      * Scan and tokenize template source.
      *
-     * @param string $text Mustache template source to tokenize
-     *
-     * @internal string $delimiters Optional, pass opening and closing delimiters
+     * @param string $text       Mustache template source to tokenize
+     * @param string $delimiters Optionally, pass initial opening and closing delimiters (default: null)
      *
      * @return array Set of Mustache tokens
      */
-    public function scan($text/*, $delimiters = null*/)
+    public function scan($text, $delimiters = null)
     {
-        if ($text instanceof String) {
+        if ($text instanceof Handlebars_String) {
             $text = $text->getString();
         }
         $this->reset();
 
-        /* Actually we not support this. so this code is not used at all, yet.
         if ($delimiters = trim($delimiters)) {
             list($otag, $ctag) = explode(' ', $delimiters);
             $this->otag = $otag;
             $this->ctag = $ctag;
         }
-        */
+
         $len = strlen($text);
         for ($i = 0; $i < $len; $i++) {
-
-            $this->escaping = $this->tagChange(self::T_ESCAPE, $text, $i);
-
-            // To play nice with helpers' arguments quote and apostrophe marks
-            // should be additionally escaped only when they are not in a tag.
-            $quoteInTag = $this->state != self::IN_TEXT
-                && ($text[$i] == self::T_SINGLE_Q || $text[$i] == self::T_DOUBLE_Q);
-
-            if ($this->escaped && $text[$i] != self::T_UNESCAPED && !$quoteInTag) {
-                $this->buffer .= "\\";
-            }
-
             switch ($this->state) {
             case self::IN_TEXT:
-                if ($this->tagChange($this->otag. self::T_TRIM, $text, $i) and !$this->escaped) {
-                    $this->flushBuffer();
-                    $this->state = self::IN_TAG_TYPE;
-                    $this->trimLeft = true;
-                } elseif ($this->tagChange(self::T_UNESCAPED.$this->otag, $text, $i) and $this->escaped) {
-                    $this->buffer .= "{{{";
-                    $i += 2;
-                    continue;
-                } elseif ($this->tagChange($this->otag, $text, $i) and !$this->escaped) {
+                if ($this->tagChange($this->otag, $text, $i)) {
                     $i--;
                     $this->flushBuffer();
                     $this->state = self::IN_TAG_TYPE;
-                } elseif ($this->escaped and $this->escaping) {
-                    $this->buffer .= "\\";
-                } elseif (!$this->escaping) {
+                } else {
                     if ($text[$i] == "\n") {
                         $this->filterLine();
                     } else {
@@ -197,14 +158,11 @@ class Tokenizer
                 break;
 
             default:
-                if ($this->tagChange(self::T_TRIM . $this->ctag, $text, $i)) {
-                    $this->trimRight = true;
-                    continue;
-                }
                 if ($this->tagChange($this->ctag, $text, $i)) {
                     // Sections (Helpers) can accept parameters
                     // Same thing for Partials (little known fact)
-                    if (($this->tagType == self::T_SECTION)
+                    if (
+                        ($this->tagType == self::T_SECTION)
                         || ($this->tagType == self::T_PARTIAL)
                         || ($this->tagType == self::T_PARTIAL_2)
                     ) {
@@ -216,16 +174,12 @@ class Tokenizer
                         $this->buffer = $newBuffer[0];
                     }
                     $t = array(
-                        self::TYPE => $this->tagType,
-                        self::NAME => trim($this->buffer),
-                        self::OTAG => $this->otag,
-                        self::CTAG => $this->ctag,
-                        self::INDEX => ($this->tagType == self::T_END_SECTION) ?
-                            $this->seenTag - strlen($this->otag) :
-                            $i + strlen($this->ctag),
-                        self::TRIM_LEFT => $this->trimLeft,
-                        self::TRIM_RIGHT => $this->trimRight
-                    );
+                        self::TYPE  => $this->tagType,
+                        self::NAME  => trim($this->buffer),
+                        self::OTAG  => $this->otag,
+                        self::CTAG  => $this->ctag,
+                        self::INDEX => ($this->tagType == self::T_END_SECTION) ? $this->seenTag - strlen($this->otag) : $i + strlen($this->ctag),
+                        );
                     if (isset($args)) {
                         $t[self::ARGS] = $args;
                     }
@@ -233,31 +187,24 @@ class Tokenizer
                     unset($t);
                     unset($args);
                     $this->buffer = '';
-                    $this->trimLeft = false;
-                    $this->trimRight = false;
                     $i += strlen($this->ctag) - 1;
                     $this->state = self::IN_TEXT;
                     if ($this->tagType == self::T_UNESCAPED) {
                         if ($this->ctag == '}}') {
                             $i++;
-                        } /* else { // I can't remember why this part is here! the ctag is always }} and
+                        } else {
                             // Clean up `{{{ tripleStache }}}` style tokens.
-                            $lastIndex = count($this->tokens) - 1;
-                            $lastName = $this->tokens[$lastIndex][self::NAME];
+                            $lastName = $this->tokens[count($this->tokens) - 1][self::NAME];
                             if (substr($lastName, -1) === '}') {
-                                $this->tokens[$lastIndex][self::NAME] = trim(
-                                    substr($lastName, 0, -1)
-                                );
+                                $this->tokens[count($this->tokens) - 1][self::NAME] = trim(substr($lastName, 0, -1));
                             }
-                        } */
+                        }
                     }
                 } else {
                     $this->buffer .= $text[$i];
                 }
                 break;
             }
-
-            $this->escaped = ($this->escaping and !$this->escaped);
         }
 
         $this->filterLine(true);
@@ -272,19 +219,15 @@ class Tokenizer
      */
     protected function reset()
     {
-        $this->state = self::IN_TEXT;
-        $this->escaped = false;
-        $this->escaping = false;
-        $this->tagType = null;
-        $this->tag = null;
-        $this->buffer = '';
-        $this->tokens = array();
-        $this->seenTag = false;
+        $this->state     = self::IN_TEXT;
+        $this->tagType   = null;
+        $this->tag       = null;
+        $this->buffer    = '';
+        $this->tokens    = array();
+        $this->seenTag   = false;
         $this->lineStart = 0;
-        $this->otag = '{{';
-        $this->ctag = '}}';
-        $this->trimLeft = false;
-        $this->trimRight = false;
+        $this->otag      = '{{';
+        $this->ctag      = '}}';
     }
 
     /**
@@ -294,12 +237,9 @@ class Tokenizer
      */
     protected function flushBuffer()
     {
-        if ($this->buffer !== '') {
-            $this->tokens[] = array(
-                self::TYPE => self::T_TEXT,
-                self::VALUE => $this->buffer
-            );
-            $this->buffer = '';
+        if (!empty($this->buffer)) {
+            $this->tokens[] = array(self::TYPE  => self::T_TEXT, self::VALUE => $this->buffer);
+            $this->buffer   = '';
         }
     }
 
@@ -341,11 +281,8 @@ class Tokenizer
             $tokensCount = count($this->tokens);
             for ($j = $this->lineStart; $j < $tokensCount; $j++) {
                 if ($this->tokens[$j][self::TYPE] == self::T_TEXT) {
-                    if (isset($this->tokens[$j + 1])
-                        && $this->tokens[$j + 1][self::TYPE] == self::T_PARTIAL
-                    ) {
-                        $this->tokens[$j + 1][self::INDENT]
-                            = $this->tokens[$j][self::VALUE];
+                    if (isset($this->tokens[$j + 1]) && $this->tokens[$j + 1][self::TYPE] == self::T_PARTIAL) {
+                        $this->tokens[$j + 1][self::INDENT] = $this->tokens[$j][self::VALUE];
                     }
 
                     $this->tokens[$j] = null;
@@ -355,12 +292,12 @@ class Tokenizer
             $this->tokens[] = array(self::TYPE => self::T_TEXT, self::VALUE => "\n");
         }
 
-        $this->seenTag = false;
+        $this->seenTag   = false;
         $this->lineStart = count($this->tokens);
     }
 
     /**
-     * Change the current Handlebars delimiters. Set new `otag` and `ctag` values.
+     * Change the current Mustache delimiters. Set new `otag` and `ctag` values.
      *
      * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
@@ -370,13 +307,10 @@ class Tokenizer
     protected function changeDelimiters($text, $index)
     {
         $startIndex = strpos($text, '=', $index) + 1;
-        $close = '=' . $this->ctag;
+        $close      = '='.$this->ctag;
         $closeIndex = strpos($text, $close, $index);
 
-        list($otag, $ctag) = explode(
-            ' ',
-            trim(substr($text, $startIndex, $closeIndex - $startIndex))
-        );
+        list($otag, $ctag) = explode(' ', trim(substr($text, $startIndex, $closeIndex - $startIndex)));
         $this->otag = $otag;
         $this->ctag = $ctag;
 
@@ -387,7 +321,7 @@ class Tokenizer
      * Test whether it's time to change tags.
      *
      * @param string $tag   Current tag name
-     * @param string $text  Handlebars template source
+     * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
      *
      * @return boolean True if this is a closing section tag
@@ -396,5 +330,4 @@ class Tokenizer
     {
         return substr($text, $index, strlen($tag)) === $tag;
     }
-
 }
