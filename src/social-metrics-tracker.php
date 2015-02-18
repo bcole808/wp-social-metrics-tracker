@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.4.0
+Version: 1.4.1
 Author: Ben Cole, Chapman University
 Author URI: http://www.bencole.net
 License: GPLv2+
@@ -38,7 +38,7 @@ Handlebars_Autoloader::register();
 
 class SocialMetricsTracker {
 
-	public $version = '1.4.0'; // for db upgrade comparison
+	public $version = '1.4.1'; // for db upgrade comparison
 	public $updater;
 	public $options;
 
@@ -144,12 +144,6 @@ class SocialMetricsTracker {
 		$visibility = ($this->options['smt_options_report_visibility']) ? $this->options['smt_options_report_visibility'] : 'manage_options';
 		add_menu_page( 'Social Metrics Tracker', 'Social Metrics', $visibility, 'social-metrics-tracker', array($this, 'render_view_Dashboard'), 'dashicons-chart-area', '30.597831' );
 
-		// Add advanced stats menu
-		if ($this->options['smt_options_debug_mode']) {
-			$debug_visibility = ($this->options['smt_options_debug_report_visibility']) ? $this->options['smt_options_debug_report_visibility'] : 'manage_options';
-			add_submenu_page('social-metrics-tracker', 'Relevancy Rank', 'Debug Info', $debug_visibility, 'social-metrics-tracker-debug',  array($this, 'render_view_AdvancedDashboard'));
-		}
-
 		// Export page
 		add_submenu_page('social-metrics-tracker', 'Data Export Tool', 'Export Data', $visibility, 'social-metrics-tracker-export',  array($this, 'render_view_export'));
 
@@ -249,6 +243,11 @@ class SocialMetricsTracker {
 
 				// The debug option is no longer in use
 				$this->delete_smt_option('debug_mode');
+			}
+
+			// 4: If migrating from version below 1.4.1 (not a clean install)
+			if ($installed_version !== false && version_compare($installed_version, '1.4.1', '<')) {
+				$this->delete_smt_option('debug_report_visibility');
 			}
 
 			// 4: Add any new settings

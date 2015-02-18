@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,6 +92,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.4.1 =
+* Removed some old debug code
+
 = 1.4.0 =
 * Added advanced Domain/URL setup options including:
 * -- The option to check either the http:// or https:// version of post URLs for share data.
@@ -168,6 +171,12 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.4.1 =
+Removed old debug code
+
+= 1.4.0 =
+Added advanced domain / SSL configuration options
 
 = 1.3.4 =
 Important update to the Facebook API

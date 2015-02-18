@@ -108,21 +108,6 @@ $wpsf_settings[] = array(
 				'50'  => '50',
 				'100' => '100'
 			)
-		),
-		array(
-			'id'    => 'debug_report_visibility',
-			'title' => 'Debug Report Visibility',
-			'desc'  => 'The debug panel will be visible to users who have this capability.',
-			'type'  => 'select',
-			'std'   => 'manage_options',
-			'choices' => array(
-				'manage_network'    => 'Super Admins (Users who can manage the network)',
-				'manage_options'    => 'Admins (Users who can manage options)',
-				'edit_others_posts' => 'Editors (Users who can edit others posts)',
-				'publish_posts'     => 'Authors (Users who can publish posts)',
-				'edit_posts'        => 'Contributors (Users who can edit their own posts)',
-				'read'              => 'Subscribers (Users who can read)'
-			)
 		)
 	)
 );
