@@ -8,7 +8,6 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	function setUp() {
 		parent::setUp();
 		$this->plugin = new SocialMetricsTracker();
-		$this->plugin->init();
 	}
 
 	// DO AFTER ALL TESTS
@@ -32,6 +31,8 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	function test_options_defaults() {
 
 		// 1: It should set some default options
+		$this->plugin->init();
+		
 		$this->assertTrue(
 			is_array($this->plugin->options),
 			'The plugin does not create default options!'
@@ -163,6 +164,8 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	* It should erase options from the DB
 	***************************************************/
 	function test_delete_option() {
+
+		// 1. It should delete options
 		$this->plugin->set_smt_option('example-field', 225);
 		$this->plugin->delete_smt_option('example-field');
 
@@ -170,6 +173,22 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 
 		$this->assertFalse(array_key_exists('smt_options_example-field', $this->plugin->options));
 		$this->assertFalse(array_key_exists('smt_options_example-field', $db_options));
+
+		// 2. It should not wipe out other settings accidentally
+		$this->plugin->set_smt_option('one', 1);
+		$this->plugin->set_smt_option('two', 2);
+
+		$this->plugin->delete_smt_option('one');
+		$this->assertEquals(2, $this->plugin->get_smt_option('two'));
+
+		// 3. Without initialization, it should be okay
+		$this->plugin->set_smt_option('one', 1);
+		$this->plugin->set_smt_option('two', 2);
+
+		$new_plugin = new SocialMetricsTracker();
+
+		$new_plugin->delete_smt_option('one');
+		$this->assertEquals(2, $new_plugin->get_smt_option('two'));
 	}
 
 

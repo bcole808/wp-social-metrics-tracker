@@ -62,7 +62,7 @@ class SocialMetricsTracker {
 	public function init() {
 
 		// Set up options
-		$this->options = get_option('smt_settings', array());
+		$this->initOptions();
 
 		// Ensure setup occurs for each blog when network activated
 		if (empty($this->options)) $this->activate();
@@ -80,6 +80,11 @@ class SocialMetricsTracker {
 			require('smt-export.php');
 			smt_download_export_file($this);
 		}
+	}
+
+	private function initOptions() {
+		if (is_array($this->options)) return;
+		$this->options = get_option('smt_settings', array());
 	}
 
 	/***************************************************
@@ -292,6 +297,7 @@ class SocialMetricsTracker {
 	* Get plugin option with the specified key
 	***************************************************/
 	public function get_smt_option($key) {
+		$this->initOptions();
 		return (array_key_exists('smt_options_'.$key, $this->options)) ? $this->options['smt_options_'.$key] : false;
 	}
 
@@ -300,6 +306,7 @@ class SocialMetricsTracker {
 	* (We might not want to save if we are bulk updating)
 	***************************************************/
 	public function set_smt_option($key, $val, $save = true) {
+		$this->initOptions();
 		$this->options['smt_options_'.$key] = $val;
 		return ($save) ? $this->save_smt_options() : null;
 	}
@@ -308,6 +315,7 @@ class SocialMetricsTracker {
 	* Remove specified option
 	***************************************************/
 	public function delete_smt_option($key) {
+		$this->initOptions();
 		unset($this->options['smt_options_'.$key]);
 		return $this->save_smt_options();
 	}
