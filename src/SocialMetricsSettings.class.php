@@ -26,7 +26,7 @@ class socialMetricsSettings {
 				break;
 
 			case 'urls':
-				if (isset($_POST)) {
+				if (count($_POST) > 0) {
 					$this->process_urls_form();
 				}
 
@@ -122,7 +122,7 @@ class socialMetricsSettings {
 
 	// Save the URL form
 	function process_urls_form() {
-		if (!isset($_POST)) return;
+		if (!isset($_POST) || count($_POST) == 0) return;
 
 		if (isset($_POST['url_protocol'])) $this->smt->set_smt_option('url_protocol', $_POST['url_protocol']);
 
@@ -211,8 +211,7 @@ class socialMetricsSettings {
 				'selected' => ($current_alt_ttl_option == '10')
 			)
 		);
-
-
+		
 		print($this->smt->renderTemplate('settings-urls', $args));
 	}
 

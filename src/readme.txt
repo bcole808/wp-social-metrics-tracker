@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.1
-Stable tag: 1.4.1
+Tested up to: 4.1.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,10 +87,17 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Screenshots ==
 
 1. The Social Metrics Tracker report view.
-2. Configuration options
+2. The report view, with both Google Analytics and multiple URL configuration
+3. Configuration options - General setup
+4. Configuration options - Google Analytics setup
+5. Configuration options - Advanced URL / Domain setup
+6. Data exported to an .xls spreadsheet
 
 
 == Changelog ==
+
+= 1.4.2 =
+* Fixed a bug where domain migration settings were being erased
 
 = 1.4.1 =
 * Removed some old debug code
@@ -172,6 +179,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Upgrade Notice ==
 
+= 1.4.2
+Fixed a bug where domain migration settings were being erased
+
 = 1.4.1 =
 Removed old debug code
 
@@ -190,7 +200,7 @@ Hotfix for specific server configurations
 = 1.3.1 =
 Added better error messages and debug info
 
-= 1.3 =
+= 1.3.0 =
 Major update which changes the way social data is collected
 
 = 1.2.5 =
