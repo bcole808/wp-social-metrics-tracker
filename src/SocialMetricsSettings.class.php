@@ -39,6 +39,10 @@ class socialMetricsSettings {
 				break;
 
 			default:
+				if (count($_POST) > 0) {
+					$this->process_general_form();
+				}
+
 				$this->section = 'general';
 				$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
 				break;
@@ -95,14 +99,20 @@ class socialMetricsSettings {
 			<?php call_user_func(array($this, $this->section.'_section')); ?>
 
 		</div>
-	<?php }
+	<?php
+	}
 
 
 	// Render the general settings page
 	function general_section() {
-		$this->wpsf->settings();
+		$this->wpsf->settings('');
 	}
 
+	// Saves the general settings page
+	function process_general_form() {
+		if (!isset($_POST) || count($_POST) == 0) return;
+		$this->smt->merge_smt_options($_POST['smt_settings']);
+	}
 
 	// Renders the Test Tool page
 	function test_section() {

@@ -253,11 +253,11 @@ if( !class_exists('WordPressSettingsFramework') ){
 		/**
 		 * Output the settings form
 		 */
-		function settings()
+		function settings($form_action='options.php')
 		{
 			do_action('wpsf_before_settings');
 			?>
-			<form action="options.php" method="post">
+			<form action="<?php echo $form_action; ?>" method="post">
 				<?php do_action('wpsf_before_settings_fields'); ?>
 				<?php settings_fields( $this->option_group ); ?>
 				<?php do_settings_sections( $this->option_group ); ?>
