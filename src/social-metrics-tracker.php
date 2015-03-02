@@ -157,7 +157,7 @@ class SocialMetricsTracker {
 	} // end adminMenuSetup()
 
 	public function dashboard_setup() {
-		new SocialMetricsTrackerWidget($this);
+		if ($this->get_smt_option('display_widget')) new SocialMetricsTrackerWidget($this);
 	}
 
 	public function render_view_Dashboard() {
