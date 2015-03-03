@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.4.4 =
+* Fixed a PHP warning caused by the plugin
+
 = 1.4.3 = 
 * Fixed a bug where saving the general settings page would overwrite domain migration settings
 * Fixed a bug where the dashboard widget would display regardless of if it was enabled
@@ -183,6 +186,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.4.4 =
+Minor bug fix
 
 = 1.4.3 =
 Bug fixes
