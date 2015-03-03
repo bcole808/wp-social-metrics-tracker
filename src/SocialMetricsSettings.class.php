@@ -12,42 +12,13 @@ class socialMetricsSettings {
 
 		add_action( 'admin_menu', array(&$this, 'admin_menu'), 99 );
 
-		$section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : false;
-		switch ($section) {
-			case 'gapi':
+		$pages = array('social-metrics-tracker', 'social-metrics-tracker-export', 'social-metrics-tracker-settings');
 
-				$this->section = 'gapi';
-
-				$smt->updater->setupDataSources();
-				$this->gapi = $smt->updater->GoogleAnalyticsUpdater;
-
-				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
-
-				break;
-
-			case 'urls':
-				if (count($_POST) > 0) {
-					$this->process_urls_form();
-				}
-
-				$this->section = 'urls';
-				break;
-
-			case 'test':
-
-				$this->section = 'test';
-				break;
-
-			default:
-				if (count($_POST) > 0) {
-					$this->process_general_form();
-				}
-
-				$this->section = 'general';
-				$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
-				break;
+		if (isset($_REQUEST['page']) && in_array($_REQUEST['page'], $pages)) {
+			$this->section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : 'general';
+			$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
 		}
-
+	
 	}
 
 	function admin_menu() {
@@ -92,7 +63,36 @@ class socialMetricsSettings {
 	}
 
 
-	function render_settings_page() { ?>
+	function render_settings_page() { 
+
+		switch ($this->section) {
+			case 'gapi':
+				$this->smt->updater->setupDataSources();
+				$this->gapi = $this->smt->updater->GoogleAnalyticsUpdater;
+
+				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
+
+				break;
+
+			case 'urls':
+				if (count($_POST) > 0) {
+					$this->process_urls_form();
+				}
+
+				break;
+
+			case 'test':
+				break;
+
+			default:
+				if (count($_POST) > 0) {
+					$this->process_general_form();
+				}
+
+				break;
+		}
+
+		?>
 		<div class="wrap">
 			<h2>Social Metrics Tracker Configuration</h2>
 			<?php $this->nav_links(); ?>

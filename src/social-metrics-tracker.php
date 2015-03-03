@@ -324,6 +324,7 @@ class SocialMetricsTracker {
 	* Merge another array of options into the current, use input to overwrite local settings
 	***************************************************/
 	public function merge_smt_options($options) {
+		if (!is_array($options)) return false;
 		$this->options = array_merge($this->options, $options);
 		return $this->save_smt_options();
 	}
