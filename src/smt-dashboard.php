@@ -479,7 +479,14 @@ function smt_render_dashboard_view($smt){
 					<?php $status = $h->wpcb->getStatusDetail(); ?>
 					<div class="smt-connection-item <?php echo ($status['working']) ? 'online' : 'offline'; ?>">
 						<?php echo $h->name ?>
-						<?php if (!$status['working']) : ?> - <?php echo $status['fail_count'] ?> failures - <?php echo $status['error_message'] ?> <br /><small>Will automatically retry <?php echo date("M j, g:i a", $status['next_query_at']); ?>.</small>
+						<?php if (!$status['working']) : ?>
+						 - <?php echo $status['fail_count'] ?> failures - <?php echo $status['error_message'] ?> 
+						 <a href="javascript:void(0);" onClick="jQuery('#smt-error-details-<?php echo $h->slug; ?>').slideToggle();">[Show debug info]</a>
+						 <div id="smt-error-details-<?php echo $h->slug; ?>" style="display:none;">
+						 	<p><b>Debug information: </b>This is a record of the most recent attempt your blog server made at connecting to the social network to retrieve stats. <span style="color:red;">Note: If you post this publicly on the support forums, the information below contains a URL back to one of your blog posts (see "request_uri" below)</span>. </p>
+						 	<textarea class="smt-debug-box"><?php echo htmlspecialchars(print_r($status['error_detail'], true)); ?></textarea>
+						 </div>
+						 <br /><small>Will automatically retry <?php echo date("M j, g:i a", $status['next_query_at']); ?>.</small>
 						<?php endif; ?>
 
 						<br />

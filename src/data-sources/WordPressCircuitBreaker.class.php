@@ -54,6 +54,7 @@ class WordPressCircuitBreaker {
 			'working'       => $this->get('fail_count') == 0,
 			'fail_count'    => $this->get('fail_count'),
 			'error_message' => $this->get('error_message'),
+			'error_detail'  => $this->get('error_detail'),
 			'last_query_at' => $this->get('last_query_time'),
 			'next_query_at' => ($this->readyToConnect()) ? $this->getTime() : $this->get('last_query_time') + $this->get('time_to_wait'),
 		);
@@ -72,10 +73,11 @@ class WordPressCircuitBreaker {
 	/***************************************************
 	* Application should report each failure
 	***************************************************/
-	public function reportFailure($message = 'An error occured, but no error message was reported.') {
+	public function reportFailure($message = 'An error occured, but no error message was reported.', $detail='') {
 		$this->set('fail_count', $this->get('fail_count') + 1);
 		$this->set('last_query_time', $this->getTime());
 		$this->set('error_message', $message);
+		$this->set('error_detail', $detail);
 
 		$this->save();
 	}

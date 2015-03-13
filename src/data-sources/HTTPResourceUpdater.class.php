@@ -22,6 +22,7 @@ abstract class HTTPResourceUpdater {
 	public $meta_prefix = 'socialcount_';
 
 	public $http_error = '';
+	public $http_error_detail = '';
 	public $complete;
 
 	public function __construct($slug, $name, $resource_uri) {
@@ -92,7 +93,7 @@ abstract class HTTPResourceUpdater {
 
 		// Report to circuit breaker
 		if (!$result) {
-			$this->wpcb->reportFailure($this->http_error);
+			$this->wpcb->reportFailure($this->http_error, $this->http_error_detail);
 		} else {
 			$this->wpcb->reportSuccess();
 		}
@@ -127,19 +128,33 @@ abstract class HTTPResourceUpdater {
 		switch (strtolower($method)) {
 			case 'post':
 				$args['body'] = json_encode($post_params);
-				$response = wp_remote_post($url, $args);
+				$request_uri = $url;
+				$response = wp_remote_post($request_uri, $args);
 				break;
 
 			case 'get' :
-				$response = wp_remote_get($url . '?' . http_build_query($this->resource_params, '', '&'), $args);
+				$request_uri = $url . '?' . http_build_query($this->resource_params, '', '&');
+				$response = wp_remote_get($request_uri, $args);
 				break;
 		}
 
 		if (is_wp_error($response)) {
 			$this->http_error = $response->get_error_message();
+			$this->http_error_detail = array(
+				'request_time'     => current_time('mysql'),
+				'request_method'   => $method,
+				'request_uri'      => $request_uri,
+				'request_response' => $response
+			);
 			return false;
 		} else if ($response['response']['code'] != 200) {
 			$this->http_error = "Received HTTP response code: <b>".$response['response']['code']." ".$response['response']['message']."</b>";
+			$this->http_error_detail = array(
+				'request_time'     => current_time('mysql'),
+				'request_method'   => $method,
+				'request_uri'      => $request_uri,
+				'request_response' => $response
+			);
 			return false;
 		}
 

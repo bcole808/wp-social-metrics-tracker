@@ -98,6 +98,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.4.5 =
 * Fixed the Facebook stat updater; temporarily switched back to the old Facebook API (version 1.0) because the new version now requires authentication.  The old version will stop working on April 30, 2015 and so another update will be required before that date. 
+* Improved the error reporting debug info for connection failures
 
 = 1.4.4 =
 * Fixed a PHP warning caused by the plugin
