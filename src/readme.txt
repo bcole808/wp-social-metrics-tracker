@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.4.5 =
+* Fixed the Facebook stat updater; temporarily switched back to the old Facebook API (version 1.0) because the new version now requires authentication.  The old version will stop working on April 30, 2015 and so another update will be required before that date. 
+
 = 1.4.4 =
 * Fixed a PHP warning caused by the plugin
 
@@ -186,6 +189,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.4.5 =
+Temporary fix for the Facebook stat updater
 
 = 1.4.4 =
 Minor bug fix
