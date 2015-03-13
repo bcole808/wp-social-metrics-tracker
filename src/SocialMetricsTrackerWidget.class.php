@@ -186,9 +186,7 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 
 
 		// Get custom post types to display in our report.
-		$post_types = get_post_types(array('public'=>true, 'show_ui'=>true));
-		unset($post_types['page']);
-		unset($post_types['attachment']);
+		$post_types = $this->smt->tracked_post_types();
 
 		$limit = 6;
 
