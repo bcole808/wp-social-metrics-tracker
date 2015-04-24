@@ -109,7 +109,7 @@ class SocialMetricsTable extends WP_List_Table {
 
 			$key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
 
-			if (!array_key_exists($key, $obj)) continue;
+			if (!is_array($obj) || !array_key_exists($key, $obj)) continue;
 
 			$sum += $obj[$key];
 
@@ -121,7 +121,7 @@ class SocialMetricsTable extends WP_List_Table {
 			// Subtract other values if is parent
 			if (array_key_exists('socialcount_url_data', $obj)) {
 				foreach ($obj['socialcount_url_data'] as $child) {
-					if (!array_key_exists($key, $child)) continue;
+					if (!is_array($child) || !array_key_exists($key, $child)) continue;
 					$sum -= $child[$key];
 					$source['num'] -= $child[$key];
 				}
