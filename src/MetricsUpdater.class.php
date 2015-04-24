@@ -50,8 +50,18 @@ class MetricsUpdater {
 			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
-		// Import adapters for 3rd party services
-		if (!isset($this->sources->FacebookPublicUpdater)) $this->sources->FacebookPublicUpdater  = new FacebookPublicUpdater();
+		// Setup adapter for Facebook updater service
+		if ($this->smt->get_smt_option('connection_type_facebook') == 'graph') {
+			// Graph:
+			$preferred_facebook_updater = new FacebookGraphUpdater();
+			$preferred_facebook_updater->setAccessToken($this->smt->get_smt_option('facebook_access_token'));
+		} else {
+			// Public / Default:
+			$preferred_facebook_updater = new FacebookPublicUpdater();
+		}
+
+		// Set adapters for all services
+		if (!isset($this->sources->FacebookUpdater))       $this->sources->FacebookUpdater       = $preferred_facebook_updater;
 		if (!isset($this->sources->TwitterUpdater))        $this->sources->TwitterUpdater        = new TwitterUpdater();
 		if (!isset($this->sources->LinkedInUpdater))       $this->sources->LinkedInUpdater       = new LinkedInUpdater();
 		if (!isset($this->sources->GooglePlusUpdater))     $this->sources->GooglePlusUpdater     = new GooglePlusUpdater();
