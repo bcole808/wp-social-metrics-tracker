@@ -5,15 +5,24 @@
 * the Shared Count plugin updates an individual post.
 ***************************************************/
 
-class FacebookUpdater extends HTTPResourceUpdater {
+class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 	public $slug  = 'facebook';
 	public $name  = 'Facebook';
 
-	private $uri = 'https://graph.facebook.com/v1.0/fql';
+	private $uri = 'https://graph.facebook.com/v2.0/fql';
 
 	public function __construct() {
 		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
+	}
+
+	public function setAccessToken($access_token) {
+		$this->access_token = $access_token;
+
+		// If params were already set...
+		if (is_array($this->updater->resource_params)) {
+			$this->updater->resource_params['access_token'] = $this->access_token;
+		}
 	}
 
 	public function setParams($post_id, $post_url = false) {
@@ -26,8 +35,13 @@ class FacebookUpdater extends HTTPResourceUpdater {
 			'q' => "SELECT url, share_count, like_count, comment_count, total_count, click_count FROM link_stat where url='$url'"
 		);
 
+		// Append the access token, if set
+		if (isset($this->access_token)) {
+			$this->setAccessToken($this->access_token);
+		}
+
 		// Note: The final encoded URL should look a bit like this:
-		// https://graph.facebook.com/v1.0/fql?q=SELECT%20url,%20share_count,%20like_count,%20comment_count,%20total_count,%20click_count%20FROM%20link_stat%20where%20url=%27http://www.wordpress.org%27
+		// https://graph.facebook.com/v2.0/fql?q=SELECT%20url,%20share_count,%20like_count,%20comment_count,%20total_count,%20click_count%20FROM%20link_stat%20where%20url=%27http://www.wordpress.org%27
 	}
 
 	public function parse() {
