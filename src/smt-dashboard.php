@@ -109,7 +109,7 @@ class SocialMetricsTable extends WP_List_Table {
 
 			$key = $HTTPResourceUpdater->meta_prefix . $HTTPResourceUpdater->slug;
 
-			if (!array_key_exists($key, $obj)) continue;
+			if (!is_array($obj) || !array_key_exists($key, $obj)) continue;
 
 			$sum += $obj[$key];
 
@@ -121,7 +121,7 @@ class SocialMetricsTable extends WP_List_Table {
 			// Subtract other values if is parent
 			if (array_key_exists('socialcount_url_data', $obj)) {
 				foreach ($obj['socialcount_url_data'] as $child) {
-					if (!array_key_exists($key, $child)) continue;
+					if (!is_array($child) || !array_key_exists($key, $child)) continue;
 					$sum -= $child[$key];
 					$source['num'] -= $child[$key];
 				}
@@ -483,7 +483,7 @@ function smt_render_dashboard_view($smt){
 						 - <?php echo $status['fail_count'] ?> failures - <?php echo $status['error_message'] ?> 
 						 <a href="javascript:void(0);" onClick="jQuery('#smt-error-details-<?php echo $h->slug; ?>').slideToggle();">[Show debug info]</a>
 						 <div id="smt-error-details-<?php echo $h->slug; ?>" style="display:none;">
-						 	<p><b>Debug information: </b>This is a record of the most recent attempt your blog server made at connecting to the social network to retrieve stats. <span style="color:red;">Note: If you post this publicly on the support forums, the information below contains a URL back to one of your blog posts (see "request_uri" below)</span>. </p>
+						 	<p><b>Debug information: </b>This is a record of the most recent attempt your blog server made at connecting to the social network to retrieve stats. <span style="color:red;">Warning: The debug info below may contain your private access_token for Facebook, if you have configured that under Connection Settings (it would be part of 'request_uri' below). It will also contain a URL back to one of your blog posts (see "request_uri" below). If you post this publicly on the support forums, be sure to delete any private information before posting!</span>. </p>
 						 	<textarea class="smt-debug-box"><?php echo htmlspecialchars(print_r($status['error_detail'], true)); ?></textarea>
 						 </div>
 						 <br /><small>Will automatically retry <?php echo date("M j, g:i a", $status['next_query_at']); ?>.</small>

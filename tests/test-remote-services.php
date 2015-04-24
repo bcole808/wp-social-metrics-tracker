@@ -19,15 +19,24 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	/**
 	* @group external-http
+	* WARNING: THIS API REQUIRES AN ACCESS TOKEN
 	*/
-	function test_facebook() {
+	function test_facebook_graph() {
 
-		$updater = new FacebookUpdater();
+		$updater = new FacebookGraphUpdater();
 		$updater->setParams(1, 'http://www.wordpress.org');
+
+		// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+		//
+		// SET AN ACCESS TOKEN HERE FOR TESTING
+		//
+		$updater->setAccessToken('');
+		//
+		// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Facebook API did not return data!!!');
 
 		// 2. Enforce expected data structure
@@ -46,6 +55,24 @@ class TestRemoteServices extends WP_UnitTestCase {
 	/**
 	* @group external-http
 	*/
+	function test_facebook_public() {
+
+		$updater = new FacebookPublicUpdater();
+		$updater->setParams(1, 'http://www.wikipedia.org');
+
+		// 1. Make sure the API responds
+		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
+		$this->assertTrue(strlen($updater->data) > 1, 'The Facebook API did not return data!!!');
+
+		// 2. Make sure it returns a positive total integer
+		$this->assertGreaterThan(119123, $updater->get_total(), 'We had trouble parsing the Facebook public endpoint!');
+
+	}
+
+	/**
+	* @group external-http
+	*/
 	function test_twitter() {
 
 		$updater = new TwitterUpdater();
@@ -53,7 +80,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Twitter API did not return data!!!');
 
 		// 2. Enforce expected data structure
@@ -79,7 +106,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The LinkedIn API did not return data!!!');
 
 		// 2. Enforce expected data structure
@@ -105,7 +132,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The GooglePlus API did not return data!!!');
 
 		// 2. Enforce expected data structure
@@ -131,7 +158,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The Pinterest API did not return data!!!');
 
 		// 2. Enforce expected data structure
@@ -157,7 +184,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 		// 1. Make sure the API responds
 		$updater->fetch();
-		$this->assertEmpty($updater->http_error, 'An HTTP error occured: '.$updater->http_error);
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
 		$this->assertTrue(is_array($updater->data), 'The StumbleUpon API did not return data!!!');
 
 		// 2. Enforce expected data structure

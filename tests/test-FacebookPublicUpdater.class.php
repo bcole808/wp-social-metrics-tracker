@@ -1,23 +1,23 @@
 <?php
 
-class TestFacebookUpdater extends WP_UnitTestCase {
+class TestFacebookPublicUpdater extends WP_UnitTestCase {
 
 	// DO BEFORE ALL TESTS
 	function setUp() {
 		parent::setUp();
 
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
+			dirname(__FILE__) .'/sample-data/facebook.com-v2.3-plugins-like.txt'
 		);
 
-		$this->updater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater = $this->getMock('FacebookPublicUpdater', array('getURL'));
 
 		$this->updater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
 
-		$this->offlineUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->offlineUpdater = $this->getMock('FacebookPublicUpdater', array('getURL'));
 
 		$this->offlineUpdater->expects($this->any())
 		    ->method('getURL')
@@ -32,10 +32,10 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	}
 
 	function assertMatchingMetaProperty() {
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 8450);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 331);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 7169);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 950);
+		$this->assertEquals($this->updater->meta['socialcount_facebook'], 119124);
+		// $this->assertEquals($this->updater->meta['facebook_comments'], 331);
+		// $this->assertEquals($this->updater->meta['facebook_shares'], 7169);
+		// $this->assertEquals($this->updater->meta['facebook_likes'], 950);
 	}
 
 
@@ -53,7 +53,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 
 		// 2. Params are configured
 		$this->assertTrue(count($this->updater->resource_params) > 0, 'It did not set params');
-		$this->assertTrue(isset($this->updater->resource_params['q']));
+		$this->assertTrue(isset($this->updater->resource_params['href']));
 
 		// 3. Resetting params should clear the instance variables
 		$this->updater->fetch();
@@ -73,13 +73,13 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$result = $this->updater->fetch();
 		$this->assertFalse($result);
 
-		// 2. It should return an array when params set
+		// 2. It should return a string when params set
 		$this->updater->setParams($post_id);
 		$result = $this->updater->fetch();
-		$this->assertTrue(is_array($result));
+		$this->assertTrue(strlen($result) > 1);
 
 		// 3. It should set the instance variable
-		$this->assertAttributeEquals(json_decode($this->sample_return, true), 'data', $this->updater);
+		$this->assertEquals(strlen($this->sample_return), strlen($this->updater->data));
 
 		// 5. It should return false if the remote service is down
 		$this->offlineUpdater->setParams($post_id);
@@ -141,7 +141,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 	***************************************************/
 	function test_get_total() {
 
-		$this->emptyResponseUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->emptyResponseUpdater = $this->getMock('FacebookPublicUpdater', array('getURL'));
 
 		$this->emptyResponseUpdater->expects($this->any())
 		    ->method('getURL')
@@ -154,11 +154,11 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
-		$this->assertEquals($this->updater->get_total(), 8450);
+		$this->assertEquals($this->updater->get_total(), 119124);
 
 		// 2. If Facebook returns a null response, we should return zero
 		$result = $this->emptyResponseUpdater->sync($post_id, get_permalink($post_id));
-		$this->assertTrue($result !== false);
+		$this->assertFalse($result);
 		$this->assertEquals($this->emptyResponseUpdater->get_total(), 0);
 	}
 
@@ -171,7 +171,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		$num = $this->offlineUpdater->updater->wpcb->get('max_failures');
 
 		// NOTE: We expect that getURL will be called exactly the number of times as the 'max_failures' property as set in the circuit breaker.
-		$cb_updater = $this->getMock('FacebookUpdater', array('getURL'));
+		$cb_updater = $this->getMock('FacebookPublicUpdater', array('getURL'));
 		$cb_updater->expects($this->exactly($num))
 		    ->method('getURL')
 		    ->will($this->returnValue(false));
@@ -216,7 +216,7 @@ class TestFacebookUpdater extends WP_UnitTestCase {
 		// There should be an array with four keys for Facebook
 		$this->assertTrue(
 			is_array($this->updater->getMetaFields()) &&
-			count($this->updater->getMetaFields()) == 4
+			count($this->updater->getMetaFields()) == 1
 		);
 
 	}

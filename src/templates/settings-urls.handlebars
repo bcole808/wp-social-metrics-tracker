@@ -7,7 +7,7 @@
 
 	<div class="box">
 
-		<label>What URL scheme should the plugin check?</label>
+		<label class="label">What URL scheme should the plugin check?</label>
 		<select id="url_protocol" name="url_protocol">
 			{{#each protocol_options}}
 			<option value="{{key}}" {{#if selected}} selected="selected" {{/if}}>{{label}}</option>
@@ -36,7 +36,7 @@
 	<div class="box">
 		<h3>Configuration</h3>
 
-		<label>
+		<label class="label">
 			Migration Date
 			<a href="javascript:void(0);" onClick="jQuery('#rewrite_before_date_help').slideToggle();" class="more-info">(More Info)</a>
 		</label>
@@ -47,7 +47,7 @@
 		</blockquote>
 		<br />
 
-		<label>
+		<label class="label">
 			Old Base URL
 			<a href="javascript:void(0);" onClick="jQuery('#rewrite_change_to_help').slideToggle();" class="more-info">(More Info)</a>
 		</label>
@@ -61,7 +61,7 @@
 
 
 		<h3>Preview</h3>
-		<label>
+		<label class="label">
 			Current live post URL:
 			<a href="javascript:void(0);" onClick="jQuery('#preview_match_from_help').slideToggle();" class="more-info">(More Info)</a>
 		</label>
@@ -72,7 +72,7 @@
 			<p>The box below will show a preview of what the corresponding URL on the old domain name we will try to match up data for.</p>
 		</blockquote>
 
-		<label>
+		<label class="label">
 			Matching URL from old domain:
 			<a href="javascript:void(0);" onClick="jQuery('#preview_change_to_help').slideToggle();" class="more-info">(More Info)</a>
 		</label>
@@ -95,7 +95,7 @@
 		<h3>Update rate for alternate URLs</h3>
 		
 
-		<label>How often should we check for social data?</label>
+		<label class="label">How often should we check for social data?</label>
 		<select id="alt_url_ttl_multiplier" name="alt_url_ttl_multiplier">
 			{{#each alt_url_ttl_multiplier_options}}
 			<option value="{{key}}" {{#if selected}} selected="selected" {{/if}}>{{label}}</option>

@@ -19,7 +19,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		);
 
-		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookGraphUpdater', array('getURL'));
 
 		$this->updater->sources->FacebookUpdater->expects($this->any())
 		    ->method('getURL')
@@ -112,7 +112,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// --------------------------------------------------
 		// TESTS FOR WHEN A SERVICE (FACEBOOK) IS UNAVAILABLE
 
-		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->updater->sources->FacebookUpdater = $this->getMock('FacebookGraphUpdater', array('getURL'));
 		$this->updater->sources->FacebookUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue(false));

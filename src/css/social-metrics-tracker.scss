@@ -528,10 +528,14 @@ button.smt-connection-item:focus {
 		border: 1px solid #e1e1e1;
 		padding: 30px;
 
-		label {
+		.label {
 			display: block;
 			color: #999;
 			margin-top:8px;
+
+			h3 {
+				display: inline-block;
+			}
 		}
 
 		h1:first-child,

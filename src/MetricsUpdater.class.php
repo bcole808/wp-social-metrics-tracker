@@ -10,7 +10,8 @@
 ***************************************************/
 
 require_once('data-sources/HTTPResourceUpdater.class.php');
-require_once('data-sources/FacebookUpdater.class.php');
+require_once('data-sources/FacebookGraphUpdater.class.php');
+require_once('data-sources/FacebookPublicUpdater.class.php');
 require_once('data-sources/TwitterUpdater.class.php');
 require_once('data-sources/LinkedInUpdater.class.php');
 require_once('data-sources/GooglePlusUpdater.class.php');
@@ -49,13 +50,23 @@ class MetricsUpdater {
 			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
-		// Import adapters for 3rd party services
-		if (!isset($this->sources->FacebookUpdater))    $this->sources->FacebookUpdater    = new FacebookUpdater();
-		if (!isset($this->sources->TwitterUpdater))     $this->sources->TwitterUpdater     = new TwitterUpdater();
-		if (!isset($this->sources->LinkedInUpdater))    $this->sources->LinkedInUpdater    = new LinkedInUpdater();
-		if (!isset($this->sources->GooglePlusUpdater))  $this->sources->GooglePlusUpdater  = new GooglePlusUpdater();
-		if (!isset($this->sources->PinterestUpdater))   $this->sources->PinterestUpdater   = new PinterestUpdater();
-		if (!isset($this->sources->StumbleUponUpdater)) $this->sources->StumbleUponUpdater = new StumbleUponUpdater();
+		// Setup adapter for Facebook updater service
+		if ($this->smt->get_smt_option('connection_type_facebook') == 'graph') {
+			// Graph:
+			$preferred_facebook_updater = new FacebookGraphUpdater();
+			$preferred_facebook_updater->setAccessToken($this->smt->get_smt_option('facebook_access_token'));
+		} else {
+			// Public / Default:
+			$preferred_facebook_updater = new FacebookPublicUpdater();
+		}
+
+		// Set adapters for all services
+		if (!isset($this->sources->FacebookUpdater))       $this->sources->FacebookUpdater       = $preferred_facebook_updater;
+		if (!isset($this->sources->TwitterUpdater))        $this->sources->TwitterUpdater        = new TwitterUpdater();
+		if (!isset($this->sources->LinkedInUpdater))       $this->sources->LinkedInUpdater       = new LinkedInUpdater();
+		if (!isset($this->sources->GooglePlusUpdater))     $this->sources->GooglePlusUpdater     = new GooglePlusUpdater();
+		if (!isset($this->sources->PinterestUpdater))      $this->sources->PinterestUpdater      = new PinterestUpdater();
+		if (!isset($this->sources->StumbleUponUpdater))    $this->sources->StumbleUponUpdater    = new StumbleUponUpdater();
 
 		return $this->dataSourcesReady = true;
 	}

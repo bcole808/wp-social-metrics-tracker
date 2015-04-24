@@ -98,7 +98,14 @@ abstract class HTTPResourceUpdater {
 			$this->wpcb->reportSuccess();
 		}
 
-		return $this->data = (strlen($result) > 0) ? $this->jsonp_decode($result, true) : false;
+		// Return either a json_decoded array, or a string, or false (in that order)
+		if (strlen($result) > 0) {
+			$decoded_result = $this->jsonp_decode($result, true);
+			return $this->data = ($decoded_result) ? $decoded_result : $result;
+		} else {
+			return $this->data = false;
+		}
+
 	}
 
 	/***************************************************
@@ -148,7 +155,22 @@ abstract class HTTPResourceUpdater {
 			);
 			return false;
 		} else if ($response['response']['code'] != 200) {
-			$this->http_error = "Received HTTP response code: <b>".$response['response']['code']." ".$response['response']['message']."</b>";
+			$this->http_error = '';
+
+			// Attempt to build a helpful error message (provided by Facebook)
+			$body = $this->jsonp_decode($response['body'], true);
+
+			if ($body && strlen($body['error']['message']) > 1) {
+				$this->http_error .= $body['error']['message'];
+			}
+
+			if ($body && strlen($body['error']['type']) > 1) {
+				$this->http_error .= ' ('.$body['error']['type'].' '.$body['error']['code'].'). ';
+			}
+
+			// Generic error message
+			$this->http_error .= "Received HTTP response code: ".$response['response']['code']." ".$response['response']['message'];
+
 			$this->http_error_detail = array(
 				'request_time'     => current_time('mysql'),
 				'request_method'   => $method,

@@ -2,7 +2,7 @@
 /************************************
 * In this test suite, you must:
 *
-* Call $FacebookUpdater->setParams(ID, 'path_to_sample.json');
+* Call $FacebookGraphUpdater->setParams(ID, 'path_to_sample.json');
 *
 * And then it will fetch that data when running the test. 
 *************************************/
@@ -21,7 +21,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// A) Set value to true/false to set updater online/offline
 	// B) Set array (true, false, false, true) to indicate that updater should be online, then offline twice, then online. After fourth, Updater returns to regular online state. 
 	private $available = array(
-		'FacebookUpdater' => true,
+		'FacebookGraphUpdater' => true,
 		'TwitterUpdater'  => true,
 		'LinkedInUpdater' => true,
 	);
@@ -50,7 +50,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -247,7 +247,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -301,29 +301,29 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// Test to make sure the mock updaters are working as intended
 	function test_mock_status() {
 		$expected = file_get_contents(dirname(__FILE__).'/sample-data/canonical-not-set/facebook-1.json');
-		$this->updater->sources->FacebookUpdater->setParams(1, 'canonical-not-set/service-1.json');
+		$this->updater->sources->FacebookGraphUpdater->setParams(1, 'canonical-not-set/service-1.json');
 
 		// 1. It returns some data
-		$result = $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json');
+		$result = $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json');
 		$this->assertEquals($expected, $result, 'There is a problem with the test suite simulating online services!');
 
 		// 2. When offline, it returns no data
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 
 		// 3. We can do fancy patterns
-		$this->available['FacebookUpdater'] = array(true, false, false, true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false, false, true, false);
 
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 		
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 
 	}
 
@@ -395,7 +395,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		);
 
 		// 1. If service is partially offline, it does not break
-		$this->available['FacebookUpdater'] = array(true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false);
 
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
 
@@ -438,12 +438,12 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 4. When a service goes completely offline, no data is lost
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 5. And if it is intermittent, no data is lost
-		$this->available['FacebookUpdater'] = array(true, false, false, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false, false, false);
 		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
@@ -457,12 +457,12 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->assertFalse($result['network_failure']);
 
 		// 2. Network failure should be reported
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 
 		// 3. A failure on a secondary request should be reported
-		$this->available['FacebookUpdater'] = array(true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false);
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
 		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
@@ -759,7 +759,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(6))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(6))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(6))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(6))->method('getURL');
 
@@ -793,7 +793,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(4))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(4))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(4))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(4))->method('getURL');
 
@@ -817,7 +817,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(2))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(2))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(2))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(2))->method('getURL');
 
@@ -840,7 +840,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(5))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(5))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(5))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(5))->method('getURL');
 

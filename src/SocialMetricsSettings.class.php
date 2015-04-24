@@ -6,6 +6,8 @@ class socialMetricsSettings {
 
 	private $wpsf;
 
+	private $facebook_auth_error;
+
 	function __construct($smt) {
 
 		$this->smt = $smt;
@@ -18,7 +20,7 @@ class socialMetricsSettings {
 			$this->section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : 'general';
 			$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
 		}
-	
+
 	}
 
 	function admin_menu() {
@@ -39,6 +41,12 @@ class socialMetricsSettings {
 					'current' => $this->section == 'general'
 				),
 				array(
+					'slug'    => 'connections',
+					'label'   => 'API Connection Settings',
+					'url'     => add_query_arg('section', 'connections'),
+					'current' => $this->section == 'connections'
+				),
+				array(
 					'slug'    => 'gapi',
 					'label'   => 'Google Analytics Setup',
 					'url'     => add_query_arg('section', 'gapi'),
@@ -50,12 +58,6 @@ class socialMetricsSettings {
 					'url'     => add_query_arg('section', 'urls'),
 					'current' => $this->section == 'urls'
 				),
-				// array(
-				// 	'slug'    => 'test',
-				// 	'label'   => 'URL Debug / Test Tool',
-				// 	'url'     => add_query_arg('section', 'test'),
-				// 	'current' => $this->section == 'test'
-				// )
 			)
 		);
 
@@ -72,6 +74,12 @@ class socialMetricsSettings {
 
 				if (isset($_GET['go_to_step']) && $_GET['go_to_step']) $this->gapi->go_to_step($_GET['go_to_step']);
 
+				break;
+
+			case 'connections':
+				if (count($_POST) > 0) {
+					$this->process_connections_form();
+				}
 				break;
 
 			case 'urls':
@@ -112,6 +120,60 @@ class socialMetricsSettings {
 	function process_general_form() {
 		if (!isset($_POST) || count($_POST) == 0) return;
 		$this->smt->merge_smt_options($_POST['smt_settings']);
+	}
+
+	function connections_section() {
+
+		$args = array(
+			'facebook_public_checked' => checked('public', $this->smt->get_smt_option('connection_type_facebook'), false),
+			'facebook_graph_checked'  => checked('graph',  $this->smt->get_smt_option('connection_type_facebook'), false),
+			'facebook_access_token_valid' => strlen($this->smt->get_smt_option('facebook_access_token')) > 0,
+			'facebook_auth_error' => $this->facebook_auth_error,
+			'fb_app_id'     => isset($_POST['fb_app_id']) ? $_POST['fb_app_id'] : '',
+			'fb_app_secret' => isset($_POST['fb_app_secret']) ? $_POST['fb_app_secret'] : '',
+		);
+
+		print($this->smt->renderTemplate('settings-connections', $args));
+	}
+
+	function process_connections_form() {
+		if (!isset($_POST) || count($_POST) == 0) return;
+
+		// Save FB connection type
+		$this->smt->set_smt_option('connection_type_facebook', $_POST['connection_type_facebook']);
+
+		// Process token delete request
+		if ($_POST['action'] == 'Delete saved access token') {
+			$this->smt->delete_smt_option('facebook_access_token');
+		}
+
+		// Generate Access Token
+		if ($_POST['action'] == 'Save Changes' && ($_POST['fb_app_id'] || $_POST['fb_app_secret']) ) {
+
+			// Need this to verify token
+			$fb = new FacebookGraphUpdater();
+
+			if (strlen($_POST['fb_app_id']) == 0) {
+				$this->facebook_auth_error = 'You must enter an App ID';
+
+			} elseif (strlen($_POST['fb_app_secret']) == 0) {
+				$this->facebook_auth_error = 'You must enter an App Secret';
+
+			} elseif (false === $access_token = $fb->requestAccessToken($_POST['fb_app_id'], $_POST['fb_app_secret'])) {
+				$this->facebook_auth_error = 'The info you entered did not validate with Facebook.';
+
+				if ($fb->error_message) {
+					$this->facebook_auth_error .= ' Facebook said: '.$fb->error_message;
+				}
+
+			} else {
+				// Save the valid access token!
+				$this->smt->set_smt_option('facebook_access_token', $access_token);
+
+			}
+
+		} 
+
 	}
 
 	// Renders the Test Tool page
