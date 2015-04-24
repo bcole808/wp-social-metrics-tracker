@@ -97,6 +97,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Changelog ==
 
 = 1.5.0 =
+* Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
 * Fixed a bug where connection debug info sometimes did not get displayed
 
 = 1.4.5 =
@@ -194,6 +195,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Changed the way Facebook data is collected
 
 = 1.4.5 =
 Temporary fix for the Facebook stat updater
