@@ -99,6 +99,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 = 1.5.0 =
 * Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
 * Fixed a bug where connection debug info sometimes did not get displayed
+* Compatbility with WordPress 4.2
 
 = 1.4.5 =
 * Fixed the Facebook stat updater; temporarily switched back to the old Facebook API (version 1.0) because the new version now requires authentication.  The old version will stop working on April 30, 2015 and so another update will be required before that date. 
@@ -197,7 +198,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Upgrade Notice ==
 
 = 1.5.0 =
-Changed the way Facebook data is collected
+Changed the way Facebook data is collected, and compatibility fixes. 
 
 = 1.4.5 =
 Temporary fix for the Facebook stat updater

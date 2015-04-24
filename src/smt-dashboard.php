@@ -10,6 +10,8 @@ if(!class_exists('WP_List_Table')){
 }
 class SocialMetricsTable extends WP_List_Table {
 
+	private $smt, $gapi, $data_max;
+
 	function __construct($smt){
 		global $status, $page;
 
