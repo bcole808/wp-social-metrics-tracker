@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.1.1
-Stable tag: 1.4.5
+Tested up to: 4.2
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,9 +97,10 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Changelog ==
 
 = 1.5.0 =
-* Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
-* Fixed a bug where connection debug info sometimes did not get displayed
 * Compatbility with WordPress 4.2
+* Fixed a bug where connection debug info sometimes did not get displayed
+* Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
+* IMPORTANT: If you rely on post custom fields for 'facebook_likes', 'facebook_shares', or 'facebook_comments' then you must configure the Facebook API to use "Facebook Graph" mode under the new "API Connection Settings" page. When migrating from a previous version of this plugin, those fields will already exist for your posts and they will simply stop updating if you leave the default settings enabled. To remove those fields, un-install this plugin completely then re-install it. 
 
 = 1.4.5 =
 * Fixed the Facebook stat updater; temporarily switched back to the old Facebook API (version 1.0) because the new version now requires authentication.  The old version will stop working on April 30, 2015 and so another update will be required before that date. 
