@@ -25,6 +25,26 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 		}
 	}
 
+	// Connect to Facebook and validate an App ID and App Secret; return an App Access Token
+	public function requestAccessToken($app_id, $app_secret) {
+		if (strlen($app_id) == 0 || strlen($app_secret) == 0) return false;
+
+		$oauth_uri = "https://graph.facebook.com/v2.3/oauth/access_token?client_id=$app_id&client_secret=$app_secret&grant_type=client_credentials";
+
+		$response = wp_remote_get($oauth_uri);
+		if (is_wp_error($response)) return false;
+
+		$data = json_decode(wp_remote_retrieve_body($response), true);
+
+		if ($response['response']['code'] != 200) {
+
+			$this->error_message = $data['error']['message'] . '('.$data['error']['type'].' '.$data['error']['code'].')';
+			return false;
+		}
+
+		return strlen($data['access_token']) ? $data['access_token'] : false;
+	}
+
 	public function setParams($post_id, $post_url = false) {
 		parent::setparams($post_id, $post_url);
 

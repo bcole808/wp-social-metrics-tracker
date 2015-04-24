@@ -124,11 +124,6 @@ class socialMetricsSettings {
 
 	function connections_section() {
 
-		// Warn if no data can be collected
-		if ($this->smt->get_smt_option('connection_type_facebook') == 'graph' && !$this->smt->get_smt_option('facebook_access_token') && $_POST['action'] != 'Delete saved access token') {
-			$this->facebook_auth_error = 'You need to enter an App ID & App Secret otherwise no data will be collected from Facebook!';
-		}
-
 		$args = array(
 			'facebook_public_checked' => checked('public', $this->smt->get_smt_option('connection_type_facebook'), false),
 			'facebook_graph_checked'  => checked('graph',  $this->smt->get_smt_option('connection_type_facebook'), false),
@@ -155,14 +150,21 @@ class socialMetricsSettings {
 		// Generate Access Token
 		if ($_POST['action'] == 'Save Changes' && ($_POST['fb_app_id'] || $_POST['fb_app_secret']) ) {
 
+			// Need this to verify token
+			$fb = new FacebookGraphUpdater();
+
 			if (strlen($_POST['fb_app_id']) == 0) {
 				$this->facebook_auth_error = 'You must enter an App ID';
 
 			} elseif (strlen($_POST['fb_app_secret']) == 0) {
 				$this->facebook_auth_error = 'You must enter an App Secret';
 
-			} elseif (false === $access_token = $_POST['fb_app_id'].'|'.$_POST['fb_app_secret']) {
-				$this->facebook_auth_error = 'The info you entered did not validate with Facebook :(';
+			} elseif (false === $access_token = $fb->requestAccessToken($_POST['fb_app_id'], $_POST['fb_app_secret'])) {
+				$this->facebook_auth_error = 'The info you entered did not validate with Facebook.';
+
+				if ($fb->error_message) {
+					$this->facebook_auth_error .= ' Facebook said: '.$fb->error_message;
+				}
 
 			} else {
 				// Save the valid access token!
