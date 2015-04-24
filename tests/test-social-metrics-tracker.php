@@ -58,6 +58,9 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 			'There are some option keys we expected to see but could not find'
 		);
 
+		// 3: It sets other default options not from the file (this one is hard-coded, for example)
+		$this->assertEquals($actual['smt_options_connection_type_facebook'], 'public');
+
 
 	}
 
