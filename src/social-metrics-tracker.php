@@ -281,6 +281,20 @@ class SocialMetricsTracker {
 	***************************************************/
 	public function add_missing_settings() {
 		$this->initOptions();
+
+		// Configure default options here;
+		// They will be set only if a value does not already exist in the DB. 
+		$defaults = array(
+			'connection_type_facebook' => 'public'
+		);
+
+		foreach ($defaults as $key => $value) {
+			if ($this->get_smt_option($key) === false) {
+				$this->set_smt_option($key, $value, false);
+			}
+		}
+
+		// Load defaults from smt-general.php
 		require('settings/smt-general.php');
 		global $wpsf_settings;
 
