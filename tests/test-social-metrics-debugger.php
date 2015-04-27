@@ -90,6 +90,8 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		$this->smt->updater->sources->GooglePlusUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
+
+		$this->smt->updater->dataSourcesReady = true;
 	}
 
 	function set_facebook_offline() {
@@ -101,6 +103,8 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 
 		// We need to report a failure
 		$this->smt->updater->sources->FacebookGraphUpdater->wpcb->reportFailure('Test Error Message');
+
+		$this->smt->updater->dataSourcesReady = true;
 
 	}
 
