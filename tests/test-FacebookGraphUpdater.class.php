@@ -32,10 +32,10 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 	}
 
 	function assertMatchingMetaProperty() {
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 8450);
-		$this->assertEquals($this->updater->meta['facebook_comments'], 331);
-		$this->assertEquals($this->updater->meta['facebook_shares'], 7169);
-		$this->assertEquals($this->updater->meta['facebook_likes'], 950);
+		$this->assertEquals($this->updater->meta['socialcount_facebook'], 10850);
+		// $this->assertEquals($this->updater->meta['facebook_comments'], 331);
+		// $this->assertEquals($this->updater->meta['facebook_shares'], 7169);
+		// $this->assertEquals($this->updater->meta['facebook_likes'], 950);
 	}
 
 
@@ -45,6 +45,7 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 	function test_setParams() {
 		$post_id = $this->factory->post->create();
 
+		$this->updater->setAccessToken('fooBar');
 		$this->updater->setParams($post_id);
 
 		// 1. Post data is saved
@@ -53,7 +54,9 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 
 		// 2. Params are configured
 		$this->assertTrue(count($this->updater->resource_params) > 0, 'It did not set params');
-		$this->assertTrue(isset($this->updater->resource_params['q']));
+		$this->assertTrue(isset($this->updater->resource_params['id']));
+		$this->assertTrue(isset($this->updater->resource_params['fields']));
+		$this->assertTrue(isset($this->updater->resource_params['access_token']));
 
 		// 3. Resetting params should clear the instance variables
 		$this->updater->fetch();
@@ -154,7 +157,7 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
-		$this->assertEquals($this->updater->get_total(), 8450);
+		$this->assertEquals($this->updater->get_total(), 10850);
 
 		// 2. If Facebook returns a null response, we should return zero
 		$result = $this->emptyResponseUpdater->sync($post_id, get_permalink($post_id));
@@ -216,7 +219,7 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 		// There should be an array with four keys for Facebook
 		$this->assertTrue(
 			is_array($this->updater->getMetaFields()) &&
-			count($this->updater->getMetaFields()) == 4
+			count($this->updater->getMetaFields()) == 1
 		);
 
 	}

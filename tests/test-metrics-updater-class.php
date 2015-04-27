@@ -60,10 +60,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 	function assert_correct_data($post_id, $skip_facebook = false) {
 		// Facebook
 		if (!$skip_facebook) {
-			$this->assertEquals(8450, get_post_meta($post_id, 'socialcount_facebook', true));
-			$this->assertEquals(331,  get_post_meta($post_id, 'facebook_comments', true));
-			$this->assertEquals(7169, get_post_meta($post_id, 'facebook_shares', true));
-			$this->assertEquals(950,  get_post_meta($post_id, 'facebook_likes', true));
+			$this->assertEquals(10850, get_post_meta($post_id, 'socialcount_facebook', true));
+			// $this->assertEquals(331,  get_post_meta($post_id, 'facebook_comments', true));
+			// $this->assertEquals(7169, get_post_meta($post_id, 'facebook_shares', true));
+			// $this->assertEquals(950,  get_post_meta($post_id, 'facebook_likes', true));
 		}
 
 		// Twitter
@@ -76,7 +76,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		if ($skip_facebook) {
 			$this->assertEquals(1213, get_post_meta($post_id, 'socialcount_TOTAL', true));
 		} else {
-			$this->assertEquals(9663, get_post_meta($post_id, 'socialcount_TOTAL', true));
+			$this->assertEquals(12063, get_post_meta($post_id, 'socialcount_TOTAL', true));
 		}
 
 		// Timestamp / meta
@@ -90,7 +90,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			$this->assertEquals(1213, get_post_meta($post_id, 'social_aggregate_score', true));
 			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 2420); // Estimate
 		} else {
-			$this->assertEquals(9663, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertEquals(12063, get_post_meta($post_id, 'social_aggregate_score', true));
 			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 19320); // Estimate
 		}
 	}

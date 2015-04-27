@@ -1,12 +1,11 @@
+
 {
-   "data": [
-      {
-         "url": "https://wikipedia.org",
-         "share_count": 685,
-         "like_count": 171,
-         "comment_count": 163,
-         "total_count": 1019,
-         "click_count": 0
-      }
-   ]
+   "og_object": {
+      "engagement": {
+         "count": 1019,
+         "social_sentence": "1,019 people like this."
+      },
+      "id": "10150167331681884"
+   },
+   "id": "https://wikipedia.org"
 }

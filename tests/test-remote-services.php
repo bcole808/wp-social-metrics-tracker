@@ -24,7 +24,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 	function test_facebook_graph() {
 
 		$updater = new FacebookGraphUpdater();
-		$updater->setParams(1, 'http://www.wordpress.org');
+		$updater->setParams(1, 'http://www.wordpress.org?foo=bar&faa=beee');
 
 		// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 		//
@@ -44,7 +44,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		), true);
 
-		$diff = array_diff_key($expected_result['data'][0], $updater->data['data'][0]);
+		$diff = array_diff_key($expected_result, $updater->data);
 		$this->assertEquals(0, count($diff), 'The Facebook API did not return the expected json format!!!');
 
 		// 3. Make sure it returns a positive total integer
