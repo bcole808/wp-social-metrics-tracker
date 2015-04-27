@@ -18,18 +18,18 @@
 		</p>
 
 		<blockquote class="fb_connection_help" style="display:none;">
-		<p><b>Publicly available data</b> only includes the total count of "engagement" for each post URL, which is the sum of all Shares, Likes, and FB Comments for that URL. If you experience problems with this option, try switching to Graph data.</p>
+		<p><b>Publicly available data</b> works out of the box and does not require any setup. If you experience problems with this option, try switching to Graph data.</p>
 		</blockquote>
 
 		<p>
 		<label>
 			<input type="radio" name="connection_type_facebook" value="graph" onChange="jQuery('#fb_app_keys').slideDown();" {{facebook_graph_checked}} />
-			Fetch Graph data with my Facebook App API Key
+			Fetch Graph data with my Facebook App API Key (Recommended)
 		</label>
 		</p>
 
 		<blockquote class="fb_connection_help" style="display:none;">
-		<p><b>Graph data</b> includes the individual number of Likes, Shares, and FB Comments. These extra data fields get stored as custom post meta on each individual post. Retrieving this data requires that you create a Facebook Developer account and enter an App ID and App Secret.</p>
+		<p><b>Graph data</b> is more efficient for your server to retrieve and is the preferred way to gather data from Facebook, however it requires that you create a Facebook Developer account and enter an App ID and App Secret.</p>
 		</blockquote>
 
 		<blockquote id="fb_app_keys" {{#unless facebook_graph_checked}}style="display:none;"{{/unless}}>
