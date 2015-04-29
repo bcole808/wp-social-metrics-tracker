@@ -108,6 +108,13 @@ $wpsf_settings[] = array(
 				'50'  => '50',
 				'100' => '100'
 			)
-		)
+		),
+		array(
+			'id'    => 'allow_debug_pingback',
+			'title' => 'Help improve the plugin',
+			'desc'  => 'Send helpful debug and usage information to the plugin developer.',
+			'type'  => 'checkbox',
+			'std'   => 0
+		),
 	)
 );

@@ -72,8 +72,8 @@ class SocialMetricsTracker {
 			add_action('admin_notices', array($this, 'developmentServerNotice'));
 		}
 
-		$this->updater  = new MetricsUpdater($this);
 		$this->debugger = new SocialMetricsDebugger($this);
+		$this->updater  = new MetricsUpdater($this);
 
 		// Data export tool
 		if (is_admin() && isset($_GET['smt_download_export_file']) && $_GET['smt_download_export_file'] && $_GET['page'] == 'social-metrics-tracker-export') {
