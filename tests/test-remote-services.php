@@ -24,7 +24,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 	function test_facebook_graph() {
 
 		$updater = new FacebookGraphUpdater();
-		$updater->setParams(1, 'http://www.wordpress.org?foo=bar&faa=beee');
+		$updater->setParams(1, 'http://www.wordpress.org');
 
 		// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 		//
