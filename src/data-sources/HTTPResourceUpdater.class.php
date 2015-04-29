@@ -93,7 +93,7 @@ abstract class HTTPResourceUpdater {
 
 		// Report to circuit breaker
 		if (!$result) {
-			$this->wpcb->reportFailure($this->http_error, $this->http_error_detail);
+			$this->wpcb->reportFailure($this->cleanSecrets($this->http_error), $this->cleanSecrets($this->http_error_detail));
 		} else {
 			$this->wpcb->reportSuccess();
 		}
@@ -198,6 +198,13 @@ abstract class HTTPResourceUpdater {
 		}
 
 		return (count($fields) > 0) ? $fields : false;
+	}
+
+	/***************************************************
+	* Obscures secret key information (example: API Auth Tokens)
+	***************************************************/
+	public function cleanSecrets($input) {
+		return $input;
 	}
 
 	/***************************************************

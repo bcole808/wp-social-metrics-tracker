@@ -11,6 +11,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 	public $name  = 'Facebook';
 
 	private $uri = 'https://graph.facebook.com/v2.3';
+	private $access_token;
 
 	public function __construct() {
 		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
@@ -83,6 +84,19 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 		// Return count
 		return intval($this->updater->data['og_object']['engagement']['count']);
+	}
+
+	/***************************************************
+	* Obscures secret key information (example: API Auth Tokens)
+	***************************************************/
+	public function cleanSecrets($input) {
+		if (strlen($this->access_token) > 0) {
+			$pass_one = str_replace($this->access_token, 'SECRET_ACCESS_TOKEN_HIDDEN', $input);
+			$pass_two = str_replace(urlencode($this->access_token), 'SECRET_ACCESS_TOKEN_HIDDEN', $pass_one);
+			return $pass_two;
+		} else {
+			return $input;
+		}
 	}
 
 }
