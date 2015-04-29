@@ -98,6 +98,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English
+* Fixed an issue where a Facebook count of one was reported as zero
 
 = 1.5.1 =
 * Updated the Facebook Graph API to version 2.3 (latest)

@@ -39,20 +39,23 @@ class FacebookPublicUpdater extends HTTPResourceUpdater {
 		// Safety check 
 		if (!is_string($this->updater->data)) return 0;
 
-		// Strings to search for in the result
+		// If there is only 1 share
+		if (strpos($this->updater->data, '<span id="u_0_2"><span>One person likes this.</span>') !== false) return 1;
+
+		// Strings to search for in the result if there is more than one share
 		$wrapper_start = '<span id="u_0_2"><span>';
 		$wrapper_end   = ' people like this.</span>';
 
 		$start = strpos($this->updater->data, $wrapper_start);
 		$end   = strpos($this->updater->data, $wrapper_end, $start);
 
-		// Safety check
+		// If the data was not found in the result
 		if ($start === false || $end === false) return 0;
 
 		// Perform substring matching
 		$match = substr($this->updater->data, $start+strlen($wrapper_start), $end - $start - strlen($wrapper_start));
 
-		// Safety check
+		// If the substring task failed
 		if ($match === false) return 0;
 
 		// Convert the string with commas to an integer
