@@ -20,7 +20,8 @@ class FacebookPublicUpdater extends HTTPResourceUpdater {
 		parent::setparams($post_id, $post_url);
 
 		$this->updater->resource_params = array(
-			'href' => $this->updater->post_url
+			'href' => $this->updater->post_url,
+			'locale' => 'en_US' // Result will be parsed in English
 		);
 
 	}

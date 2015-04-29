@@ -96,6 +96,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.5.2 =
+* Fixed an issue where Facebook stats were not collected for some websites in languages other than English
+
 = 1.5.1 =
 * Updated the Facebook Graph API to version 2.3 (latest)
 * IMPORTANT: As of this version, the individual post meta fields for 'facebook_likes', 'facebook_comments' and 'facebook_shares' are no longer available. You will not notice any difference unless you have previously written a custom theme or plugin which made use of these hidden custom fields. To delete these old fields and clean up your database, you should completely un-install (and delete) this plugin from the Dashboard and then re-install it. 
@@ -200,6 +203,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.5.2 =
+Fixed a bug with Facebook stats on non-English websites
 
 = 1.5.1 =
 Switch to Facebook API version 2.3
