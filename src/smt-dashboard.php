@@ -515,6 +515,8 @@ function smt_render_dashboard_view($smt){
 			$SocialMetricsTable->display();
 			?>
 
+			<p align="center">Please <a href="https://wordpress.org/support/view/plugin-reviews/social-metrics-tracker">rate the Social Metrics Tracker</a> plugin if you have found it useful, or <a href="https://wordpress.org/support/plugin/social-metrics-tracker">visit the support forum</a> for help.</p>
+
 		</form>
 
 		<?php MetricsUpdater::printQueueLength(); ?>
