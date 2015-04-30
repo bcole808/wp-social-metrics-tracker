@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.2
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,20 @@ If you do not see any statistics on the Social Metrics dashboard, make sure that
 = Un-installation =
 
 When you un-install this plugin through the WordPress dashboard, it will remove all traces of any social data collected by the plugin. If you wish to keep the data, manually delete the plugin files instead of using the WordPress dashboard; this will bypass the uninstall.php script which deletes the data.
+
+= Troubleshooting Common Problems =
+
+Q: The plugin shows zero shares for my posts
+A: It takes at least a few hours for shares to show up. To check the status, go to http://www.sharedcount.com/ and paste the URL to a post that is being reported incorrectly by this plugin. Verify that it does indeed have some shares reported. Next, go to the reporting dashboard and click "Update Now" next to that post to force it to re-check stats. 
+
+Q: Google Analytics is not pairing correctly
+A: This is unfortunately a known issue. Pairing with Google Analytics sometimes works, and sometimes does not. If there are any web developers out there who are familiar with the Google Analytics API, please get in touch! 
+
+Q: Shares are sometimes showing up
+A: If you use https://, or if you have recently migrated domains, or if you have more than one URL to your posts then you might need to configure "Advanced Domain / URL Setup" under the plugin configuration page. Social networks track shares for URL variations separately, so this plugin has the ability to check all the variations of a URL and add the numbers together in the reporting dashboard. 
+
+Q: Facebook is not updating correctly
+A: Go into "API Connection Settings" in the plugin configuration and switch to use "Facebook Graph data" - this will require you to register an app with Facebook, but will provide you with the most reliable Facebook data. 
 
 
 == Frequently Asked Questions ==
@@ -96,6 +110,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.5.3 =
+* Added the ability to send usage and debug statistics to the developer to improve the plugin.
+
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English
 
@@ -104,7 +121,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * IMPORTANT: As of this version, the individual post meta fields for 'facebook_likes', 'facebook_comments' and 'facebook_shares' are no longer available. You will not notice any difference unless you have previously written a custom theme or plugin which made use of these hidden custom fields. To delete these old fields and clean up your database, you should completely un-install (and delete) this plugin from the Dashboard and then re-install it. 
 
 = 1.5.0 =
-* Compatbility with WordPress 4.2
+* Compatibility with WordPress 4.2
 * Fixed a bug where connection debug info sometimes did not get displayed
 * Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
 
@@ -203,6 +220,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.5.3 =
+Added a debug reporting option
 
 = 1.5.2 =
 Fixed a bug with Facebook stats on non-English websites
