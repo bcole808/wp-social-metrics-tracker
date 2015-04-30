@@ -432,6 +432,7 @@ function smt_render_dashboard_view($smt){
 
 	if (isset($_REQUEST['smt_test_http_now'])) {
 		$smt->debugger->testHTTPResourceUpdaters();
+		$smt->debugger->reportDebugStats();
 	}
 
 	$offline_updaters = $smt->debugger->getOfflineHTTPResourceUpdaters();
@@ -504,9 +505,10 @@ function smt_render_dashboard_view($smt){
 				</div>
 
 			<?php endif; ?>
-
-
 			<?php
+
+			do_action( 'smt_dashboard_before_table' );
+
 			//Create an instance of our package class...
 			$SocialMetricsTable = new SocialMetricsTable($smt);
 

@@ -15,6 +15,36 @@ class SocialMetricsDebugger {
 			add_action('social_metrics_data_sync_complete', array($this, 'cronReportDebugStats'), 999);
 		}
 
+		// Ask the user to enable debug one time
+		if ($this->smt->get_smt_option('allow_debug_pingback_last_prompt') === false) {
+			add_action('smt_dashboard_before_table', array($this, 'displayDebugPrompt'));
+			$this->maybeToggleDebugMode();
+		}
+
+	}
+
+	/**
+	 * Performs any tasks requested by URL params
+	 *
+	 * @return nothing
+	 */
+	public function maybeToggleDebugMode() {
+
+		// Enable debug and hide message
+		if (isset($_GET['smt_enable_debug_report'])) {
+			$this->smt->set_smt_option('allow_debug_pingback', true);
+			$this->smt->set_smt_option('allow_debug_pingback_last_prompt', current_time( 'timestamp' ));
+
+			header("Location:".remove_query_arg('smt_enable_debug_report'));
+		}
+
+		// Disable debug and hide message
+		if (isset($_GET['smt_disable_debug_report'])) {
+			$this->smt->set_smt_option('allow_debug_pingback', false);
+			$this->smt->set_smt_option('allow_debug_pingback_last_prompt', current_time( 'timestamp' ));
+
+			header("Location:".remove_query_arg('smt_disable_debug_report'));
+		}
 	}
 
 	/**
@@ -54,6 +84,19 @@ class SocialMetricsDebugger {
 		return (count($offline) == 0) ? true : $offline;
 	}
 
+	/**
+	 * Displays a nice prompt asking the user if they are willing to report debug stats
+	 *
+	 * @return prints to screen!
+	 */
+	public function displayDebugPrompt() {
+		$args = array(
+			'debug_report' => print_r($this->buildDebugReport(), true),
+			'url_to_enable_reports'  => add_query_arg('smt_enable_debug_report', '1'),
+			'url_to_disable_reports' => add_query_arg('smt_disable_debug_report', '1'),
+		);
+		print($this->smt->renderTemplate('debug-prompt-box', $args));
+	}
 
 	/**
 	 * Fires reportDebugStates once every 24 hours
@@ -64,7 +107,7 @@ class SocialMetricsDebugger {
 
 		$last = intval($this->smt->get_smt_option('last_debug_pingback'));
 
-		if (current_time( 'timestamp' ) - $last > MINUTE_IN_SECONDS) {
+		if (current_time( 'timestamp' ) - $last > DAY_IN_SECONDS) {
 			return $this->reportDebugStats();
 		}
 	}
@@ -72,7 +115,7 @@ class SocialMetricsDebugger {
 	/**
 	 * Phone home and report helpful debug information to the plugin developer! :)
 	 *
-	 * @return boolean (success or failure of the ping)
+	 * @return nothing
 	 */
 	public function reportDebugStats() {
 
@@ -82,11 +125,11 @@ class SocialMetricsDebugger {
 		$this->smt->set_smt_option('last_debug_pingback', current_time( 'timestamp' ));
 
 		$args = array(
-			'timeout'     => 3,
+			'timeout'     => 2,
 			'blocking'    => true,
-			'headers'     => array('Content-type' => 'application/json'),
+			'headers'     => array('Content-type' => 'application/json', 'Accept' => 'application/json'),
 			'sslverify'   => true,
-			'body'        => json_encode($this->buildDebugReport)
+			'body'        => json_encode($this->buildDebugReport())
 		);
 
 		wp_remote_post($this->pingback_url, $args);
@@ -96,31 +139,31 @@ class SocialMetricsDebugger {
 	/**
 	 * Builds a debug report
 	 *
-	 * @return array
+	 * @return (array) The debug report which will be sent
 	 */
 	public function buildDebugReport() {
 		global $wp_version;
 
 		$options = $this->smt->options;
 
-		if (array_key_exists('facebook_access_token', $options)) {
-			$options['facebook_access_token'] = 'SECRET_KEY_HIDDEN__STRLEN_'.strlen($options['facebook_access_token']);
+		if (array_key_exists('smt_options_facebook_access_token', $options)) {
+			$options['smt_options_facebook_access_token'] = 'SECRET_KEY_REMOVED__STRLEN_'.strlen($options['smt_options_facebook_access_token']);
 		}
 
 		return array(
 			'site_id' => get_home_url(),
-			'is_multisite' => is_multisite(),
+			'is_multisite' => (is_multisite()) ? 'true' : 'false',
 			'wordpress_version' => $wp_version,
 			'plugin_version' => $this->smt->version,
-			'plugin_settings' => $this->smt->options,
-			'api_connection_status' => $this->buildConnectionStatusReport()
+			'plugin_settings' => $options,
+			'api_connection_status' => $this->buildConnectionStatusReport(),
 		);
 	}
 
 	/**
 	 * Create an array of debug info with the current status of circuit breakers
 	 *
-	 * @return array
+	 * @return (array) Just the API connection status portion of the debug report
 	 */
 	private function buildConnectionStatusReport() {
 		$items = array();
