@@ -252,8 +252,7 @@ class MetricsUpdater {
 		if (!$post instanceof WP_Post) return false;
 
 		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
-		//@todo Remove this
-		$permalink = str_replace( '.dev', '.com', $permalink );
+
 		if ($permalink === false) return false;
 
 		// Stop if TTL not elapsed
