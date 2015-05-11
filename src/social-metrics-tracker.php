@@ -209,7 +209,6 @@ class SocialMetricsTracker {
 		$types_to_track = array();
 
 		$smt_post_types = get_post_types( array( 'public' => true ), 'names' );
-		unset($smt_post_types['attachment']);
 
 		foreach ($smt_post_types as $type) {
 			if (isset($this->options['smt_options_post_types_'.$type]) && $this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
@@ -271,6 +270,7 @@ class SocialMetricsTracker {
 		// Set default post types to track
 		$this->set_smt_option('post_types_post', 'post', false);
 		$this->set_smt_option('post_types_page', 'page', false);
+		$this->set_smt_option('post_types_attachment', 'page', false);
 		$this->add_missing_settings(); // Also saves the two above
 
 		$this->version_check();
