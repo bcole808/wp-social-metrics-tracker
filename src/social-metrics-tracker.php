@@ -214,6 +214,8 @@ class SocialMetricsTracker {
 			if (isset($this->options['smt_options_post_types_'.$type]) && $this->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
 		}
 
+		$smt_post_types = apply_filters( 'smt_post_types', $smt_post_types );
+
 		// If none selected, default post types
 		return ($types_to_track) ? $types_to_track : array_values($smt_post_types);
 	}

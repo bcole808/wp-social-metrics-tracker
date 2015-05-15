@@ -150,7 +150,7 @@ class MetricsUpdater {
 		if ($post_id <= 0 && $post) $post_id = $post->ID;
 
 		// Get post types to track
-		$types = $this->get_post_types();
+		$types = $this->smt->tracked_post_types();
 
 		// Validation
 		if (is_admin())                                  return false;
@@ -168,24 +168,6 @@ class MetricsUpdater {
 
 		return true;
 	} // end checkThisPost()
-
-	// Return an array of post types we currently track
-	public function get_post_types() {
-
-		$types_to_track = array();
-
-		$smt_post_types = get_post_types( array( 'public' => true ), 'names' );
-
-		foreach ($smt_post_types as $type) {
-			if (isset($this->smt->options['smt_options_post_types_'.$type]) && $this->smt->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
-		}
-
-		$smt_post_types = apply_filters( 'smt_post_types', $smt_post_types );
-
-		// If none selected, default post types
-		return ($types_to_track) ? $types_to_track : array_values($smt_post_types);
-
-	}
 
 
 	/**
@@ -742,7 +724,7 @@ class MetricsUpdater {
 
 		update_option( 'smt_last_full_sync', $this->getLocalTime() );
 
-		$post_types = $this->get_post_types();
+		$post_types = $this->smt->tracked_post_types();
 		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
 
 		$q = new WP_Query();
