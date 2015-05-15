@@ -98,6 +98,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.5.3 =
 * Allow attachment/media pages to be tracked
+* Added "Update Stats" link to dashboard widget
 
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English

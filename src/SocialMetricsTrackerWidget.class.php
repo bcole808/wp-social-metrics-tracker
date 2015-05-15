@@ -59,12 +59,10 @@ class SocialMetricsTrackerWidget extends WP_List_Table {
 		$actions = array(
 			// 'view'      => sprintf('<a href="%s">View</a>',$item['permalink']),
 			'edit'      => sprintf('<a href="post.php?post=%s&action=edit">Edit</a>',$item['ID']),
-			'pubdate'   => 'Published on ' . date("M j, Y",strtotime($item['post_date'])),
-			//'update'    => sprintf('Stats updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED']))
+			'update'  => '<a href="'.add_query_arg( 'smt_sync_now', $item['ID']).'" title="'.sprintf('Last updated %s',SocialMetricsTracker::timeago($item['socialcount_LAST_UPDATED'])).'">Update Stats</a>'
 		);
 
 		//Return the title contents
-
 		return '<a href="'.$item['permalink'].'"><b>'.$item['post_title'] . '</b></a>' . $this->row_actions($actions);
 	}
 
