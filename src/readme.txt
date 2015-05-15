@@ -96,6 +96,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Changelog ==
 
+= 1.5.3 =
+* Allow attachment/media pages to be tracked
+
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English
 * Fixed an issue where a Facebook count of one was reported as zero
@@ -204,6 +207,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.5.3 =
+Allow attachments to be tracked
 
 = 1.5.2 =
 Fixed a bug with Facebook stats on non-English websites
