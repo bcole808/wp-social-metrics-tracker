@@ -270,8 +270,7 @@ class SocialMetricsTracker {
 		// Set default post types to track
 		$this->set_smt_option('post_types_post', 'post', false);
 		$this->set_smt_option('post_types_page', 'page', false);
-		$this->set_smt_option('post_types_attachment', 'page', false);
-		$this->add_missing_settings(); // Also saves the two above
+		$this->add_missing_settings(); // Also saves the items above
 
 		$this->version_check();
 	}
