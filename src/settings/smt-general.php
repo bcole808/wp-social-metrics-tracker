@@ -1,9 +1,9 @@
 <?php
 
-$smt_post_types = get_post_types( array('public'=>true, 'show_ui'=>true), 'names' );
-
-// Do not allow attachments
-unset($smt_post_types['attachment']);
+$smt_post_types = array();
+foreach ( get_post_types( array('public'=>true, 'show_ui'=>true), 'objects' ) as $type ) {
+	$smt_post_types[ $type->name ] = $type->labels->name;
+}
 
 global $wpsf_settings;
 

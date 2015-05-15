@@ -327,7 +327,7 @@ class SocialMetricsTable extends WP_List_Table {
 		$querydata = new WP_Query(array(
 			'posts_per_page'=> $per_page,
 			'offset'        => ($this->get_pagenum()-1) * $per_page,
-			'post_status'	=> 'publish',
+			'post_status'	=> array( 'publish', 'inherit' ),
 			'post_type'		=> $post_types
 		));
 
