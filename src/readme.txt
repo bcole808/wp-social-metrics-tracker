@@ -99,6 +99,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 = 1.5.3 =
 * Allow attachment/media pages to be tracked
 * Added "Update Stats" link to dashboard widget
+* Fixed a bug where Google Analytics pageviews were not being updated
 
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English
@@ -210,7 +211,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Upgrade Notice ==
 
 = 1.5.3 =
-Allow attachments to be tracked
+Allow attachments to be tracked, and misc. updates
 
 = 1.5.2 =
 Fixed a bug with Facebook stats on non-English websites

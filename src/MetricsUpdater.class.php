@@ -245,6 +245,9 @@ class MetricsUpdater {
 		// Remove secure protocol from URL
 		$permalink = $this->adjustProtocol($permalink);
 
+		// Setup data sources (must be done before action hook)
+		$this->setupDataSources();
+
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
 
