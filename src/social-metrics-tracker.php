@@ -94,7 +94,23 @@ class SocialMetricsTracker {
 			// The network admin has to be excluded or all settings from the main blog will me merged into to the
 			// settings
 			if ( ! is_network_admin() && '1' === $this->get_smt_option( 'allow_network_settings_override' ) ) {
-				$this->options = array_merge( $this->options, get_option('smt_settings', array()) );
+				$blog_options = get_option( 'smt_settings', array() );
+
+				// For security reasions some options cannot be overriden
+				// @todo: Complete this list
+				$non_overridable_options = array(
+					'allow_network_settings_override',
+					'facebook_access_token',
+				);
+
+				foreach ( $non_overridable_options as $key ) {
+					$key = 'smt_options_' . $key;
+					if ( isset( $blog_options[ $key ] ) ) {
+						unset( $blog_options[ $key ] );
+					}
+				}
+
+				$this->options = array_merge( $this->options, $blog_options );
 			}
 
 		} else {
@@ -102,6 +118,11 @@ class SocialMetricsTracker {
 		}
 	}
 
+	/**
+	 * Returns true if the plugin has been activated network wide
+	 *
+	 * @return bool
+	 */
 	public function is_active_for_network() {
 		if ( null !== $this->network_activated ) {
 			return $this->network_activated;
@@ -111,7 +132,7 @@ class SocialMetricsTracker {
 			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 		}
 
-		$this->network_activated = is_plugin_active_for_network( plugin_basename( __FILE__ ) );
+		$this->network_activated = is_plugin_active_for_network( 'social-metrics-tracker/social-metrics-tracker.php' );
 
 		return $this->network_activated;
 	}
@@ -323,6 +344,11 @@ class SocialMetricsTracker {
 			'connection_type_facebook' => 'public'
 		);
 
+		// Allow overriding settings by default
+		if ( $this->is_active_for_network() ) {
+			$defaults['allow_network_settings_override'] = 1;
+		}
+
 		foreach ($defaults as $key => $value) {
 			if ($this->get_smt_option($key) === false) {
 				$this->set_smt_option($key, $value, false);
@@ -333,7 +359,7 @@ class SocialMetricsTracker {
 		require('settings/smt-general.php');
 		global $wpsf_settings;
 
-		foreach ($wpsf_settings[0]['fields'] as $default) {
+		foreach ($wpsf_settings['smt']['fields'] as $default) {
 			$key = $default['id'];
 
 			if ($this->get_smt_option($key) === false) {

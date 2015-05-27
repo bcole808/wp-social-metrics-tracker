@@ -13,6 +13,8 @@ class socialMetricsSettings {
 	 */
 	private $smt;
 
+	private $settings_pages = array();
+
 	function __construct($smt) {
 
 		$this->smt = $smt;
@@ -30,6 +32,8 @@ class socialMetricsSettings {
 	}
 
 	function admin_menu() {
+		// Only add the admin page if overriding the settings is allowed. This will also prevent access to the pages
+		// if overriding is net allowed, thereby prevent options from being modified
 		if ( $this->smt->is_active_for_network() && '0' === $this->smt->get_smt_option( 'allow_network_settings_override' ) ) {
 			return;
 		}
@@ -57,49 +61,70 @@ class socialMetricsSettings {
 		}
 	}
 
-	// Display list of all and current option pages
-	function nav_links() {
-
+	/**
+	 * Returns an array of settings pages
+	 *
+	 * @return array
+	 */
+	function get_settings_pages() {
 
 		$args = array(
-			'menu_items' => array(
-				0 => array(
-					'slug'    => 'general',
-					'label'   => 'General Settings',
-					'url'     => remove_query_arg( 'section' ),
-					'current' => $this->section == 'general'
-				),
-
-				3 => array(
-					'slug'    => 'urls',
-					'label'   => 'Advanced Domain / URL Setup',
-					'url'     => add_query_arg('section', 'urls'),
-					'current' => $this->section == 'urls'
-				),
-			)
+			0 => array(
+				'slug'    => 'general',
+				'label'   => 'General Settings',
+				'url'     => remove_query_arg( 'section' ),
+				'current' => $this->section == 'general'
+			),
+			3 => array(
+				'slug'    => 'urls',
+				'label'   => 'Advanced Domain / URL Setup',
+				'url'     => add_query_arg('section', 'urls'),
+				'current' => $this->section == 'urls'
+			),
 		);
 
+		// Only add API settings areas in the network admin or if the plugin is not network enabled.
 		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
-			$args['menu_items'][1] = array(
+			$args[1] = array(
 				'slug'    => 'connections',
 				'label'   => 'API Connection Settings',
 				'url'     => add_query_arg('section', 'connections'),
 				'current' => $this->section == 'connections'
 			);
 
-			$args['menu_items'][2] =  array(
+			$args[2] =  array(
 				'slug'    => 'gapi',
 				'label'   => 'Google Analytics Setup',
 				'url'     => add_query_arg('section', 'gapi'),
 				'current' => $this->section == 'gapi'
 			);
+
+			ksort( $args );
 		}
 
-		print($this->smt->renderTemplate('settings-nav', $args));
+		return $args;
 	}
 
 
 	function render_settings_page() { 
+		$pages = $this->get_settings_pages();
+
+		// Check if the user can access this settings page. The proper way to do this would be to user the WordPress
+		// capabilities system.
+		$invalid_page = true;
+		foreach ( $pages as $page ) {
+			if ( $page['slug'] === $this->section ) {
+				$invalid_page = false;
+				break;
+			}
+		}
+
+		// Display the WordPress access denied option
+		if ( ! $invalid_page ) {
+			_e( 'Cheatin&#8217; uh?' );
+			return;
+		}
+
 
 		switch ($this->section) {
 			case 'gapi':
@@ -137,7 +162,7 @@ class socialMetricsSettings {
 		?>
 		<div class="wrap">
 			<h2>Social Metrics Tracker Configuration</h2>
-			<?php $this->nav_links(); ?>
+			<?php print($this->smt->renderTemplate('settings-nav', array( 'menu_items' => $pages ))); ?>
 			<?php call_user_func(array($this, $this->section.'_section')); ?>
 
 		</div>
