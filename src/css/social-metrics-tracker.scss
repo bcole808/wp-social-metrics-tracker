@@ -252,7 +252,8 @@
 /* Configuration page CSS
    ========================================================================== */
 
-.social-metrics_page_social-metrics-tracker-settings .wrap {
+.social-metrics_page_social-metrics-tracker-settings .wrap,
+.settings_page_social-metrics-tracker .wrap {
 	max-width: 900px;
 }
 
@@ -509,7 +510,8 @@ button.smt-connection-item:focus {
 
 /* Stat Details Pane
    ========================================================================== */
-.social-metrics_page_social-metrics-tracker-settings {
+.social-metrics_page_social-metrics-tracker-settings,
+.settings_page_social-metrics-tracker {
 	.smt-url-box {
 		color: #333;
 		width: 90%;

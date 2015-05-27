@@ -8,11 +8,17 @@ class socialMetricsSettings {
 
 	private $facebook_auth_error;
 
+	/**
+	 * @var SocialMetricsTracker
+	 */
+	private $smt;
+
 	function __construct($smt) {
 
 		$this->smt = $smt;
 
 		add_action( 'admin_menu', array(&$this, 'admin_menu'), 99 );
+		add_action( 'network_admin_menu', array(&$this, 'network_admin_menu'), 99 );
 
 		$pages = array('social-metrics-tracker', 'social-metrics-tracker-export', 'social-metrics-tracker-settings');
 
@@ -24,8 +30,31 @@ class socialMetricsSettings {
 	}
 
 	function admin_menu() {
+		if ( $this->smt->is_active_for_network() && '0' === $this->smt->get_smt_option( 'allow_network_settings_override' ) ) {
+			return;
+		}
 
-		add_submenu_page('social-metrics-tracker', 'Social Metrics Tracker Configuration', 'Configuration', 'manage_options', 'social-metrics-tracker-settings',  array($this, 'render_settings_page'));
+		add_submenu_page(
+			'social-metrics-tracker',
+			'Social Metrics Tracker Configuration',
+			'Configuration',
+			'manage_options',
+			'social-metrics-tracker-settings',
+			array($this, 'render_settings_page')
+		);
+	}
+
+	function network_admin_menu() {
+		if ( $this->smt->is_active_for_network() ) {
+			add_submenu_page(
+				'settings.php',
+				'Social Metrics Tracker Configuration',
+				'Social Metrics Tracker', 'manage_network_options',
+				'social-metrics-tracker',
+				array($this, 'render_settings_page'),
+				'dashicons-chart-area'
+			);
+		}
 	}
 
 	// Display list of all and current option pages
@@ -34,25 +63,14 @@ class socialMetricsSettings {
 
 		$args = array(
 			'menu_items' => array(
-				array(
+				0 => array(
 					'slug'    => 'general',
 					'label'   => 'General Settings',
-					'url'     => 'admin.php?page=social-metrics-tracker-settings',
+					'url'     => remove_query_arg( 'section' ),
 					'current' => $this->section == 'general'
 				),
-				array(
-					'slug'    => 'connections',
-					'label'   => 'API Connection Settings',
-					'url'     => add_query_arg('section', 'connections'),
-					'current' => $this->section == 'connections'
-				),
-				array(
-					'slug'    => 'gapi',
-					'label'   => 'Google Analytics Setup',
-					'url'     => add_query_arg('section', 'gapi'),
-					'current' => $this->section == 'gapi'
-				),
-				array(
+
+				3 => array(
 					'slug'    => 'urls',
 					'label'   => 'Advanced Domain / URL Setup',
 					'url'     => add_query_arg('section', 'urls'),
@@ -60,6 +78,22 @@ class socialMetricsSettings {
 				),
 			)
 		);
+
+		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
+			$args['menu_items'][1] = array(
+				'slug'    => 'connections',
+				'label'   => 'API Connection Settings',
+				'url'     => add_query_arg('section', 'connections'),
+				'current' => $this->section == 'connections'
+			);
+
+			$args['menu_items'][2] =  array(
+				'slug'    => 'gapi',
+				'label'   => 'Google Analytics Setup',
+				'url'     => add_query_arg('section', 'gapi'),
+				'current' => $this->section == 'gapi'
+			);
+		}
 
 		print($this->smt->renderTemplate('settings-nav', $args));
 	}
@@ -113,7 +147,14 @@ class socialMetricsSettings {
 
 	// Render the general settings page
 	function general_section() {
+		add_filter( 'pre_option_smt_settings', array( $this, 'patch_settings' ) );
 		$this->wpsf->settings('');
+		remove_filter( 'pre_option_smt_settings', array( $this, 'patch_settings' ) );
+	}
+
+	public function patch_settings()
+	{
+		return $this->smt->get_smt_options();
 	}
 
 	// Saves the general settings page
