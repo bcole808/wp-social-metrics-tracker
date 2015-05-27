@@ -150,9 +150,12 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	}
 
 	function test_set_option_network_admin() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
 		$this->network_enable_plugin();
 		$this->switch_to_network_admin();
-
 
 		$this->plugin->set_smt_option( 'example-field', 100 );
 
@@ -181,6 +184,10 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	}
 
 	function test_get_option_enable_network_override() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
 		$this->network_enable_plugin();
 
 		update_site_option(
@@ -210,6 +217,10 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 	}
 
 	function test_get_option_disable_network_override() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
 		$this->network_enable_plugin();
 
 		update_site_option(
