@@ -120,7 +120,7 @@ class socialMetricsSettings {
 		}
 
 		// Display the WordPress access denied option
-		if ( ! $invalid_page ) {
+		if ( $invalid_page ) {
 			_e( 'Cheatin&#8217; uh?' );
 			return;
 		}
