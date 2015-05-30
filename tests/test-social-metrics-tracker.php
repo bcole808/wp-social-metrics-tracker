@@ -2,6 +2,9 @@
 
 class SocialMetricsTrackerTests extends WP_UnitTestCase {
 
+	/**
+	 * @var SocialMetricsTracker
+	 */
 	private $plugin;
 
 	// DO BEFORE ALL TESTS
@@ -12,6 +15,7 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 
 	// DO AFTER ALL TESTS
 	function tearDown() {
+		unset( $GLOBALS['current_screen'] );
 		parent::tearDown();
 	}
 
@@ -44,7 +48,7 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 
 		$expected = array();
 
-		foreach ($wpsf_settings[0]['fields'] as $default) {
+		foreach ($wpsf_settings['smt']['fields'] as $default) {
 			$key   = 'smt_options_'.$default['id'];
 			$value = $default['std'];
 
@@ -145,6 +149,22 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 		$this->assertEquals(100, $db_options['smt_options_example-field']);
 	}
 
+	function test_set_option_network_admin() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
+		$this->network_enable_plugin();
+		$this->switch_to_network_admin();
+
+		$this->plugin->set_smt_option( 'example-field', 100 );
+
+		$network_options = get_site_option( 'smt_settings' );
+		$options = get_option( 'smt_settings' );
+		$this->assertEquals( 100, $network_options['smt_options_example-field'] );
+		$this->assertFalse( isset( $options['smt_options_example-field'] ) );
+	}
+
 	/***************************************************
 	* It should retrieve options from the DB
 	***************************************************/
@@ -161,6 +181,71 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 
 		$this->assertFalse($new_plugin->get_smt_option('fake-field'));
 		$this->assertEquals(225, $new_plugin->get_smt_option('example-field'));
+	}
+
+	function test_get_option_enable_network_override() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
+		$this->network_enable_plugin();
+
+		update_site_option(
+			'smt_settings',
+		    array(
+		        'smt_options_allow_network_settings_override' => '1',
+			    'smt_options_not_overridden' => 'value1',
+			    'smt_options_overridden' => 'value2',
+			    'smt_options_facebook_access_token' => 'API KEY',
+		    )
+		);
+
+		update_option(
+			'smt_settings',
+			array(
+				'smt_options_overridden' => 'value3',
+				'smt_options_allow_network_settings_override' => '0', // Stupio blog admin trying to lock himself out
+				'smt_options_facebook_access_token' => 'ROGUE API KEY',
+			)
+		);
+
+		$this->plugin->set_smt_option( 'overridden', 'value3' );
+
+		$this->assertEquals( 'value1', $this->plugin->get_smt_option( 'not_overridden' ) );
+		$this->assertEquals( 'value3', $this->plugin->get_smt_option( 'overridden' ) );
+		$this->assertEquals( 'API KEY', $this->plugin->get_smt_option( 'facebook_access_token' ) );
+	}
+
+	function test_get_option_disable_network_override() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
+		$this->network_enable_plugin();
+
+		update_site_option(
+			'smt_settings',
+			array(
+				'smt_options_allow_network_settings_override' => '0',
+				'smt_options_not_overridden' => 'value1',
+				'smt_options_also_not_overridden' => 'value2',
+				'smt_options_also_not_overridden' => 'value2',
+			)
+		);
+
+		update_option(
+			'smt_settings',
+			array(
+				'smt_options_allow_network_settings_override' => '1', // Sneaky blog admin trying to gain access to settings
+				'smt_options_also_not_overridden' => 'value3',
+			)
+		);
+
+		$this->plugin->set_smt_option( 'overridden', 'value3' );
+
+		$this->assertEquals( 'value1', $this->plugin->get_smt_option( 'not_overridden' ) );
+		$this->assertEquals( 'value2', $this->plugin->get_smt_option( 'also_not_overridden' ) );
+		$this->assertEquals( '0', $this->plugin->get_smt_option( 'allow_network_settings_override' ) );
 	}
 
 	/***************************************************
@@ -194,6 +279,29 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 		$this->assertEquals(2, $new_plugin->get_smt_option('two'));
 	}
 
+
+	public function switch_to_network_admin()
+	{
+		$stub = $this->getMockBuilder('WP_Mock_Screen')
+					 ->setMethods ( array( 'in_admin' ) )
+		             ->getMock();
+
+		$stub->expects( $this->any() )
+			 ->method( 'in_admin' )
+		     ->will( $this->returnValue( true ) );
+
+		$GLOBALS['current_screen'] = $stub;
+
+		$this->assertTrue( is_network_admin() );
+	}
+
+	public function network_enable_plugin()
+	{
+		update_site_option(
+			'active_sitewide_plugins',
+			array( 'social-metrics-tracker/social-metrics-tracker.php' => time() )
+		);
+	}
 
 }
 

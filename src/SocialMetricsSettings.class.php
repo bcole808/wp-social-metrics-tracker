@@ -8,11 +8,19 @@ class socialMetricsSettings {
 
 	private $facebook_auth_error;
 
+	/**
+	 * @var SocialMetricsTracker
+	 */
+	private $smt;
+
+	private $settings_pages = array();
+
 	function __construct($smt) {
 
 		$this->smt = $smt;
 
 		add_action( 'admin_menu', array(&$this, 'admin_menu'), 99 );
+		add_action( 'network_admin_menu', array(&$this, 'network_admin_menu'), 99 );
 
 		$pages = array('social-metrics-tracker', 'social-metrics-tracker-export', 'social-metrics-tracker-settings');
 
@@ -24,48 +32,99 @@ class socialMetricsSettings {
 	}
 
 	function admin_menu() {
+		// Only add the admin page if overriding the settings is allowed. This will also prevent access to the pages
+		// if overriding is net allowed, thereby prevent options from being modified
+		if ( $this->smt->is_active_for_network() && '0' === $this->smt->get_smt_option( 'allow_network_settings_override' ) ) {
+			return;
+		}
 
-		add_submenu_page('social-metrics-tracker', 'Social Metrics Tracker Configuration', 'Configuration', 'manage_options', 'social-metrics-tracker-settings',  array($this, 'render_settings_page'));
+		add_submenu_page(
+			'social-metrics-tracker',
+			'Social Metrics Tracker Configuration',
+			'Configuration',
+			'manage_options',
+			'social-metrics-tracker-settings',
+			array($this, 'render_settings_page')
+		);
 	}
 
-	// Display list of all and current option pages
-	function nav_links() {
+	function network_admin_menu() {
+		if ( $this->smt->is_active_for_network() ) {
+			add_submenu_page(
+				'settings.php',
+				'Social Metrics Tracker Configuration',
+				'Social Metrics Tracker', 'manage_network_options',
+				'social-metrics-tracker',
+				array($this, 'render_settings_page'),
+				'dashicons-chart-area'
+			);
+		}
+	}
 
+	/**
+	 * Returns an array of settings pages
+	 *
+	 * @return array
+	 */
+	function get_settings_pages() {
 
 		$args = array(
-			'menu_items' => array(
-				array(
-					'slug'    => 'general',
-					'label'   => 'General Settings',
-					'url'     => 'admin.php?page=social-metrics-tracker-settings',
-					'current' => $this->section == 'general'
-				),
-				array(
-					'slug'    => 'connections',
-					'label'   => 'API Connection Settings',
-					'url'     => add_query_arg('section', 'connections'),
-					'current' => $this->section == 'connections'
-				),
-				array(
-					'slug'    => 'gapi',
-					'label'   => 'Google Analytics Setup',
-					'url'     => add_query_arg('section', 'gapi'),
-					'current' => $this->section == 'gapi'
-				),
-				array(
-					'slug'    => 'urls',
-					'label'   => 'Advanced Domain / URL Setup',
-					'url'     => add_query_arg('section', 'urls'),
-					'current' => $this->section == 'urls'
-				),
-			)
+			0 => array(
+				'slug'    => 'general',
+				'label'   => 'General Settings',
+				'url'     => remove_query_arg( 'section' ),
+				'current' => $this->section == 'general'
+			),
+			3 => array(
+				'slug'    => 'urls',
+				'label'   => 'Advanced Domain / URL Setup',
+				'url'     => add_query_arg('section', 'urls'),
+				'current' => $this->section == 'urls'
+			),
 		);
 
-		print($this->smt->renderTemplate('settings-nav', $args));
+		// Only add API settings areas in the network admin or if the plugin is not network enabled.
+		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
+			$args[1] = array(
+				'slug'    => 'connections',
+				'label'   => 'API Connection Settings',
+				'url'     => add_query_arg('section', 'connections'),
+				'current' => $this->section == 'connections'
+			);
+
+			$args[2] =  array(
+				'slug'    => 'gapi',
+				'label'   => 'Google Analytics Setup',
+				'url'     => add_query_arg('section', 'gapi'),
+				'current' => $this->section == 'gapi'
+			);
+
+			ksort( $args );
+		}
+
+		return $args;
 	}
 
 
 	function render_settings_page() { 
+		$pages = $this->get_settings_pages();
+
+		// Check if the user can access this settings page. The proper way to do this would be to user the WordPress
+		// capabilities system.
+		$invalid_page = true;
+		foreach ( $pages as $page ) {
+			if ( $page['slug'] === $this->section ) {
+				$invalid_page = false;
+				break;
+			}
+		}
+
+		// Display the WordPress access denied option
+		if ( $invalid_page ) {
+			_e( 'Cheatin&#8217; uh?' );
+			return;
+		}
+
 
 		switch ($this->section) {
 			case 'gapi':
@@ -103,7 +162,7 @@ class socialMetricsSettings {
 		?>
 		<div class="wrap">
 			<h2>Social Metrics Tracker Configuration</h2>
-			<?php $this->nav_links(); ?>
+			<?php print($this->smt->renderTemplate('settings-nav', array( 'menu_items' => $pages ))); ?>
 			<?php call_user_func(array($this, $this->section.'_section')); ?>
 
 		</div>
@@ -113,7 +172,14 @@ class socialMetricsSettings {
 
 	// Render the general settings page
 	function general_section() {
+		add_filter( 'pre_option_smt_settings', array( $this, 'patch_settings' ) );
 		$this->wpsf->settings('');
+		remove_filter( 'pre_option_smt_settings', array( $this, 'patch_settings' ) );
+	}
+
+	public function patch_settings()
+	{
+		return $this->smt->get_smt_options();
 	}
 
 	// Saves the general settings page

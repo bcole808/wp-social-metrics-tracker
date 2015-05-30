@@ -4,3 +4,4 @@
 node_modules/*
 .sass-cache/*
 build/logs/clover.xml
+phpunit.xml
