@@ -68,41 +68,45 @@ class socialMetricsSettings {
 	 */
 	function get_settings_pages() {
 
-		$args = array(
-			0 => array(
-				'slug'    => 'general',
-				'label'   => 'General Settings',
-				'url'     => remove_query_arg( 'section' ),
-				'current' => $this->section == 'general'
-			),
-			3 => array(
-				'slug'    => 'urls',
-				'label'   => 'Advanced Domain / URL Setup',
-				'url'     => add_query_arg('section', 'urls'),
-				'current' => $this->section == 'urls'
-			),
+		$pages = array();
+
+		// General
+		$pages[] = array(
+			'slug'    => 'general',
+			'label'   => 'General Settings',
+			'url'     => remove_query_arg( 'section' ),
+			'current' => $this->section == 'general'
 		);
 
-		// Only add API settings areas in the network admin or if the plugin is not network enabled.
+		// API Connections
 		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
-			$args[1] = array(
+			$pages[] = array(
 				'slug'    => 'connections',
 				'label'   => 'API Connection Settings',
 				'url'     => add_query_arg('section', 'connections'),
 				'current' => $this->section == 'connections'
 			);
+		}
 
-			$args[2] =  array(
+		// Google Analytics
+		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
+			$pages[] = array(
 				'slug'    => 'gapi',
 				'label'   => 'Google Analytics Setup',
 				'url'     => add_query_arg('section', 'gapi'),
 				'current' => $this->section == 'gapi'
 			);
-
-			ksort( $args );
 		}
 
-		return $args;
+		// Domain / URL setup
+		$pages[] = array(
+			'slug'    => 'urls',
+			'label'   => 'Advanced Domain / URL Setup',
+			'url'     => add_query_arg('section', 'urls'),
+			'current' => $this->section == 'urls'
+		);
+
+		return $pages;
 	}
 
 
