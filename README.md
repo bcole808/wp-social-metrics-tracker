@@ -111,3 +111,7 @@ We wanted to track posts on social networks to see which stories students, alumn
 ## Contributing
 
 Anyone and everyone is welcome to [contribute](https://github.com/chapmanu/wp-social-metrics-tracker/issues).
+
+Cross-browser compatibility testing is provided by the fantastic folks at [Browser Stack](https://www.browserstack.com). 
+
+![Browser Stack](/assets/browser_stack.png?raw=true "Browser Stack")

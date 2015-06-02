@@ -54,9 +54,16 @@ class SocialMetricsDebugger {
 		$HTTPResourceUpdater->setParams(0, 'http://www.wordpress.org');
 		$result = $HTTPResourceUpdater->fetch(true);
 
+		$http_error_detail = array(
+			'request_time'     => current_time('mysql'),
+			'request_method'   => $HTTPResourceUpdater->resource_request_method,
+			'request_uri'      => $HTTPResourceUpdater->resource_uri,
+			'request_response' => $result
+		);
+
 		// If the connection did not fail, check to make sure we received data!
 		if ($result !== false && $HTTPResourceUpdater->get_total() <= 0) {
-			$HTTPResourceUpdater->wpcb->reportFailure('The connection was successful, but we did not receive the expected data from the social network.');
+			$HTTPResourceUpdater->wpcb->reportFailure('The connection was successful, but we did not receive the expected data from the social network.', $http_error_detail);
 		}
 
 	}

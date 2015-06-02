@@ -1,0 +1,74 @@
+
+<form method="post" id="smt-settings-connections-page">
+	<br />
+	<br />
+
+	<div class="box">
+
+		<label class="label">
+			<h3>How should we connect to Facebook?</h3>
+			<a href="javascript:void(0);" onClick="jQuery('.fb_connection_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+
+		<p>
+		<label>
+			<input type="radio" name="connection_type_facebook" value="public" onChange="jQuery('#fb_app_keys').slideUp();" {{facebook_public_checked}} />
+			Fetch publicly available data
+		</label>
+		</p>
+
+		<blockquote class="fb_connection_help" style="display:none;">
+		<p><b>Publicly available data</b> works out of the box and does not require any setup. If you experience problems with this option, try switching to Graph data.</p>
+		</blockquote>
+
+		<p>
+		<label>
+			<input type="radio" name="connection_type_facebook" value="graph" onChange="jQuery('#fb_app_keys').slideDown();" {{facebook_graph_checked}} />
+			Fetch Graph data with my Facebook App API Key (Recommended)
+		</label>
+		</p>
+
+		<blockquote class="fb_connection_help" style="display:none;">
+		<p><b>Graph data</b> is more efficient for your server to retrieve and is the preferred way to gather data from Facebook, however it requires that you create a Facebook Developer account and enter an App ID and App Secret.</p>
+		</blockquote>
+
+		<blockquote id="fb_app_keys" {{#unless facebook_graph_checked}}style="display:none;"{{/unless}}>
+
+			<div id="fb_get_token" {{#if facebook_access_token_valid}}style="display:none;"{{/if}}>
+				<p><b>Step 1</b></p>
+				&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://developers.facebook.com/apps/" target="_blank">Go to Facebook to register a developer App</a>
+				
+				<p><b>Step 2</b></p>
+
+				<label class="label">Facebook App ID</label>
+				<input type="text" id="fb_app_id" name="fb_app_id" class="smt-url-box" value="{{fb_app_id}}" /> 
+				<br />
+
+				<label class="label">
+					Facebook App Secret
+					<a href="javascript:void(0);" onClick="jQuery('#fp_app_secret_explain').slideToggle();" class="more-info">(More Info)</a>
+				</label>
+				<input type="text" id="fb_app_secret" name="fb_app_secret" class="smt-url-box" value="{{fb_app_secret}}" /> 
+				<p id="fp_app_secret_explain" style="display:none;">
+				Your App Secret will be used to generate an App Access Token which will be stored in your database. Make sure your database is secured, as anyone with access to read your database will be able to see your App Access Token.</p>
+
+				{{#if facebook_auth_error}}
+				<p style="color:red;">{{facebook_auth_error}}</p>
+				{{/if}}
+
+			</div>
+
+			<div id="fb_has_token" {{#unless facebook_access_token_valid}}style="display:none;"{{/unless}}>
+				<p style="color:green;"><b>Your App Access Token is saved in the database.</b></p>
+				<input type="submit" name="action" value="Delete saved access token" class="button" onClick="return confirm('Really delete the saved Facebook Access Token? You will need to provide your App ID and App Secret to create a new one again.')" />
+			</div>
+			
+		</blockquote>
+
+	</div>
+
+	<br />
+	<br />
+	<input type="submit" name="action" class="button-primary" value="Save Changes" />
+
+</form>

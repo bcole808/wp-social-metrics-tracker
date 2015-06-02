@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.1.1
-Stable tag: 1.4.5
+Tested up to: 4.2
+Stable tag: 1.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,24 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.5.3 =
+* Allow attachment/media pages to be tracked
+* Added "Update Stats" link to dashboard widget
+* Fixed a bug where Google Analytics pageviews were not being updated
+
+= 1.5.2 =
+* Fixed an issue where Facebook stats were not collected for some websites in languages other than English
+* Fixed an issue where a Facebook count of one was reported as zero
+
+= 1.5.1 =
+* Updated the Facebook Graph API to version 2.3 (latest)
+* IMPORTANT: As of this version, the individual post meta fields for 'facebook_likes', 'facebook_comments' and 'facebook_shares' are no longer available. You will not notice any difference unless you have previously written a custom theme or plugin which made use of these hidden custom fields. To delete these old fields and clean up your database, you should completely un-install (and delete) this plugin from the Dashboard and then re-install it. 
+
+= 1.5.0 =
+* Compatbility with WordPress 4.2
+* Fixed a bug where connection debug info sometimes did not get displayed
+* Updated the way Facebook data is retrieved; added two options to settings page under "API Connection Settings". 
 
 = 1.4.5 =
 * Fixed the Facebook stat updater; temporarily switched back to the old Facebook API (version 1.0) because the new version now requires authentication.  The old version will stop working on April 30, 2015 and so another update will be required before that date. 
@@ -191,6 +209,18 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.5.3 =
+Allow attachments to be tracked, and misc. updates
+
+= 1.5.2 =
+Fixed a bug with Facebook stats on non-English websites
+
+= 1.5.1 =
+Switch to Facebook API version 2.3
+
+= 1.5.0 =
+Changed the way Facebook data is collected, and compatibility fixes. 
 
 = 1.4.5 =
 Temporary fix for the Facebook stat updater

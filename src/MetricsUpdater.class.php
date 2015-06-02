@@ -10,7 +10,8 @@
 ***************************************************/
 
 require_once('data-sources/HTTPResourceUpdater.class.php');
-require_once('data-sources/FacebookUpdater.class.php');
+require_once('data-sources/FacebookGraphUpdater.class.php');
+require_once('data-sources/FacebookPublicUpdater.class.php');
 require_once('data-sources/TwitterUpdater.class.php');
 require_once('data-sources/LinkedInUpdater.class.php');
 require_once('data-sources/GooglePlusUpdater.class.php');
@@ -49,13 +50,23 @@ class MetricsUpdater {
 			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
-		// Import adapters for 3rd party services
-		if (!isset($this->sources->FacebookUpdater))    $this->sources->FacebookUpdater    = new FacebookUpdater();
-		if (!isset($this->sources->TwitterUpdater))     $this->sources->TwitterUpdater     = new TwitterUpdater();
-		if (!isset($this->sources->LinkedInUpdater))    $this->sources->LinkedInUpdater    = new LinkedInUpdater();
-		if (!isset($this->sources->GooglePlusUpdater))  $this->sources->GooglePlusUpdater  = new GooglePlusUpdater();
-		if (!isset($this->sources->PinterestUpdater))   $this->sources->PinterestUpdater   = new PinterestUpdater();
-		if (!isset($this->sources->StumbleUponUpdater)) $this->sources->StumbleUponUpdater = new StumbleUponUpdater();
+		// Setup adapter for Facebook updater service
+		if ($this->smt->get_smt_option('connection_type_facebook') == 'graph') {
+			// Graph:
+			$preferred_facebook_updater = new FacebookGraphUpdater();
+			$preferred_facebook_updater->setAccessToken($this->smt->get_smt_option('facebook_access_token'));
+		} else {
+			// Public / Default:
+			$preferred_facebook_updater = new FacebookPublicUpdater();
+		}
+
+		// Set adapters for all services
+		if (!isset($this->sources->FacebookUpdater))       $this->sources->FacebookUpdater       = $preferred_facebook_updater;
+		if (!isset($this->sources->TwitterUpdater))        $this->sources->TwitterUpdater        = new TwitterUpdater();
+		if (!isset($this->sources->LinkedInUpdater))       $this->sources->LinkedInUpdater       = new LinkedInUpdater();
+		if (!isset($this->sources->GooglePlusUpdater))     $this->sources->GooglePlusUpdater     = new GooglePlusUpdater();
+		if (!isset($this->sources->PinterestUpdater))      $this->sources->PinterestUpdater      = new PinterestUpdater();
+		if (!isset($this->sources->StumbleUponUpdater))    $this->sources->StumbleUponUpdater    = new StumbleUponUpdater();
 
 		return $this->dataSourcesReady = true;
 	}
@@ -139,12 +150,12 @@ class MetricsUpdater {
 		if ($post_id <= 0 && $post) $post_id = $post->ID;
 
 		// Get post types to track
-		$types = $this->get_post_types();
+		$types = $this->smt->tracked_post_types();
 
 		// Validation
 		if (is_admin())                                  return false;
 		if (is_int($post_id) && $post_id <= 0)           return false;
-		if (!$post || $post->post_status != 'publish')   return false; // Allow only published posts
+		if (!$post || !in_array($post->post_status, array('publish', 'inherit')))   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
 		// If TTL has elapsed
@@ -157,23 +168,6 @@ class MetricsUpdater {
 
 		return true;
 	} // end checkThisPost()
-
-	// Return an array of post types we currently track
-	public function get_post_types() {
-
-		$types_to_track = array();
-
-		$smt_post_types = get_post_types( array( 'public' => true ), 'names' );
-		unset($smt_post_types['attachment']);
-
-		foreach ($smt_post_types as $type) {
-			if (isset($this->smt->options['smt_options_post_types_'.$type]) && $this->smt->options['smt_options_post_types_'.$type] == $type) $types_to_track[] = $type;
-		}
-
-		// If none selected, default post types
-		return ($types_to_track) ? $types_to_track : array_values($smt_post_types);
-
-	}
 
 
 	/**
@@ -235,7 +229,14 @@ class MetricsUpdater {
 		$post_id = intval($post_id);
 		if ($post_id <= 0) return false;
 
+		// Get post object
+		$post = get_post($post_id);
+
+		// Validate that post was found
+		if (!$post instanceof WP_Post) return false;
+
 		$permalink = ($permalink) ? $permalink : get_permalink($post_id);
+
 		if ($permalink === false) return false;
 
 		// Stop if TTL not elapsed
@@ -244,11 +245,11 @@ class MetricsUpdater {
 		// Remove secure protocol from URL
 		$permalink = $this->adjustProtocol($permalink);
 
+		// Setup data sources (must be done before action hook)
+		$this->setupDataSources();
+
 		// Retrieve 3rd party data updates (Used for Google Analytics)
 		do_action('social_metrics_data_sync', $post_id, $permalink);
-
-		// Get post object
-		$post = get_post($post_id);
 
 		// Will we re-check the alt_data?
 		$last_alt_check = intval(get_post_meta($post_id, 'socialcount_alt_data_LAST_UPDATED', true));
@@ -726,7 +727,7 @@ class MetricsUpdater {
 
 		update_option( 'smt_last_full_sync', $this->getLocalTime() );
 
-		$post_types = $this->get_post_types();
+		$post_types = $this->smt->tracked_post_types();
 		$offset     = (isset($_REQUEST['smt_sync_offset'])) ? intval($_REQUEST['smt_sync_offset']) : 0;
 
 		$q = new WP_Query();
@@ -736,7 +737,7 @@ class MetricsUpdater {
 			'orderby'		         => 'post_date',
 			'posts_per_page'         => 50,
 			'offset'                 => $offset,
-			'post_status'            => 'publish',
+			'post_status'            => array( 'publish', 'inherit' ),
 			'cache_results'          => false,
 			'update_post_meta_cache' => false,
 			'update_post_term_cache' => false

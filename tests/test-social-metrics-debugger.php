@@ -25,9 +25,9 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 			dirname(__FILE__) .'/sample-data/graph.facebook.com.json'
 		);
 
-		$this->smt->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->smt->updater->sources->FacebookGraphUpdater = $this->getMock('FacebookGraphUpdater', array('getURL'));
 
-		$this->smt->updater->sources->FacebookUpdater->expects($this->any())
+		$this->smt->updater->sources->FacebookGraphUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
@@ -90,17 +90,21 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		$this->smt->updater->sources->GooglePlusUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
+
+		$this->smt->updater->dataSourcesReady = true;
 	}
 
 	function set_facebook_offline() {
-		$this->smt->updater->sources->FacebookUpdater = $this->getMock('FacebookUpdater', array('getURL'));
+		$this->smt->updater->sources->FacebookGraphUpdater = $this->getMock('FacebookGraphUpdater', array('getURL'));
 
-		$this->smt->updater->sources->FacebookUpdater->expects($this->any())
+		$this->smt->updater->sources->FacebookGraphUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue(false));
 
 		// We need to report a failure
-		$this->smt->updater->sources->FacebookUpdater->wpcb->reportFailure('Test Error Message');
+		$this->smt->updater->sources->FacebookGraphUpdater->wpcb->reportFailure('Test Error Message');
+
+		$this->smt->updater->dataSourcesReady = true;
 
 	}
 
@@ -117,7 +121,7 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		$result = $this->smt->debugger->testHTTPResourceUpdaters();
 		$this->assertTrue(is_array($result));
 		$this->assertEquals(
-			array('FacebookUpdater' => $this->smt->updater->sources->FacebookUpdater),
+			array('FacebookGraphUpdater' => $this->smt->updater->sources->FacebookGraphUpdater),
 			$result
 		);
 	}
@@ -133,7 +137,7 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		// 2. It should return an array of the offline service
 		$this->set_facebook_offline();
 		$this->assertEquals(
-			array('FacebookUpdater' => $this->smt->updater->sources->FacebookUpdater),
+			array('FacebookGraphUpdater' => $this->smt->updater->sources->FacebookGraphUpdater),
 			$this->smt->debugger->getOfflineHTTPResourceUpdaters()
 		);
 	}

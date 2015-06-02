@@ -2,7 +2,7 @@
 /************************************
 * In this test suite, you must:
 *
-* Call $FacebookUpdater->setParams(ID, 'path_to_sample.json');
+* Call $FacebookGraphUpdater->setParams(ID, 'path_to_sample.json');
 *
 * And then it will fetch that data when running the test. 
 *************************************/
@@ -21,7 +21,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// A) Set value to true/false to set updater online/offline
 	// B) Set array (true, false, false, true) to indicate that updater should be online, then offline twice, then online. After fourth, Updater returns to regular online state. 
 	private $available = array(
-		'FacebookUpdater' => true,
+		'FacebookGraphUpdater' => true,
 		'TwitterUpdater'  => true,
 		'LinkedInUpdater' => true,
 	);
@@ -50,7 +50,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -77,9 +77,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-not-set/service-1.json' => array(
 				'permalink'                => 'canonical-not-set/service-1.json',
 				'socialcount_facebook'     => 1019,
-				'facebook_comments'        => 163,
-				'facebook_shares'          => 685,
-				'facebook_likes'           => 171,
+				// 'facebook_comments'        => 163,
+				// 'facebook_shares'          => 685,
+				// 'facebook_likes'           => 171,
 				'socialcount_twitter'      => 111,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -87,9 +87,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-not-set/service-2.json' => array(
 				'permalink'                => 'canonical-not-set/service-2.json',
 				'socialcount_facebook'     => 1019,
-				'facebook_comments'        => 163,
-				'facebook_shares'          => 685,
-				'facebook_likes'           => 171,
+				// 'facebook_comments'        => 163,
+				// 'facebook_shares'          => 685,
+				// 'facebook_likes'           => 171,
 				'socialcount_twitter'      => 0,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -97,9 +97,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-not-set/service-3.json' => array(
 				'permalink'                => 'canonical-not-set/service-3.json',
 				'socialcount_facebook'     => 110624,
-				'facebook_comments'        => 15537,
-				'facebook_shares'          => 71650,
-				'facebook_likes'           => 23437,
+				// 'facebook_comments'        => 15537,
+				// 'facebook_shares'          => 71650,
+				// 'facebook_likes'           => 23437,
 				'socialcount_twitter'      => 163021,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -107,9 +107,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-not-set/service-4.json' => array(
 				'permalink'                => 'canonical-not-set/service-4.json',
 				'socialcount_facebook'     => 110624,
-				'facebook_comments'        => 15537,
-				'facebook_shares'          => 71650,
-				'facebook_likes'           => 23437,
+				// 'facebook_comments'        => 15537,
+				// 'facebook_shares'          => 71650,
+				// 'facebook_likes'           => 23437,
 				'socialcount_twitter'      => 168,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -118,9 +118,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-set/service-1.json' => array(
 				'permalink'                => 'canonical-set/service-1.json',
 				'socialcount_facebook'     => 171759,
-				'facebook_comments'        => 16579,
-				'facebook_shares'          => 131060,
-				'facebook_likes'           => 24120,
+				// 'facebook_comments'        => 16579,
+				// 'facebook_shares'          => 131060,
+				// 'facebook_likes'           => 24120,
 				'socialcount_twitter'      => 5,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -128,9 +128,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-set/service-2.json' => array(
 				'permalink'                => 'canonical-set/service-2.json',
 				'socialcount_facebook'     => 171759,
-				'facebook_comments'        => 16579,
-				'facebook_shares'          => 131060,
-				'facebook_likes'           => 24120,
+				// 'facebook_comments'        => 16579,
+				// 'facebook_shares'          => 131060,
+				// 'facebook_likes'           => 24120,
 				'socialcount_twitter'      => 2379,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -138,9 +138,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-set/service-3.json' => array(
 				'permalink'                => 'canonical-set/service-3.json',
 				'socialcount_facebook'     => 171759,
-				'facebook_comments'        => 16579,
-				'facebook_shares'          => 131060,
-				'facebook_likes'           => 24120,
+				// 'facebook_comments'        => 16579,
+				// 'facebook_shares'          => 131060,
+				// 'facebook_likes'           => 24120,
 				'socialcount_twitter'      => 7,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -148,9 +148,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'canonical-set/service-4.json' => array(
 				'permalink'                => 'canonical-set/service-4.json',
 				'socialcount_facebook'     => 171759,
-				'facebook_comments'        => 16579,
-				'facebook_shares'          => 131060,
-				'facebook_likes'           => 24120,
+				// 'facebook_comments'        => 16579,
+				// 'facebook_shares'          => 131060,
+				// 'facebook_likes'           => 24120,
 				'socialcount_twitter'      => 69221,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
@@ -216,7 +216,8 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	function verify_correct_primary_data($post_id, $data) {
 		$expected = (is_array($data)) ? $data : $this->correct_alt_data[$data];
 
-		$keys = array('socialcount_facebook', 'socialcount_twitter', 'socialcount_linkedin', 'facebook_comments', 'facebook_likes', 'facebook_shares');
+		// $keys = array('socialcount_facebook', 'socialcount_twitter', 'socialcount_linkedin', 'facebook_comments', 'facebook_likes', 'facebook_shares');
+		$keys = array('socialcount_facebook', 'socialcount_twitter', 'socialcount_linkedin');
 
 		foreach($keys as $key) {
 			$this->assertEquals($expected[$key], get_post_meta($post_id, $key, true), 'The key "'.$key.'" did not have the right value.');
@@ -247,7 +248,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -301,29 +302,29 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// Test to make sure the mock updaters are working as intended
 	function test_mock_status() {
 		$expected = file_get_contents(dirname(__FILE__).'/sample-data/canonical-not-set/facebook-1.json');
-		$this->updater->sources->FacebookUpdater->setParams(1, 'canonical-not-set/service-1.json');
+		$this->updater->sources->FacebookGraphUpdater->setParams(1, 'canonical-not-set/service-1.json');
 
 		// 1. It returns some data
-		$result = $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json');
+		$result = $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json');
 		$this->assertEquals($expected, $result, 'There is a problem with the test suite simulating online services!');
 
 		// 2. When offline, it returns no data
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 
 		// 3. We can do fancy patterns
-		$this->available['FacebookUpdater'] = array(true, false, false, true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false, false, true, false);
 
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertFalse($this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertFalse($this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 		
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
-		$this->assertTrue(false !== $this->updater->sources->FacebookUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
+		$this->assertTrue(false !== $this->updater->sources->FacebookGraphUpdater->getURL('canonical-not-set/service-1.json'));
 
 	}
 
@@ -386,16 +387,16 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$expected_data = array(
 			'permalink'                => 'canonical-set/service-1.json',
 			'socialcount_facebook'     => 171759, // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
 			'socialcount_twitter'      => 71612,  // the sum of twitter-1, 2, 3, and 4
 			'socialcount_linkedin'     => 241,     // the sum of linkedin-1, 2, 3, and 4 (which are identical)
 			'socialcount_TOTAL'        => 243612
 		);
 
 		// 1. If service is partially offline, it does not break
-		$this->available['FacebookUpdater'] = array(true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false);
 
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
 
@@ -404,9 +405,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->verify_correct_primary_data($post_id, array(
 			'permalink'                => 'canonical-set/service-1.json',
 			'socialcount_facebook'     => 171759, // Only the value from facebook-1
-			'facebook_comments'        => 16579,
-			'facebook_shares'          => 131060,
-			'facebook_likes'           => 24120,
+			// 'facebook_comments'        => 16579,
+			// 'facebook_shares'          => 131060,
+			// 'facebook_likes'           => 24120,
 			'socialcount_twitter'      => 2384, // the sum of twitter-1 and twitter-2
 			'socialcount_linkedin'     => 241,
 			'socialcount_TOTAL'        => 174384
@@ -425,9 +426,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->verify_correct_primary_data($post_id, array(
 			'permalink'                => 'canonical-set/service-1.json',
 			'socialcount_facebook'     => 171759, // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
-			'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
+			// 'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
 			'socialcount_twitter'      => 71605,  // the sum of twitter-1, 2, (not 3), and 4
 			'socialcount_linkedin'     => 241,    // the sum of linkedin-1, 2, 3, and 4 (which are identical)
 			'socialcount_TOTAL'        => 243605
@@ -438,12 +439,12 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 4. When a service goes completely offline, no data is lost
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
 		// 5. And if it is intermittent, no data is lost
-		$this->available['FacebookUpdater'] = array(true, false, false, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false, false, false);
 		$this->updater->updatePostStats($post_id, true, 'canonical-set/service-1.json');
 		$this->verify_correct_primary_data($post_id, $expected_data);
 
@@ -457,12 +458,12 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->assertFalse($result['network_failure']);
 
 		// 2. Network failure should be reported
-		$this->available['FacebookUpdater'] = false;
+		$this->available['FacebookGraphUpdater'] = false;
 		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
 		$this->assertTrue($result['network_failure']);
 
 		// 3. A failure on a secondary request should be reported
-		$this->available['FacebookUpdater'] = array(true, false);
+		$this->available['FacebookGraphUpdater'] = array(true, false);
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-4.json');
 
 		$result = $this->updater->fetchPostStats($post_id, true, 'canonical-set/service-2.json');
@@ -474,9 +475,9 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		$expected_total = array(
 			'socialcount_facebook'     => 111643,
-			'facebook_comments'        => 15700,
-			'facebook_shares'          => 72335,
-			'facebook_likes'           => 23608,
+			// 'facebook_comments'        => 15700,
+			// 'facebook_shares'          => 72335,
+			// 'facebook_likes'           => 23608,
 			'socialcount_twitter'      => 163300,
 			'socialcount_linkedin'     => 988,
 			'socialcount_TOTAL'        => 275763,
@@ -759,7 +760,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(6))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(6))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(6))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(6))->method('getURL');
 
@@ -793,7 +794,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(4))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(4))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(4))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(4))->method('getURL');
 
@@ -817,7 +818,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(2))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(2))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(2))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(2))->method('getURL');
 
@@ -840,7 +841,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
-		$this->updater->sources->FacebookUpdater->expects($this->exactly(5))->method('getURL');
+		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(5))->method('getURL');
 		$this->updater->sources->TwitterUpdater->expects($this->exactly(5))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(5))->method('getURL');
 
