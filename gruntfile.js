@@ -5,66 +5,18 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 
 		sass: {
-		    dist: {
-		        options: {
-		            style: 'compressed'
-		        },
-		        files: {
-		            'src/css/social-metrics-tracker.min.css': 'src/css/social-metrics-tracker.scss'
-		        }
-		    }
 		},
 
 		uglify: {
-		    build: {
-		        src:  'src/js/social-metrics-tracker.js',
-		        dest: 'src/js/social-metrics-tracker.min.js'
-		    }
 		},
 
 		phpunit: {
-		    classes: {
-		        dir: ''
-		    },
-		    options: {
-		        bin: 'phpunit',
-		        bootstrap: 'tests/bootstrap.php',
-		        colors: true,
-		        failOnFailures: true, // Allow grunt to continue watching on failure
-		        // coverageClover: 'build/logs/clover.xml',
-		        excludeGroup: 'external-http'
-		    }
 		},
 
 		// Watch tasks
 		watch: {
 			options: {
-			    livereload: true,
 			},
-		    scripts: {
-		        files: ['src/js/social-metrics-tracker.js'],
-		        tasks: ['uglify'],
-		        options: {
-		            spawn: false,
-		        },
-		    },
-		    css: {
-		        files: ['src/css/*.scss'],
-		        tasks: ['sass'],
-		        options: {
-		            spawn: false,
-		        }
-		    },
-		    php: {
-		    	files: ['src/**/*.php', 'tests/**/*.php'],
-		    	tasks: ['clear', 'phpunit'],
-		    	options : {
-		    		spawn: false,
-		    	}
-		    },
-		    templates: {
-		    	files: ['src/**/*.handlebars']
-		    }
 		}
 
 	});

@@ -29,6 +29,24 @@ install_wp() {
 	tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
 
 	wget -nv -O $WP_CORE_DIR/wp-content/db.php https://raw.github.com/markoheijnen/wp-mysqli/master/db.php
+
+	# Setup WP Config
+	# portable in-place argument for both GNU sed and Mac OSX sed
+	if [[ $(uname -s) == 'Darwin' ]]; then
+		local ioption='-i .bak'
+	else
+		local ioption='-i'
+	fi
+	
+	cd $WP_CORE_DIR
+
+	wget -nv -O wp-config.php http://develop.svn.wordpress.org/trunk/wp-config-sample.php
+	
+	#sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-config.php
+	sed $ioption "s/database_name_here/$DB_NAME/" wp-config.php
+	sed $ioption "s/username_here/$DB_USER/" wp-config.php
+	sed $ioption "s/password_here/$DB_PASS/" wp-config.php
+	#sed $ioption "s|localhost|${DB_HOST}|" wp-config.php
 }
 
 install_test_suite() {
