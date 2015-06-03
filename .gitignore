@@ -5,3 +5,5 @@ node_modules/*
 .sass-cache/*
 build/logs/clover.xml
 phpunit.xml
+tools/wordpress
+config.yml
