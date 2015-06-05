@@ -23,7 +23,7 @@ namespace :setup do
     print_step('Creating WP dev db')
 
     # Check if WP is already installed
-    if system "if ! $(wp core is-installed); then \nexit 1 \nfi"
+    if system "if ! $(#{@wpcli} core is-installed); then \nexit 1 \nfi"
       puts "\n\n*****\nWordPress is already installed. Drop the database and re-install with WordPress #{$options['wp_version']}?".colorize(:red)
       
       system "mysqladmin drop #{$options['db_name_for_dev']} \
@@ -38,7 +38,7 @@ namespace :setup do
       --password=#{$options['db_password']}"
 
     # Fill DB with stuff
-    system "wp core install \
+    system "#{@wpcli} core install \
       --url=http://#{$options['dev_url']} \
       --title='SMT test site' \
       --admin_user=#{$options['wp_user']} \
@@ -56,12 +56,13 @@ namespace :setup do
     `rm -f tmp/wp-config.php`
     `rm -f tmp/wordpress/wp-config.php`
 
-    system "wp core config \
-      --skip-salts \
-      --dbname=#{$options['db_name_for_dev']} \
-      --dbuser=#{$options['db_username']} \
-      --dbpass=#{$options['db_password']} \
-      --dbhost=#{$options['db_host']}"
+    args = "--skip-salts"
+    args << " --dbname=#{$options['db_name_for_dev']}"
+    args << " --dbuser=#{$options['db_username']}"
+    args << " --dbpass=#{$options['db_password']}" if !$options['db_password'].empty?
+    args << " --dbhost=#{$options['db_host']}"
+
+    system "#{@wpcli} core config #{args}"
 
     system "mv tmp/wordpress/wp-config.php tmp/wp-config.php"
   end
@@ -77,7 +78,7 @@ namespace :setup do
     puts "Created a symbolic link at #{plugin_dir}"
 
     # Activate plugin
-    system "wp plugin activate social-metrics-tracker"
+    system "#{@wpcli} plugin activate social-metrics-tracker"
   end
 
 end

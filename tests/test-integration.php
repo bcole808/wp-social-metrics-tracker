@@ -9,7 +9,7 @@ class TestIntegration extends PHPUnit_Extensions_SeleniumTestCase {
 		shell_exec('rake test:install_db');
 
 		$this->setBrowser('*firefox');
-		$this->setBrowserUrl( 'http://localhost:7000' );
+		$this->setBrowserUrl( 'http://localhost:9001' );
 
 	}
 

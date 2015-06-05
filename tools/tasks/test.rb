@@ -38,9 +38,9 @@ namespace :test do
 
   end
 
-  task :install_db do 
+  task :install_db => :requires_wpcli do 
     # Fill DB with stuff
-    system "wp core install \
+    system "#{@wpcli} core install \
       --url=http://#{$options['test_url']} \
       --title='SMT test site' \
       --admin_user=#{$options['wp_user']} \

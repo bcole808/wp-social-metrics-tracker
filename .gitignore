@@ -8,3 +8,4 @@ phpunit.xml
 tools/wordpress
 config.yml
 tmp/*
+vendor/*

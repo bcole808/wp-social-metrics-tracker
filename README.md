@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/chapmanu/wp-social-metrics-tracker.svg)](https://travis-ci.org/chapmanu/wp-social-metrics-tracker)
 
+[ ![Codeship Status for chapmanu/wp-social-metrics-tracker](https://codeship.com/projects/3c6afdd0-ede0-0132-88d7-5a51cb58650a/status?branch=development)](https://codeship.com/projects/84147)
+
 # Social Metrics Tracker
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
