@@ -7,6 +7,6 @@ task :serve do
   system "open http://#{$options['dev_url']}/wp-admin/"
 
   # Start php server
-  exec "php -S #{$options['dev_url']} -t tools/wordpress/ tools/router.php"
+  exec "php -S #{$options['dev_url']} -t tmp/wordpress/ tools/router.php"
 
 end

@@ -11,9 +11,10 @@ env:
     - WP_VERSION=3.5 WP_MULTISITE=0
 
 before_script:
-    - bash tests/bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+    - bundle install
+    - rake setup
 
-script: phpunit --exclude-group external-http
+script: rake test
 
 notifications:
     flowdock: d9d29e9786ea83224219ec61abdec44f

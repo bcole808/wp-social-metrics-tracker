@@ -4,6 +4,7 @@
 db_host: 'localhost'
 db_username: 'root'
 db_password: 'password'
+
 db_name_for_dev: 'smt_development'
 db_name_for_test: 'smt_test'
 
@@ -13,5 +14,6 @@ wp_user: 'admin'
 wp_password: 'admin'
 wp_email: 'you@example.com'
 
-# Dev env settings
+# URL settings
 dev_url: 'localhost:8000'
+test_url: 'localhost:7000'

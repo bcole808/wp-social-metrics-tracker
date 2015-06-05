@@ -21,8 +21,8 @@ module Helpers
   end
 
   # Prints a big message to the terminal
-  def print_info(msg)
-    puts msg
+  def print_step(msg)
+    puts "======================  #{msg}  ======================".upcase
   end
 
   # Displays a message and waits for input
