@@ -9,3 +9,6 @@ tools/wordpress
 config.yml
 tmp/*
 vendor/*
+
+# This is the symlink for the plugin
+src/src
