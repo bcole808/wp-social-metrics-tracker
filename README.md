@@ -22,7 +22,7 @@ That’s it.
 
  ... profit!
 
-## Developer Guide
+## Plugin Integration Guide
 
 ![Good news, everyone!](http://3.bp.blogspot.com/_J2l4ETMVCDo/TQEuvsblAFI/AAAAAAAAA3A/Olb2qTHKEZ8/s400/11111111.jpg)
 
@@ -68,9 +68,29 @@ There are some Wordpress action hooks which can be used to extend the functional
 **social_metrics_post_sync** is called just before an individual post is updated.
 **social_metrics_post_sync_complete** is called when an individual post update completes.
 
-### Contributing to development
+## Contributor Guide
 
-There are some *really super awesome* PHPUnit tests written to help make sure that code changes don't break any existing functionality. If you plan on submitting pull requests, please make sure to [read over the wiki page](https://github.com/chapmanu/wp-social-metrics-tracker/wiki/Plugin-testing-with-PHPUnit) which explains how to get PHPUnit up and running in your development environment. 
+### Setup
+
+You don't have to use all of these tools, but they are available to help make the development process easier.  **Ruby / Rake Tasks** are used to make it easy to start a WordPress server to try things on. **Grunt** tasks are used to build/minify CSS/JS. **PHPUnit** and **Selenium** are used for testing. 
+
+1. Fork/clone this repository. 
+2. Get your own [MySQL server](https://dev.mysql.com/downloads/mysql/) up and running (MAMP works too). 
+2. Create **config.yml** from the file **config.defaults.yml** and add your own development settings.
+3. Install [PHPUnit](https://phpunit.de/manual/current/en/installation.html)
+2. Run `npm install` (Requires [Node.js](https://nodejs.org/)) to get Grunt dependencies
+3. Run `bundle install` (Requires [Ruby](https://www.ruby-lang.org)) to get dev tool dependencies 
+4. Run `rake setup` to create dev environment
+
+Ready to roll! Now you can use `rake serve` to start a local dev server.
+
+### Building files
+
+The SASS and JS files can be built and minified by running `grunt` (which also runs PHPUnit once).  You can also use `grunt watch` to continually build files and host a livereload server. 
+
+### Unit Tests
+
+To run tests locally, follow all of the setup steps and then run `rake test`. This will start up a PHP server and a Selenium Server, and then run `phpunit` for you with integration tests enabled. You can also just run `phpunit` to only execute Unit Tests. 
 
 # FAQ
 
@@ -110,9 +130,7 @@ We wanted to track posts on social networks to see which stories students, alumn
 
 [42](https://www.google.com/#q=the+answer+to+life+the+universe+and+everything).
 
-## Contributing
-
-Anyone and everyone is welcome to [contribute](https://github.com/chapmanu/wp-social-metrics-tracker/issues).
+## Special Thanks
 
 Cross-browser compatibility testing is provided by the fantastic folks at [Browser Stack](https://www.browserstack.com). 
 
