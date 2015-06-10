@@ -5,3 +5,10 @@ node_modules/*
 .sass-cache/*
 build/logs/clover.xml
 phpunit.xml
+tools/wordpress
+config.yml
+tmp/*
+vendor/*
+
+# This is the symlink for the plugin
+src/src

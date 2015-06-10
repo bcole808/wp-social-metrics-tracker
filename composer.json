@@ -1,0 +1,6 @@
+{
+    "require-dev": {
+        "phpunit/phpunit-selenium": ">=1.2",
+        "wp-cli/wp-cli": ">=0.19.0"
+    }
+}

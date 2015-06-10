@@ -1,12 +1,14 @@
 [![Build Status](https://travis-ci.org/chapmanu/wp-social-metrics-tracker.svg)](https://travis-ci.org/chapmanu/wp-social-metrics-tracker)
 
+[ ![Codeship Status for chapmanu/wp-social-metrics-tracker](https://codeship.com/projects/3c6afdd0-ede0-0132-88d7-5a51cb58650a/status?branch=development)](https://codeship.com/projects/84147)
+
 # Social Metrics Tracker
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
 
 **Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. The plugin is able to track data from multiple URLs, including differing protocols, subdomains, or other alternate post URLs. 
 
-## Quick Start
+# Quick Start
 
 1. Download the [latest release](https://github.com/chapmanu/wp-social-metrics-tracker/releases/latest).
 2. Upload the folder `src` to your wp-plugins directory and rename it to `social-metrics-tracker`
@@ -20,7 +22,7 @@ That’s it.
 
  ... profit!
 
-## Developer Guide
+# Advanced Integration Guide
 
 ![Good news, everyone!](http://3.bp.blogspot.com/_J2l4ETMVCDo/TQEuvsblAFI/AAAAAAAAA3A/Olb2qTHKEZ8/s400/11111111.jpg)
 
@@ -66,9 +68,29 @@ There are some Wordpress action hooks which can be used to extend the functional
 **social_metrics_post_sync** is called just before an individual post is updated.
 **social_metrics_post_sync_complete** is called when an individual post update completes.
 
-### Contributing to development
+# Contributor Guide
 
-There are some *really super awesome* PHPUnit tests written to help make sure that code changes don't break any existing functionality. If you plan on submitting pull requests, please make sure to [read over the wiki page](https://github.com/chapmanu/wp-social-metrics-tracker/wiki/Plugin-testing-with-PHPUnit) which explains how to get PHPUnit up and running in your development environment. 
+### Setup
+
+You don't have to use all of these tools, but they are available to help make the development process easier.  **Ruby / Rake Tasks** are used to make it easy to start a WordPress server to try things on. **Grunt** tasks are used to build/minify CSS/JS. **PHPUnit** and **Selenium** are used for testing. 
+
+1. Fork/clone this repository. 
+2. Get your own [MySQL server](https://dev.mysql.com/downloads/mysql/) up and running (MAMP works too). 
+2. Create **config.yml** from the file **config.defaults.yml** and add your own development settings.
+3. Install [PHPUnit](https://phpunit.de/manual/current/en/installation.html)
+2. Run `npm install` (Requires [Node.js](https://nodejs.org/)) to get Grunt dependencies
+3. Run `bundle install` (Requires [Ruby](https://www.ruby-lang.org)) to get dev tool dependencies 
+4. Run `rake setup` to create dev environment
+
+Ready to roll! Now you can use `rake serve` to start a local dev server.
+
+### Building files
+
+The SASS and JS files can be built and minified by running `grunt` (which also runs PHPUnit once).  You can also use `grunt watch` to continually build files and host a livereload server. 
+
+### Unit Tests
+
+To run tests locally, follow all of the setup steps and then run `rake test`. This will start up a PHP server and a Selenium Server, and then run `phpunit` for you with integration tests enabled. You can also just run `phpunit` to only execute Unit Tests. 
 
 # FAQ
 
@@ -108,6 +130,8 @@ We wanted to track posts on social networks to see which stories students, alumn
 
 [42](https://www.google.com/#q=the+answer+to+life+the+universe+and+everything).
 
-## Contributing
+## Special Thanks
 
-Anyone and everyone is welcome to [contribute](https://github.com/chapmanu/wp-social-metrics-tracker/issues).
+Cross-browser compatibility testing is provided by the fantastic folks at [Browser Stack](https://www.browserstack.com). 
+
+![Browser Stack](/assets/browser_stack.png?raw=true "Browser Stack")

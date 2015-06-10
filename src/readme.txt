@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.2
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 = 1.5.3 =
 * Allow attachment/media pages to be tracked
 * Added "Update Stats" link to dashboard widget
+* Fixed a bug where Google Analytics pageviews were not being updated
 
 = 1.5.2 =
 * Fixed an issue where Facebook stats were not collected for some websites in languages other than English
@@ -210,7 +211,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Upgrade Notice ==
 
 = 1.5.3 =
-Allow attachments to be tracked
+Allow attachments to be tracked, and misc. updates
 
 = 1.5.2 =
 Fixed a bug with Facebook stats on non-English websites
