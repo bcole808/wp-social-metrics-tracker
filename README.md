@@ -8,7 +8,7 @@
 
 **Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. The plugin is able to track data from multiple URLs, including differing protocols, subdomains, or other alternate post URLs. 
 
-## Quick Start
+# Quick Start
 
 1. Download the [latest release](https://github.com/chapmanu/wp-social-metrics-tracker/releases/latest).
 2. Upload the folder `src` to your wp-plugins directory and rename it to `social-metrics-tracker`
@@ -22,7 +22,7 @@ That’s it.
 
  ... profit!
 
-## Plugin Integration Guide
+# Advanced Integration Guide
 
 ![Good news, everyone!](http://3.bp.blogspot.com/_J2l4ETMVCDo/TQEuvsblAFI/AAAAAAAAA3A/Olb2qTHKEZ8/s400/11111111.jpg)
 
@@ -68,7 +68,7 @@ There are some Wordpress action hooks which can be used to extend the functional
 **social_metrics_post_sync** is called just before an individual post is updated.
 **social_metrics_post_sync_complete** is called when an individual post update completes.
 
-## Contributor Guide
+# Contributor Guide
 
 ### Setup
 
