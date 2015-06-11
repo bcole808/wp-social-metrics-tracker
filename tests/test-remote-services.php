@@ -34,6 +34,11 @@ class TestRemoteServices extends WP_UnitTestCase {
 		//
 		// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 
+		if ( '' === $updater->access_token ) {
+		    $this->markTestSkipped('An Access Token is reuquired to test the live Facebook API.');
+		}
+
+
 		// 1. Make sure the API responds
 		$updater->fetch();
 		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
