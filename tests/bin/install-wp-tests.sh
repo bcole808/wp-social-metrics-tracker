@@ -13,8 +13,30 @@ WP_VERSION=${5-latest}
 
 WP_TESTS_DIR=tmp/wordpress-tests-lib/
 WP_CORE_DIR=tmp/wordpress/
+SELENIUM_DIR=tmp/selenium/
 
 set -ex
+
+install_selenium() {
+	mkdir -p $SELENIUM_DIR
+	#!/bin/sh
+	# Install Selenium server, http://www.seleniumhq.org
+	#
+	# You can either add this here, or configure them on the environment tab of your
+	# project settings.
+	SELENIUM_VERSION="2.46.0"
+	# SELENIUM_PORT="4444"
+	# SELENIUM_OPTIONS=""
+
+	# exit on the first failure
+	set -e
+
+	MINOR_VERSION=${SELENIUM_VERSION%.*}
+	SELENIUM_JAR="${SELENIUM_DIR}selenium-server-standalone-${SELENIUM_VERSION}.jar"
+
+	wget -O "${SELENIUM_JAR}" --continue "http://selenium-release.storage.googleapis.com/${MINOR_VERSION}/selenium-server-standalone-${SELENIUM_VERSION}.jar"
+
+}
 
 install_wp() {
 	mkdir -p $WP_CORE_DIR
@@ -73,6 +95,7 @@ install_db() {
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
+install_selenium
 install_wp
 install_test_suite
 install_db
