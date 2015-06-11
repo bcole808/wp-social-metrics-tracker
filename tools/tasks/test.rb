@@ -1,5 +1,3 @@
-require 'selenium-connect'
-
 desc 'Runs integration and unit tests'
 task :test do
 
@@ -27,8 +25,7 @@ namespace :test do
 
     # Start the selenium server
     print "Starting Selenium server..."
-    config = SeleniumConnect::Configuration.new browser: 'firefox'
-    @sc = SeleniumConnect.start config
+    @selenium_pid = Process.spawn("java -jar ./tmp/selenium/selenium-server-standalone-2.46.0.jar ", :out=>"/dev/null")
     puts "Done!"
 
     # Start PHP server
@@ -63,7 +60,8 @@ namespace :test do
 
     # Close the selenium server
     print "Closing Selenium server..."
-    @sc.finish
+    Process.kill "TERM", @selenium_pid
+    Process.wait @selenium_pid
     puts "Done!"
 
   end
