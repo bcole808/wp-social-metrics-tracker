@@ -34,7 +34,11 @@ install_selenium() {
 	MINOR_VERSION=${SELENIUM_VERSION%.*}
 	SELENIUM_JAR="${SELENIUM_DIR}selenium-server-standalone-${SELENIUM_VERSION}.jar"
 
-	wget -O "${SELENIUM_JAR}" --continue "http://selenium-release.storage.googleapis.com/${MINOR_VERSION}/selenium-server-standalone-${SELENIUM_VERSION}.jar"
+	if [ ! -f $SELENIUM_JAR ]; then
+		wget -O "${SELENIUM_JAR}" --continue "http://selenium-release.storage.googleapis.com/${MINOR_VERSION}/selenium-server-standalone-${SELENIUM_VERSION}.jar"
+	else
+	    echo "File already exists, skipping download: ${SELENIUM_JAR}"
+	fi
 
 }
 
@@ -47,8 +51,13 @@ install_wp() {
 		local ARCHIVE_NAME="wordpress-$WP_VERSION"
 	fi
 
-	wget -nv -O /tmp/wordpress.tar.gz http://wordpress.org/${ARCHIVE_NAME}.tar.gz
-	tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
+	if [ ! -f /tmp/wp-${ARCHIVE_NAME}.tar.gz ]; then
+		wget -nv -O /tmp/wp-${ARCHIVE_NAME}.tar.gz http://wordpress.org/${ARCHIVE_NAME}.tar.gz
+	else
+	    echo "File already exists, skipping download: /tmp/wp-${ARCHIVE_NAME}.tar.gz"
+	fi
+
+	tar --strip-components=1 -zxmf /tmp/wp-${ARCHIVE_NAME}.tar.gz -C $WP_CORE_DIR
 
 	wget -nv -O $WP_CORE_DIR/wp-content/db.php https://raw.github.com/markoheijnen/wp-mysqli/master/db.php
 }
