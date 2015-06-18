@@ -106,10 +106,11 @@ end
 ##################################
 desc 'Downloads and configures WordPress and test suite'
 ##################################
-task :setup do 
+task :setup, [:quiet] do |t, args|
+  args.with_defaults(:quiet => false)
 
-  is_multisite = confirm('Do you want to develop on WordPress multisite right now?')
-  
+  is_multisite = (args.quiet) ? false : confirm('Do you want to develop on WordPress multisite right now?')
+
   Rake::Task["setup:dev_db"].invoke
   Rake::Task["setup:files"].invoke
   Rake::Task["setup:wp_config"].invoke
