@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.2
-Stable tag: 1.5.3
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.6.0 =
+* Added network settings page when plugin is network activated
 
 = 1.5.3 =
 * Allow attachment/media pages to be tracked
