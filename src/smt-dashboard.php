@@ -38,8 +38,7 @@ class SocialMetricsTable extends WP_List_Table {
 			// case 'comments':
 			//     return number_format($item['comment_count'],0,'.',',');
 			case 'date':
-				$dateString = date("M j, Y",strtotime($item['post_date']));
-				return $dateString;
+				return $item['post_date'];
 			default:
 				return 'Not Set';
 		}
@@ -348,8 +347,8 @@ class SocialMetricsTable extends WP_List_Table {
 			global $post;
 
 			$item['ID'] = $post->ID;
-			$item['post_title'] = $post->post_title;
-			$item['post_date'] = $post->post_date;
+			$item['post_title'] = get_the_title();
+			$item['post_date'] = get_the_date();
 			$item['comment_count'] = $post->comment_count;
 			$item['socialcount_total'] = (get_post_meta($post->ID, "socialcount_TOTAL", true)) ? get_post_meta($post->ID, "socialcount_TOTAL", true) : 0;
 			$item['socialcount_LAST_UPDATED'] = get_post_meta($post->ID, "socialcount_LAST_UPDATED", true);
