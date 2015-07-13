@@ -41,6 +41,8 @@ class SocialMetricsTracker {
 	public $version = '1.5.3'; // for db upgrade comparison
 	public $updater;
 	public $options;
+	protected $network_activated;
+
 
 	public function __construct() {
 
@@ -50,6 +52,7 @@ class SocialMetricsTracker {
 
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
+			add_action('network_admin_menu', array($this,'networkAdminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('plugins_loaded', array($this, 'version_check'));
 			add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
@@ -84,7 +87,54 @@ class SocialMetricsTracker {
 
 	private function initOptions() {
 		if (is_array($this->options)) return;
-		$this->options = get_option('smt_settings', array());
+
+		if ($this->is_active_for_network()) {
+			$this->options = get_site_option('smt_settings', array());
+
+			// The network admin has to be excluded or all settings from the main blog will me merged into to the
+			// settings
+			if ( ! is_network_admin() && '1' === $this->get_smt_option( 'allow_network_settings_override' ) ) {
+				$blog_options = get_option( 'smt_settings', array() );
+
+				// For security reasions some options cannot be overriden
+				// @todo: Complete this list
+				$non_overridable_options = array(
+					'allow_network_settings_override',
+					'facebook_access_token',
+				);
+
+				foreach ( $non_overridable_options as $key ) {
+					$key = 'smt_options_' . $key;
+					if ( isset( $blog_options[ $key ] ) ) {
+						unset( $blog_options[ $key ] );
+					}
+				}
+
+				$this->options = array_merge( $this->options, $blog_options );
+			}
+
+		} else {
+			$this->options = get_option('smt_settings', array());
+		}
+	}
+
+	/**
+	 * Returns true if the plugin has been activated network wide
+	 *
+	 * @return bool
+	 */
+	public function is_active_for_network() {
+		if ( null !== $this->network_activated ) {
+			return $this->network_activated;
+		}
+
+		if ( !function_exists( 'is_plugin_active_for_network' ) ) {
+			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+		}
+
+		$this->network_activated = is_plugin_active_for_network( 'social-metrics-tracker/social-metrics-tracker.php' );
+
+		return $this->network_activated;
 	}
 
 	/***************************************************
@@ -151,6 +201,12 @@ class SocialMetricsTracker {
 
 		// Export page
 		add_submenu_page('social-metrics-tracker', 'Data Export Tool', 'Export Data', $visibility, 'social-metrics-tracker-export',  array($this, 'render_view_export'));
+
+		new socialMetricsSettings($this);
+
+	} // end adminMenuSetup()
+
+	public function networkAdminMenuSetup() {
 
 		new socialMetricsSettings($this);
 
@@ -289,6 +345,11 @@ class SocialMetricsTracker {
 			'connection_type_facebook' => 'public'
 		);
 
+		// Allow overriding settings by default
+		if ( $this->is_active_for_network() ) {
+			$defaults['allow_network_settings_override'] = 1;
+		}
+
 		foreach ($defaults as $key => $value) {
 			if ($this->get_smt_option($key) === false) {
 				$this->set_smt_option($key, $value, false);
@@ -299,7 +360,7 @@ class SocialMetricsTracker {
 		require('settings/smt-general.php');
 		global $wpsf_settings;
 
-		foreach ($wpsf_settings[0]['fields'] as $default) {
+		foreach ($wpsf_settings['smt']['fields'] as $default) {
 			$key = $default['id'];
 
 			if ($this->get_smt_option($key) === false) {
@@ -308,6 +369,11 @@ class SocialMetricsTracker {
 		}
 
 		$this->save_smt_options();
+	}
+
+	public function get_smt_options() {
+		$this->initOptions();
+		return $this->options;
 	}
 
 	/***************************************************
@@ -350,7 +416,11 @@ class SocialMetricsTracker {
 	* Saves the settings to the DB
 	***************************************************/
 	private function save_smt_options() {
-		return update_option('smt_settings', $this->options);
+		if ( is_network_admin() ) {
+			return update_site_option('smt_settings', $this->options);
+		} else {
+			return update_option('smt_settings', $this->options);
+		}
 	}
 
 	public function deactivate() {

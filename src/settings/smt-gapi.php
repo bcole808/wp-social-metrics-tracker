@@ -35,7 +35,7 @@ $wpsf_settings[] = array(
 );
 
 if (is_multisite() && current_user_can('manage_network')) {
-    $wpsf_settings[0][fields][] = array(
+    $wpsf_settings[0]['fields'][] = array(
         'id' => 'network',
         'title' => 'WP Network Wide',
         'desc' => 'Use these credentials for every site in the WordPress multisite environment. This requires that your entire WordPress network be linked to exactly one Google Analytics profile. If you have a diffrent profile for each blog, you should leave this unchecked and repeat setup for each blog. ',

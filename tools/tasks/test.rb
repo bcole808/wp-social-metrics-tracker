@@ -4,11 +4,15 @@ task :test do
   Rake::Task["test:before"].invoke
 
   # Run tests
-  pass = system 'phpunit --exclude-group external-http'
+  puts "NOW RUNNING SELENIUM TESTS... (group 1 of 2)"
+  selenium_tests_pass = system 'phpunit --group selenium'
+
+  puts "NOW RUNNING UNIT TESTS... (group 2 of 2)"
+  unit_tests_pass     = system 'phpunit --exclude-group external-http,selenium'
 
   Rake::Task["test:after"].invoke
 
-  exit 1 if !pass
+  exit 1 if ( !selenium_tests_pass || !unit_tests_pass )
 
 end
 
@@ -18,9 +22,7 @@ namespace :test do
 
     # Switch WP Config to test mode
     print "Adjusting wp-config.php..."
-    wp_config = File.read('tmp/wp-config.php')
-    new_contents = wp_config.gsub($options['db_name_for_dev'], $options['db_name_for_test'])
-    File.open('tmp/wordpress/wp-config.php', "w") {|file| file.puts new_contents }
+    Rake::Task['test:create_config'].invoke
     puts "Done!"
 
     # Start the selenium server
@@ -35,7 +37,23 @@ namespace :test do
 
   end
 
-  task :install_db => :requires_wpcli do 
+  task :create_config do
+    wp_config = File.read('tmp/wp-config.php')
+    new_contents = wp_config.gsub($options['db_name_for_dev'], $options['db_name_for_test'])
+    File.open('tmp/wordpress/wp-config.php', "w") {|file| file.puts new_contents }
+  end
+
+  task :reset_test_db do
+
+  end
+
+  task :install_single => :requires_wpcli do 
+
+    Rake::Task['test:create_config'].invoke
+
+    system "mysqladmin -f drop #{$options['db_name_for_test']} --user=#{$options['db_username']} --password=#{$options['db_password']}"
+    system "mysqladmin create #{$options['db_name_for_test']} --user=#{$options['db_username']} --password=#{$options['db_password']}"
+
     # Fill DB with stuff
     system "#{@wpcli} core install \
       --url=http://#{$options['test_url']} \
@@ -43,6 +61,28 @@ namespace :test do
       --admin_user=#{$options['wp_user']} \
       --admin_password=#{$options['wp_password']} \
       --admin_email=#{$options['wp_email']}"
+
+    Rake::Task["setup:wp_config"].invoke(false, $options['db_name_for_test'])
+    Rake::Task["setup:install_wp"].invoke(false, $options['test_url'])
+    # Rake::Task["setup:install_plugin"].invoke(is_multisite)
+
+  end
+
+  task :install_multisite => :requires_wpcli do
+
+    Rake::Task['test:create_config'].invoke
+
+    system "mysqladmin -f drop #{$options['db_name_for_test']} --user=#{$options['db_username']} --password=#{$options['db_password']}"
+    system "mysqladmin create #{$options['db_name_for_test']} --user=#{$options['db_username']} --password=#{$options['db_password']}"
+
+    # Fill DB with stuff
+    system "#{@wpcli} core multisite-install \
+      --url=http://#{$options['test_url']} \
+      --title='SMT test site' \
+      --admin_user=#{$options['wp_user']} \
+      --admin_password=#{$options['wp_password']} \
+      --admin_email=#{$options['wp_email']}"
+
   end
 
   task :after do
