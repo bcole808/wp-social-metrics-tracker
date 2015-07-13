@@ -165,7 +165,13 @@ class socialMetricsSettings {
 
 		?>
 		<div class="wrap">
+
 			<h2>Social Metrics Tracker Configuration</h2>
+
+			<?php if ( ! is_network_admin() && $this->smt->is_active_for_network() ) : ?>
+				<div id="message" class="update-nag notice below-h2"><p>Because this plugin is network-activated, some settings can only be configured <a href="<?php echo network_admin_url('settings.php?page=social-metrics-tracker'); ?>">on the Network Settings page</a>.</p></div>
+			<?php endif; ?>
+
 			<?php print($this->smt->renderTemplate('settings-nav', array( 'menu_items' => $pages ))); ?>
 			<?php call_user_func(array($this, $this->section.'_section')); ?>
 
