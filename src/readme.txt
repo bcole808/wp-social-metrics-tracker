@@ -91,13 +91,15 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 3. Configuration options - General setup
 4. Configuration options - Google Analytics setup
 5. Configuration options - Advanced URL / Domain setup
-6. Data exported to an .xls spreadsheet
+6. Data exported to a .csv spreadsheet
 
 
 == Changelog ==
 
 = 1.6.0 =
 * Added network settings page when plugin is network activated
+* Changed data export tool to create .csv instead of .xls
+* Added column to data export for number of alternate tracked URLs
 
 = 1.5.3 =
 * Allow attachment/media pages to be tracked
