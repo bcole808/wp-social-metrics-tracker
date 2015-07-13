@@ -89,7 +89,7 @@ namespace :test do
 
     # remove WP Config test mode
     print "Removed wp-config.php..."
-    File.delete('tmp/wordpress/wp-config.php')
+    File.delete('tmp/wordpress/wp-config.php') if File.exist?('tmp/wordpress/wp-config.php')
     puts "Done!"
 
     # Close PHP server
