@@ -43,8 +43,8 @@ namespace :setup do
   ##################################
   desc 'Install WordPress into DB'
   ##################################
-  task :install_wp, [:is_multisite] => :requires_wpcli do |t, args|
-    args.with_defaults(:is_multisite => false)
+  task :install_wp, [:is_multisite, :site_url] => :requires_wpcli do |t, args|
+    args.with_defaults(:is_multisite => false, :site_url => $options['dev_url'])
 
     print_step("Install WordPress into DB, multisite=#{args.is_multisite}")
 
@@ -52,7 +52,7 @@ namespace :setup do
 
     # Fill DB with stuff
     system "#{@wpcli} core #{install_mode} \
-      --url=http://#{$options['dev_url']} \
+      --url=http://#{args['site_url']} \
       --title='SMT test site' \
       --admin_user=#{$options['wp_user']} \
       --admin_password=#{$options['wp_password']} \
@@ -63,19 +63,21 @@ namespace :setup do
   ##################################
   desc 'Create wp-config for dev'
   ##################################
-  task :wp_config => :requires_wpcli do
-    print_step('Creating wp-config for DEV')
+  task :wp_config, [:is_multisite, :db_name] => :requires_wpcli do |t, args|
+    args.with_defaults(:is_multisite => false, :db_name => $options['db_name_for_dev'])
+
+    print_step('Creating wp-config')
 
     `rm -f tmp/wp-config.php`
     `rm -f tmp/wordpress/wp-config.php`
 
-    args = "--skip-salts"
-    args << " --dbname=#{$options['db_name_for_dev']}"
-    args << " --dbuser=#{$options['db_username']}"
-    args << " --dbpass=#{$options['db_password']}" if !$options['db_password'].empty?
-    args << " --dbhost=#{$options['db_host']}"
+    wp_params = "--skip-salts"
+    wp_params << " --dbname=#{args['db_name']}"
+    wp_params << " --dbuser=#{$options['db_username']}"
+    wp_params << " --dbpass=#{$options['db_password']}" if !$options['db_password'].empty?
+    wp_params << " --dbhost=#{$options['db_host']}"
 
-    system "#{@wpcli} core config #{args}"
+    system "#{@wpcli} core config #{wp_params}"
 
     system "mv tmp/wordpress/wp-config.php tmp/wp-config.php"
   end

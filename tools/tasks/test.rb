@@ -43,6 +43,10 @@ namespace :test do
     File.open('tmp/wordpress/wp-config.php', "w") {|file| file.puts new_contents }
   end
 
+  task :reset_test_db do
+
+  end
+
   task :install_single => :requires_wpcli do 
 
     Rake::Task['test:create_config'].invoke
@@ -57,6 +61,10 @@ namespace :test do
       --admin_user=#{$options['wp_user']} \
       --admin_password=#{$options['wp_password']} \
       --admin_email=#{$options['wp_email']}"
+
+    Rake::Task["setup:wp_config"].invoke(false, $options['db_name_for_test'])
+    Rake::Task["setup:install_wp"].invoke(false, $options['test_url'])
+    # Rake::Task["setup:install_plugin"].invoke(is_multisite)
 
   end
 
