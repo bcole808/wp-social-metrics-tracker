@@ -10,6 +10,8 @@ class FacebookPublicUpdater extends HTTPResourceUpdater {
 	public $slug  = 'facebook';
 	public $name  = 'Facebook';
 
+	public $enabled_by_default = true;
+
 	private $uri = 'https://www.facebook.com/v2.3/plugins/like.php';
 
 	public function __construct() {

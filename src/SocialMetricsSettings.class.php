@@ -200,6 +200,8 @@ class socialMetricsSettings {
 
 	function connections_section() {
 
+		$api_enabled = $this->smt->get_smt_option('api_enabled');
+
 		$args = array(
 			'facebook_public_checked' => checked('public', $this->smt->get_smt_option('connection_type_facebook'), false),
 			'facebook_graph_checked'  => checked('graph',  $this->smt->get_smt_option('connection_type_facebook'), false),
@@ -209,11 +211,26 @@ class socialMetricsSettings {
 			'fb_app_secret' => isset($_POST['fb_app_secret']) ? $_POST['fb_app_secret'] : '',
 		);
 
+		// Build list of all available APIs and their status
+		foreach ( $this->smt->updater->allSources() as $HTTPResourceUpdater ) {
+			$args['smt_apis'][] = array(
+				'slug' => $HTTPResourceUpdater->slug,
+				'name' => $HTTPResourceUpdater->name,
+				'enable-checked'  => checked( $api_enabled[$HTTPResourceUpdater->slug], '1', false ),
+				'disable-checked' => checked( $api_enabled[$HTTPResourceUpdater->slug], '0', false ),
+			);
+		}
+
 		print($this->smt->renderTemplate('settings-connections', $args));
 	}
 
 	function process_connections_form() {
 		if (!isset($_POST) || count($_POST) == 0) return;
+
+		// Save API enabled/disabled status
+		if ( isset($_POST['smt_api_enabled']) && is_array($_POST['smt_api_enabled']) ) {
+			$this->smt->set_smt_option('api_enabled', $_POST['smt_api_enabled']);
+		}
 
 		// Save FB connection type
 		$this->smt->set_smt_option('connection_type_facebook', $_POST['connection_type_facebook']);

@@ -21,6 +21,8 @@ abstract class HTTPResourceUpdater {
 
 	public $meta_prefix = 'socialcount_';
 
+	public $enabled_by_default = false;
+
 	public $http_error = '';
 	public $http_error_detail = '';
 	public $complete;

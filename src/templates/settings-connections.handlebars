@@ -1,5 +1,43 @@
 
 <form method="post" id="smt-settings-connections-page">
+
+	<br />
+	<br />
+
+	<div class="box">
+	
+		<label class="label">
+			<h3>Enable or Disable Social Network APIs</h3>
+			<a href="javascript:void(0);" onClick="jQuery('.smt_toggle_api_help').slideToggle();" class="more-info">(More Info)</a>
+		</label>
+
+		<blockquote class="smt_toggle_api_help" style="display:none;">
+			<p>Using fewer social networks will increase performance by making fewer API requests in total. </p>
+
+			<p>When disabled, the plugin will not collect any data from that social network API. When stats are updated, the total will no longer include disabled social networks. However, any existing data from those networks will remain in the database; to completely delete old stats from the database, you must un-install this plugin and re-activate it or manually remove the post meta fields.</p>
+		</blockquote>
+
+		<table>
+			<tr>
+				<th>Social Network</th>
+				<th>Status</th>
+			</tr>
+			{{#each smt_apis}}
+			<tr>
+				<td class="smt-network-name">{{name}}</td>
+				<td>
+					<input type="radio" name="smt_api_enabled[{{slug}}]" id="{{slug}}-enable" value="1" {{enable-checked}} />
+					<label for="{{slug}}-enable">Enable</label>
+					&nbsp;&nbsp;
+					<input type="radio" name="smt_api_enabled[{{slug}}]" id="{{slug}}-disable" value="0" {{disable-checked}} />
+					<label for="{{slug}}-disable">Disable</label>
+				</td> 
+			</tr>
+			{{/each}}
+		</table>
+
+	</div>
+
 	<br />
 	<br />
 

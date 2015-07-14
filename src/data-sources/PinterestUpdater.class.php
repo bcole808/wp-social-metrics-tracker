@@ -10,6 +10,8 @@ class PinterestUpdater extends HTTPResourceUpdater {
 	public $slug  = 'pinterest';
 	public $name  = 'Pinterest';
 
+	public $enabled_by_default = true;
+
 	private $uri = 'http://api.pinterest.com/v1/urls/count.json';
 
 	public function __construct() {

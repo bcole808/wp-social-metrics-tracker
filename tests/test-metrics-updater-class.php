@@ -314,6 +314,84 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	}
 
+	function test_getSources() {
+
+		$smt = new SocialMetricsTracker();
+		$smt->init();
+		$test_updater = new MetricsUpdater($smt);
+
+		// 1. It should return a set of $HTTPResourceUpdater objects
+		$sources = $test_updater->getSources();
+
+		$this->assertEquals( 6, count((array)$sources), 'The wrong number of updaters were initialized!' );
+
+		foreach ($sources as $HTTPResourceUpdater) {
+			$this->assertTrue( is_a( $HTTPResourceUpdater, 'HTTPResourceUpdater' ), 'Wrong object type found!' );
+		}
+	}
+
+	function test_getSources_with_inactive() {
+
+		$smt = new SocialMetricsTracker();
+		$smt->init();
+
+		// Disable an updater, enable another
+		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'twitter'=>0) );
+
+		$test_updater = new MetricsUpdater($smt);
+		$sources = $test_updater->getSources();
+
+		// 1. It should not contain the disabled Updaters. 
+		foreach ($sources as $HTTPResourceUpdater) {
+			$this->assertFalse( is_a( $HTTPResourceUpdater, 'FacebookGraphUpdater' ), 'This should have been de-activated!' );
+			$this->assertFalse( is_a( $HTTPResourceUpdater, 'FacebookPublicUpdater' ), 'This should have been de-activated!' );
+			$this->assertFalse( is_a( $HTTPResourceUpdater, 'TwitterUpdater' ), 'This should have been de-activated!' );
+		}
+
+		// 2. It should still return "allSources"
+		$allsources = $test_updater->allSources();
+
+		$this->assertEquals( 6, count( (array) $allsources ), 'The wrong number of updaters were initialized!' );
+
+	}
+
+	function test_default_api_enabled() {
+
+		$smt = new SocialMetricsTracker();
+		$smt->init();
+		$test_updater = new MetricsUpdater($smt);
+
+
+		// 1. Six should be enabled by default
+		$smt->add_missing_settings();
+
+		$expected = array(
+			'facebook'    => true,
+			'twitter'     => true,
+			'linkedin'    => true,
+			'googleplus'  => true,
+			'pinterest'   => true,
+			'stumbleupon' => true,
+		);
+
+		$this->assertEquals( $expected, $smt->get_smt_option( 'api_enabled' ) );
+
+
+		// 2. If items previously disabled, it should persist and missing items should be added
+		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'twitter'=>0, 'googleplus'=>1) );
+		$smt->add_missing_settings();
+		
+		$expected = array(
+			'facebook'    => false,
+			'twitter'     => false,
+			'linkedin'    => true,
+			'googleplus'  => true,
+			'pinterest'   => true,
+			'stumbleupon' => true,
+		);
+
+		$this->assertEquals( $expected, $smt->get_smt_option( 'api_enabled' ) );
+
+	}
 
 }
-

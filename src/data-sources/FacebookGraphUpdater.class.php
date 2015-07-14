@@ -10,10 +10,14 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 	public $slug  = 'facebook';
 	public $name  = 'Facebook';
 
+	public $enabled_by_default = true;
+
 	private $uri = 'https://graph.facebook.com/v2.3';
 
-	public function __construct() {
+	public function __construct($access_token=false) {
 		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
+
+		if ($access_token) $this->setAccessToken($access_token);
 	}
 
 	public function setAccessToken($access_token) {

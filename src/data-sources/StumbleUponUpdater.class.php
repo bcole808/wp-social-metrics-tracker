@@ -10,6 +10,8 @@ class StumbleUponUpdater extends HTTPResourceUpdater {
 	public $slug  = 'stumbleupon';
 	public $name  = 'StumbleUpon';
 
+	public $enabled_by_default = true;
+
 	private $uri = 'http://www.stumbleupon.com/services/1.01/badge.getinfo';
 
 	public function __construct() {

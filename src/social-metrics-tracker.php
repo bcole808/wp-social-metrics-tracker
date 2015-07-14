@@ -339,6 +339,8 @@ class SocialMetricsTracker {
 	public function add_missing_settings() {
 		$this->initOptions();
 
+		$updater = new MetricsUpdater($this);
+
 		// Configure default options here;
 		// They will be set only if a value does not already exist in the DB. 
 		$defaults = array(
@@ -355,6 +357,16 @@ class SocialMetricsTracker {
 				$this->set_smt_option($key, $value, false);
 			}
 		}
+
+		// Merge the api_enabled array to ensure all APIs have a value
+		$api_enabled_defaults = array();
+		$api_enabled_current = $this->get_smt_option('api_enabled') ? $this->get_smt_option('api_enabled') : array();
+
+		foreach ($updater->allSources() as $HTTPResourceUpdater) {
+			$api_enabled_defaults[$HTTPResourceUpdater->slug] = $HTTPResourceUpdater->enabled_by_default;
+		}
+
+		$this->set_smt_option('api_enabled', array_merge($api_enabled_defaults, $api_enabled_current), false);
 
 		// Load defaults from smt-general.php
 		require('settings/smt-general.php');

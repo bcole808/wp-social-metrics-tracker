@@ -10,6 +10,8 @@ class LinkedInUpdater extends HTTPResourceUpdater {
 	public $slug = 'linkedin';
 	public $name = 'LinkedIn';
 
+	public $enabled_by_default = true;
+
 	private $uri = 'http://www.linkedin.com/countserv/count/share';
 
 	public function __construct() {

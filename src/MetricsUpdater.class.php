@@ -46,35 +46,62 @@ class MetricsUpdater {
 	public function setupDataSources() {
 		if (isset($this->dataSourcesReady) && $this->dataSourcesReady) return;
 
-		if (class_exists('GoogleAnalyticsUpdater')) {
-			if (!$this->GoogleAnalyticsUpdater) $this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
+		if (class_exists('GoogleAnalyticsUpdater') && !isset($this->GoogleAnalyticsUpdater)) {
+			$this->GoogleAnalyticsUpdater = new GoogleAnalyticsUpdater();
 		}
 
-		// Setup adapter for Facebook updater service
-		if ($this->smt->get_smt_option('connection_type_facebook') == 'graph') {
-			// Graph:
-			$preferred_facebook_updater = new FacebookGraphUpdater();
-			$preferred_facebook_updater->setAccessToken($this->smt->get_smt_option('facebook_access_token'));
-		} else {
-			// Public / Default:
-			$preferred_facebook_updater = new FacebookPublicUpdater();
-		}
-
-		// Set adapters for all services
-		if (!isset($this->sources->FacebookUpdater))       $this->sources->FacebookUpdater       = $preferred_facebook_updater;
-		if (!isset($this->sources->TwitterUpdater))        $this->sources->TwitterUpdater        = new TwitterUpdater();
-		if (!isset($this->sources->LinkedInUpdater))       $this->sources->LinkedInUpdater       = new LinkedInUpdater();
-		if (!isset($this->sources->GooglePlusUpdater))     $this->sources->GooglePlusUpdater     = new GooglePlusUpdater();
-		if (!isset($this->sources->PinterestUpdater))      $this->sources->PinterestUpdater      = new PinterestUpdater();
-		if (!isset($this->sources->StumbleUponUpdater))    $this->sources->StumbleUponUpdater    = new StumbleUponUpdater();
+		$this->sources = $this->activeSources();
 
 		return $this->dataSourcesReady = true;
 	}
 
-	// Gets sources object
+	// Gets active updater objects only
 	public function getSources() {
 		$this->setupDataSources();
 		return $this->sources;
+	}
+
+	// Return all possible updater objects, regardless of status
+	public function allSources() {
+		$sources = new stdClass();
+
+		// Any special settings?
+		$fb_graph_mode   = ( 'graph' == $this->smt->get_smt_option('connection_type_facebook') );
+		$fb_access_token = $this->smt->get_smt_option('facebook_access_token');
+
+		// Initialize sources
+		$sources->FacebookUpdater    = $fb_graph_mode ? new FacebookGraphUpdater($fb_access_token) : new FacebookPublicUpdater();
+		$sources->TwitterUpdater     = new TwitterUpdater();
+		$sources->LinkedInUpdater    = new LinkedInUpdater();
+		$sources->GooglePlusUpdater  = new GooglePlusUpdater();
+		$sources->PinterestUpdater   = new PinterestUpdater();
+		$sources->StumbleUponUpdater = new StumbleUponUpdater();
+
+		return $sources;
+	}
+
+	// Return only the currently active updater objects, based on user configuration
+	private function activeSources() {
+
+		// Get all sources
+		$sources = $this->allSources();
+
+		// Disable inactive sources
+		$api_enabled = $this->smt->get_smt_option('api_enabled');
+
+		foreach ($sources as $key => $HTTPResourceUpdater) {
+
+			// If there is no value, default behavior is to leave enabled
+			if ( ! isset($api_enabled[$HTTPResourceUpdater->slug]) ) continue;
+
+			// If a truthy value is present, leave enabled
+			if ( $api_enabled[$HTTPResourceUpdater->slug] ) continue;
+			
+			// Disable this source from being used
+			unset($sources->$key);
+		}
+
+		return $sources;
 	}
 
 	// Get the current time

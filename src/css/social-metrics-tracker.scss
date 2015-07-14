@@ -252,6 +252,37 @@
 /* Configuration page CSS
    ========================================================================== */
 
+#smt-settings-connections-page {
+
+	table {
+		border: none;
+		border-spacing: 0;
+
+
+		th {
+			text-align: left;
+			font-weight: bold;
+			background-color: #DDD;
+
+			&:first-child {
+				border-radius: 3px 0 0 3px;
+			}
+			&:last-child {
+				border-radius: 0 3px 3px 0;
+			}
+		}
+
+		td, th {
+			padding: 8px 10px;
+		}
+
+		tr:nth-child(odd) {
+			background-color: #EEE;
+		}
+	}
+
+}
+
 .social-metrics_page_social-metrics-tracker-settings .wrap,
 .settings_page_social-metrics-tracker .wrap {
 	max-width: 900px;
