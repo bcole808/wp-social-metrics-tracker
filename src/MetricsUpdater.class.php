@@ -19,6 +19,7 @@ require_once('data-sources/PinterestUpdater.class.php');
 require_once('data-sources/StumbleUponUpdater.class.php');
 require_once('data-sources/XingUpdater.class.php');
 require_once('data-sources/FlattrUpdater.class.php');
+require_once('data-sources/RedditUpdater.class.php');
 
 class MetricsUpdater {
 
@@ -76,8 +77,9 @@ class MetricsUpdater {
 		$sources->TwitterUpdater     = new TwitterUpdater();
 		$sources->LinkedInUpdater    = new LinkedInUpdater();
 		$sources->GooglePlusUpdater  = new GooglePlusUpdater();
-		$sources->PinterestUpdater   = new PinterestUpdater();
+		$sources->RedditUpdater      = new RedditUpdater();
 		$sources->StumbleUponUpdater = new StumbleUponUpdater();
+		$sources->PinterestUpdater   = new PinterestUpdater();
 		$sources->FlattrUpdater      = new FlattrUpdater();
 		$sources->XingUpdater        = new XingUpdater();
 
