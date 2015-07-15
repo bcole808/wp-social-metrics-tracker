@@ -71,7 +71,7 @@ class TestRemoteServices extends WP_UnitTestCase {
 		$this->assertTrue(strlen($updater->data) > 1, 'The Facebook API did not return data!!!');
 
 		// 2. Make sure it returns a positive total integer
-		$this->assertGreaterThan(119123, $updater->get_total(), 'We had trouble parsing the Facebook public endpoint!');
+		$this->assertGreaterThan(5000, $updater->get_total(), 'We had trouble parsing the Facebook public endpoint!');
 
 	}
 
@@ -205,5 +205,82 @@ class TestRemoteServices extends WP_UnitTestCase {
 
 	}
 
-}
+	/**
+	* @group external-http
+	*/
+	function test_xing() {
 
+		$updater = new XingUpdater();
+		$updater->setParams(1, 'http://www.google.com');
+
+		// 1. Make sure the API responds
+		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
+		$this->assertTrue(is_array($updater->data), 'The Xing API did not return data!!!');
+
+		// 2. Enforce expected data structure
+		$expected_result = json_decode(file_get_contents(
+			dirname(__FILE__) .'/sample-data/xing.com.json'
+		), true);
+
+		$diff = array_diff_key($expected_result, $updater->data);
+		$this->assertEquals(0, count($diff), 'The Xing API did not return the expected json format!!!');
+
+		// 3. Make sure it returns a positive total integer
+		$this->assertGreaterThan(100, $updater->get_total(), 'We had trouble parsing the Xing API!');
+
+	}
+
+	/**
+	* @group external-http
+	*/
+	function test_flattr() {
+
+		$updater = new FlattrUpdater();
+		$updater->setParams(1, 'http://www.wikipedia.org');
+
+		// 1. Make sure the API responds
+		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
+		$this->assertTrue(is_array($updater->data), 'The Flattr API did not return data!!!');
+
+		// 2. Enforce expected data structure
+		$expected_result = json_decode(file_get_contents(
+			dirname(__FILE__) .'/sample-data/flattr.com.json'
+		), true);
+
+		$diff = array_diff_key($expected_result, $updater->data);
+		$this->assertEquals(0, count($diff), 'The Flattr API did not return the expected json format!!!');
+
+		// 3. Make sure it returns a positive total integer
+		$this->assertGreaterThan(3860, $updater->get_total(), 'We had trouble parsing the Flattr API!');
+
+	}
+
+	/**
+	* @group external-http
+	*/
+	function test_reddit() {
+
+		$updater = new RedditUpdater();
+		$updater->setParams(1, 'http://www.wikipedia.org');
+
+		// 1. Make sure the API responds
+		$updater->fetch();
+		$this->assertEmpty($updater->http_error, 'An HTTP error occurred: '.$updater->http_error);
+		$this->assertTrue(is_array($updater->data), 'The Reddit API did not return data!!!');
+
+		// 2. Enforce expected data structure
+		$expected_result = json_decode(file_get_contents(
+			dirname(__FILE__) .'/sample-data/reddit.com.json'
+		), true);
+
+		$diff = array_diff_key($expected_result, $updater->data);
+		$this->assertEquals(0, count($diff), 'The Reddit API did not return the expected json format. Return: '.print_r($updater->data, true));
+
+		// 3. Make sure it returns a positive total integer
+		$this->assertGreaterThan(400, $updater->get_total(), 'We had trouble parsing the Reddit API!');
+
+	}
+
+}

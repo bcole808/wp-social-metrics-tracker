@@ -351,7 +351,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// 2. It should still return "allSources"
 		$allsources = $test_updater->allSources();
 
-		$this->assertEquals( 6, count( (array) $allsources ), 'The wrong number of updaters were initialized!' );
+		$this->assertEquals( 9, count( (array) $allsources ), 'The wrong number of updaters were initialized!' );
 
 	}
 
@@ -370,8 +370,11 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			'twitter'     => true,
 			'linkedin'    => true,
 			'googleplus'  => true,
-			'pinterest'   => true,
+			'pinterest'   => false,
 			'stumbleupon' => true,
+			'reddit'      => true,
+			'flattr'      => false,
+			'xing'        => false,
 		);
 
 		$this->assertEquals( $expected, $smt->get_smt_option( 'api_enabled' ) );
@@ -386,8 +389,11 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			'twitter'     => false,
 			'linkedin'    => true,
 			'googleplus'  => true,
-			'pinterest'   => true,
+			'pinterest'   => false,
 			'stumbleupon' => true,
+			'reddit'      => true,
+			'flattr'      => false,
+			'xing'        => false,
 		);
 
 		$this->assertEquals( $expected, $smt->get_smt_option( 'api_enabled' ) );
