@@ -34,8 +34,9 @@ class StumbleUponUpdater extends HTTPResourceUpdater {
 		$updater->meta[$this->updater->meta_prefix.$this->updater->slug] = $this->get_total();
 	}
 
+	// Must return an integer
 	public function get_total() {
-		return ($this->updater->data === null || $this->updater->data['result']['in_index'] == false) ? 0 : $this->updater->data['result']['views'];
+		return ($this->updater->data === null || $this->updater->data['result']['in_index'] == false) ? 0 : intval($this->updater->data['result']['views']);
 	}
 
 }

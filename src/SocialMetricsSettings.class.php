@@ -216,8 +216,8 @@ class socialMetricsSettings {
 			$args['smt_apis'][] = array(
 				'slug' => $HTTPResourceUpdater->slug,
 				'name' => $HTTPResourceUpdater->name,
-				'enable-checked'  => checked( $api_enabled[$HTTPResourceUpdater->slug], '1', false ),
-				'disable-checked' => checked( $api_enabled[$HTTPResourceUpdater->slug], '0', false ),
+				'enable-checked'  => checked( (boolean) $api_enabled[$HTTPResourceUpdater->slug], true, false ),
+				'disable-checked' => checked( (boolean) $api_enabled[$HTTPResourceUpdater->slug], false, false ),
 			);
 		}
 

@@ -77,6 +77,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 	}
 
+	// Must return an integer
 	public function get_total() {
 
 		// Validation

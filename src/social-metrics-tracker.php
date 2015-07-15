@@ -313,6 +313,20 @@ class SocialMetricsTracker {
 				$this->delete_smt_option('debug_report_visibility');
 			}
 
+			// 4: If migrating from version below 1.6.0 (not a clean install)
+			if ($installed_version !== false && version_compare($installed_version, '1.6.0', '<')) {
+
+				// users prior to this version had the following set of APIs enabled, so we should maintain that even if the defaults change. 
+				$this->set_smt_option('api_enabled', array(
+					'facebook'    => true,
+					'twitter'     => true,
+					'linkedin'    => true,
+					'googleplus'  => true,
+					'pinterest'   => true,
+					'stumbleupon' => true
+				));
+			}
+
 			// 4: Add any new settings
 			$this->add_missing_settings();
 
