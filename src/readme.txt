@@ -19,7 +19,7 @@ This WordPress plugin collects and displays an analysis of social media interact
 
 = Get stats from these social networks: =
 
-Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+
+Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr
 
 = Focus your writing topics: =
 
@@ -53,7 +53,7 @@ The information is retrieved directly from the public APIs that each social netw
 
 = What social networks are measured? =
 
-Data is collected from the following social networks: Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+
+You can enable or disable tracking of data from any of these social networks: Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr.
 
 = What information is sent from my blog to other services? =
 
@@ -69,7 +69,7 @@ Absolutely! This plugin was created with large-scale Multisite blog networks in 
 
 = What about pageviews? =
 
-You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key.
+You can link with your Google Analytics account to import pageview data for posts. This requires a free Google API Developer Key. Note: some users have been having trouble getting Google Analytics set up correctly. This section of the plugin needs to be updated in the future to be more stable. 
 
 = What about canonical URLs? =
 
@@ -97,8 +97,11 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 == Changelog ==
 
 = 1.6.0 =
+* Added API stats for Reddit.com
+* Added API stats for XING.com
+* Added API stats for Flattr.com
+* Allow admin to disable specific social network APIs from being used
 * Added network settings page when plugin is network activated
-* Added section to settings to allow admin to disable specific social network APIs from being used
 * Changed data export tool to create .csv instead of .xls
 * Added column to data export for number of alternate tracked URLs
 
