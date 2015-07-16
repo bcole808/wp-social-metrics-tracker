@@ -323,7 +323,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// 1. It should return a set of $HTTPResourceUpdater objects
 		$sources = $test_updater->getSources();
 
-		$this->assertEquals( 6, count((array)$sources), 'The wrong number of updaters were initialized!' );
+		$this->assertEquals( 5, count((array)$sources), 'The wrong number of updaters were initialized!' );
 
 		foreach ($sources as $HTTPResourceUpdater) {
 			$this->assertTrue( is_a( $HTTPResourceUpdater, 'HTTPResourceUpdater' ), 'Wrong object type found!' );
@@ -369,7 +369,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			'facebook'    => true,
 			'twitter'     => true,
 			'linkedin'    => true,
-			'googleplus'  => true,
+			'googleplus'  => false,
 			'pinterest'   => false,
 			'stumbleupon' => true,
 			'reddit'      => true,

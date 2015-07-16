@@ -53,7 +53,7 @@ The information is retrieved directly from the public APIs that each social netw
 
 = What social networks are measured? =
 
-You can enable or disable tracking of data from any of these social networks: Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr.
+Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr are available for tracking. By default, not all of the data sources are enabled in order to optimize performance out of the box. You can enable or disable tracking of data from any of these social networks by going to the API Connections Settings page in the plugin configuration area. It is recommended to only turn on the networks where your visitors are actively sharing content in order to conserve server resources when fetching data. 
 
 = What information is sent from my blog to other services? =
 
@@ -100,7 +100,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * Added API stats for Reddit.com
 * Added API stats for XING.com
 * Added API stats for Flattr.com
-* Allow admin to disable specific social network APIs from being used
+* Allow admin to disable specific social network APIs from being used (Some APIs are now disabled by default to optimize performance out of the box)
 * Added network settings page when plugin is network activated
 * Changed data export tool to create .csv instead of .xls
 * Improve performance of data export tool for large sites
