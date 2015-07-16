@@ -76,9 +76,9 @@ class MetricsUpdater {
 		$sources->FacebookUpdater    = $fb_graph_mode ? new FacebookGraphUpdater($fb_access_token) : new FacebookPublicUpdater();
 		$sources->TwitterUpdater     = new TwitterUpdater();
 		$sources->LinkedInUpdater    = new LinkedInUpdater();
-		$sources->GooglePlusUpdater  = new GooglePlusUpdater();
 		$sources->RedditUpdater      = new RedditUpdater();
 		$sources->StumbleUponUpdater = new StumbleUponUpdater();
+		$sources->GooglePlusUpdater  = new GooglePlusUpdater();
 		$sources->PinterestUpdater   = new PinterestUpdater();
 		$sources->FlattrUpdater      = new FlattrUpdater();
 		$sources->XingUpdater        = new XingUpdater();

@@ -75,6 +75,14 @@ You can link with your Google Analytics account to import pageview data for post
 
 Ah yes, sometimes you have more than one URL to a post. For example, with or without www or with http:// or https://.  There is a tool on the configuration page of the plugin to help you configure the checking of canonical URLs. When there are multiple URLs associated with a post, there will be a new link that appears by each post called "URL Details" on the reporting dashboard which will provide detailed stats. 
 
+= Why are share counts are different than what they should be? =
+
+The main thing that can cause differences in share counts is different URL variants for the same post. For example, http:// or https:// will be a different URL, or the presence or absence of a trailing slash will be a different URL as well. Sometimes social networks are smart and combine counts of canonical URLs, and sometimes they do not combine them.
+
+A good tool to figure out the "real" share count is www.SharedCount.com where you can enter a URL and the tool will tell you what the social network APIs are reporting. Try a couple of possible URL variants with that tool and see if you can figure out if maybe there is more than one version of a post URL that has shares. 
+
+It has also been reported that sometimes social networks will suddenly reduce or reset the number of shares for a given URL. I have not been able to figure out why, but please get in touch if you have any idea why this is happening. 
+
 = What if I migrate to a new domain? =
 
 Most Social networks will NOT copy your old share numbers over to your new URLs. However, this plugin has a tool to continue to check and combine the numbers from your old domain name ULRs. 
