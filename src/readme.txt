@@ -103,7 +103,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * Allow admin to disable specific social network APIs from being used
 * Added network settings page when plugin is network activated
 * Changed data export tool to create .csv instead of .xls
-* Added column to data export for number of alternate tracked URLs
+* Improve performance of data export tool for large sites
 
 = 1.5.3 =
 * Allow attachment/media pages to be tracked

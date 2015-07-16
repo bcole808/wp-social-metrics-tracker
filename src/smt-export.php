@@ -11,16 +11,22 @@ function smt_download_export_file($smt) {
 	$gapi = new GoogleAnalyticsUpdater(); 
 	$gapi_can_sync = $gapi->can_sync();
 
-	$querydata = new WP_Query(array(
-		'posts_per_page'=> -1,
-		'post_status'	=> 'publish',
-		'post_type'		=> $smt->tracked_post_types(),
-		'orderby'       => 'date',
-		'order'         => 'DESC'
-	));
+	// For performance reasons, do multiple small queries instead of just one with all the posts
+	$posts_per_batch = 250;
+	$num_posts_added = 0; // counter
+
+	$query_args = array(
+		'posts_per_page' => $posts_per_batch,
+		'offset'         => $num_posts_added,
+		'post_status'    => 'publish',
+		'post_type'      => $smt->tracked_post_types(),
+		'orderby'        => 'date',
+		'order'          => 'DESC'
+	);
+
+	$querydata = new WP_Query($query_args);
 
 	if ( $querydata->have_posts() ) : while ( $querydata->have_posts() ) : $querydata->the_post();
-
 		global $post;
 
 		$item = array();
@@ -40,11 +46,23 @@ function smt_download_export_file($smt) {
 			$item[$HTTPResourceUpdater->name] = get_post_meta($post->ID, "socialcount_".$HTTPResourceUpdater->slug, true);
 		}
 
-	   array_push($data, $item);
+		array_push($data, $item);
+
+		// Handle pagination (for performance reasons, we are doing multiple smaller queries in this way)
+		$num_posts_added++;
+
+		// Query for next batch of posts, if needed
+		if ($querydata->current_post + 1 == $querydata->post_count && $querydata->post_count == $posts_per_batch) {
+
+			// Set offset to number already added
+			$query_args['offset'] = $num_posts_added;
+
+			// Perform new query
+			$querydata = new WP_Query($query_args);
+		}
 
 	endwhile;
 	endif;
-
 
 	// Build the spreadsheet headings
 	$headings = array();
@@ -66,6 +84,8 @@ function smt_download_export_file($smt) {
 	foreach ($data as $row) {
 		fputcsv($output, $row);
 	}
+
+	fclose($output);
 
 	exit;
 
