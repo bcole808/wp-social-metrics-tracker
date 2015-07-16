@@ -55,13 +55,6 @@ module.exports = function(grunt) {
 		            spawn: false,
 		        }
 		    },
-		    php: {
-		    	files: ['src/**/*.php', 'tests/**/*.php'],
-		    	tasks: ['clear', 'phpunit'],
-		    	options : {
-		    		spawn: false,
-		    	}
-		    },
 		    templates: {
 		    	files: ['src/**/*.handlebars']
 		    }
@@ -77,6 +70,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-phpunit');
 
 	// 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
-	grunt.registerTask('default', ['sass', 'uglify', 'phpunit']);
+	grunt.registerTask('default', ['sass', 'uglify']);
 
 };

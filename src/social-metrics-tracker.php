@@ -42,6 +42,7 @@ class SocialMetricsTracker {
 	public $updater;
 	public $options;
 	protected $network_activated;
+	protected $use_network_settings;
 
 
 	public function __construct() {
@@ -88,53 +89,72 @@ class SocialMetricsTracker {
 	private function initOptions() {
 		if (is_array($this->options)) return;
 
-		if ($this->is_active_for_network()) {
+		if ( $this->use_network_settings() ) {
 			$this->options = get_site_option('smt_settings', array());
-
-			// The network admin has to be excluded or all settings from the main blog will me merged into to the
-			// settings
-			if ( ! is_network_admin() && '1' === $this->get_smt_option( 'allow_network_settings_override' ) ) {
-				$blog_options = get_option( 'smt_settings', array() );
-
-				// For security reasions some options cannot be overriden
-				// @todo: Complete this list
-				$non_overridable_options = array(
-					'allow_network_settings_override',
-					'facebook_access_token',
-				);
-
-				foreach ( $non_overridable_options as $key ) {
-					$key = 'smt_options_' . $key;
-					if ( isset( $blog_options[ $key ] ) ) {
-						unset( $blog_options[ $key ] );
-					}
-				}
-
-				$this->options = array_merge( $this->options, $blog_options );
-			}
-
 		} else {
 			$this->options = get_option('smt_settings', array());
 		}
+
 	}
 
 	/**
-	 * Returns true if the plugin has been activated network wide
+	 * Returns true if this blog is multisite enabled and this plugin has been activated network wide
 	 *
 	 * @return bool
 	 */
 	public function is_active_for_network() {
+
+		// Return cached value?
 		if ( null !== $this->network_activated ) {
 			return $this->network_activated;
 		}
 
+		// Single site
+		if ( ! is_multisite() ) {
+			return $this->network_activated = false;
+		}
+
+		// Multisite
 		if ( !function_exists( 'is_plugin_active_for_network' ) ) {
 			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 		}
 
-		$this->network_activated = is_plugin_active_for_network( 'social-metrics-tracker/social-metrics-tracker.php' );
+		return $this->network_activated = is_plugin_active_for_network( 'social-metrics-tracker/social-metrics-tracker.php' );
+	}
 
-		return $this->network_activated;
+	/**
+	 * Returns true if we should always read/write to network settings instead of current blog
+	 * Also updates the saved value if provided
+	 *
+	 * @param bool - Update the option
+	 * @return bool
+	 */
+	public function use_network_settings($new_value=null) {
+
+		// If unable to use_network_settings
+		if ( !$this->is_active_for_network() ) {
+			return $this->use_network_settings = false;
+		}
+
+		// Update saved value if provided
+		if ( null !== $new_value) {
+
+			// Update option
+			$this->use_network_settings = $new_value;
+			update_site_option( 'smt_use_network_settings_everywhere', $this->use_network_settings );
+
+			// Re-load options from DB (IMPORTANT!)
+			$this->options = null;
+			$this->initOptions();
+		}
+
+		// Return cached value?
+		if ( null !== $this->use_network_settings ) {
+			return $this->use_network_settings;
+		}
+
+		// Get saved value, or default
+		return $this->use_network_settings = get_site_option('smt_use_network_settings_everywhere', false);
 	}
 
 	/***************************************************
@@ -325,6 +345,11 @@ class SocialMetricsTracker {
 					'pinterest'   => true,
 					'stumbleupon' => true
 				));
+
+				// Multisite installations should explicitly retain their behavior
+				if ( is_multisite() ) {
+					$this->use_network_settings( false );
+				}
 			}
 
 			// 4: Add any new settings
@@ -442,7 +467,7 @@ class SocialMetricsTracker {
 	* Saves the settings to the DB
 	***************************************************/
 	private function save_smt_options() {
-		if ( is_network_admin() ) {
+		if ( $this->use_network_settings() ) {
 			return update_site_option('smt_settings', $this->options);
 		} else {
 			return update_option('smt_settings', $this->options);

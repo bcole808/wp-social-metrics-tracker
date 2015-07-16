@@ -157,6 +157,8 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 		$this->network_enable_plugin();
 		$this->switch_to_network_admin();
 
+		$this->plugin->use_network_settings( true );
+
 		$this->plugin->set_smt_option( 'example-field', 100 );
 
 		$network_options = get_site_option( 'smt_settings' );
@@ -188,12 +190,9 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->network_enable_plugin();
-
 		update_site_option(
 			'smt_settings',
 		    array(
-		        'smt_options_allow_network_settings_override' => '1',
 			    'smt_options_not_overridden' => 'value1',
 			    'smt_options_overridden' => 'value2',
 			    'smt_options_facebook_access_token' => 'API KEY',
@@ -204,15 +203,18 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 			'smt_settings',
 			array(
 				'smt_options_overridden' => 'value3',
-				'smt_options_allow_network_settings_override' => '0', // Stupio blog admin trying to lock himself out
 				'smt_options_facebook_access_token' => 'ROGUE API KEY',
 			)
 		);
 
-		$this->plugin->set_smt_option( 'overridden', 'value3' );
+
+		$this->network_enable_plugin();
+		$this->plugin->use_network_settings( true );
+
+		$this->plugin->set_smt_option( 'overridden', 'value4' );
 
 		$this->assertEquals( 'value1', $this->plugin->get_smt_option( 'not_overridden' ) );
-		$this->assertEquals( 'value3', $this->plugin->get_smt_option( 'overridden' ) );
+		$this->assertEquals( 'value4', $this->plugin->get_smt_option( 'overridden' ) );
 		$this->assertEquals( 'API KEY', $this->plugin->get_smt_option( 'facebook_access_token' ) );
 	}
 
@@ -221,31 +223,29 @@ class SocialMetricsTrackerTests extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->network_enable_plugin();
-
 		update_site_option(
 			'smt_settings',
 			array(
-				'smt_options_allow_network_settings_override' => '0',
-				'smt_options_not_overridden' => 'value1',
-				'smt_options_also_not_overridden' => 'value2',
-				'smt_options_also_not_overridden' => 'value2',
+				'smt_options_only_set_in_network_options' => 'my_network_value_1',
+				'smt_options_set_in_both_places' => 'my_network_value_2',
 			)
 		);
 
 		update_option(
 			'smt_settings',
 			array(
-				'smt_options_allow_network_settings_override' => '1', // Sneaky blog admin trying to gain access to settings
-				'smt_options_also_not_overridden' => 'value3',
+				'smt_options_set_in_both_places' => 'my_local_value',
 			)
 		);
 
-		$this->plugin->set_smt_option( 'overridden', 'value3' );
+		$this->network_enable_plugin();
+		$this->plugin->use_network_settings( false );
 
-		$this->assertEquals( 'value1', $this->plugin->get_smt_option( 'not_overridden' ) );
-		$this->assertEquals( 'value2', $this->plugin->get_smt_option( 'also_not_overridden' ) );
-		$this->assertEquals( '0', $this->plugin->get_smt_option( 'allow_network_settings_override' ) );
+		$this->plugin->set_smt_option( 'my_new_setting', 'my_new_value' );
+
+		$this->assertEquals( false, $this->plugin->get_smt_option( 'only_set_in_network_options' ) );
+		$this->assertEquals( 'my_local_value', $this->plugin->get_smt_option( 'set_in_both_places' ) );
+		$this->assertEquals( 'my_new_value', $this->plugin->get_smt_option( 'my_new_setting' ) );
 	}
 
 	/***************************************************

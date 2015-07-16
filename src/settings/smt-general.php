@@ -111,20 +111,3 @@ $wpsf_settings['smt'] = array(
 		)
 	)
 );
-
-if ( is_network_admin() ) {
-	array_unshift(
-		$wpsf_settings['smt']['fields'],
-		array(
-			'id'    => 'allow_network_settings_override',
-			'title' => 'Network mode',
-			'desc'  => 'Should blog admins be allowed to override the network setting?',
-			'type'  => 'select',
-			'std'   => '0',
-			'choices' => array(
-				'0'  => 'Don\'t allow settings to be overwritten',
-				'1'  => 'Allow settings to be overwritten',
-			)
-		)
-	);
-}

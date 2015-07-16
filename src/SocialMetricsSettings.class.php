@@ -29,12 +29,14 @@ class socialMetricsSettings {
 			$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
 		}
 
+		// $this->smt->use_network_settings = get_site_option('smt_use_network_settings_everywhere');
+
 	}
 
 	function admin_menu() {
 		// Only add the admin page if overriding the settings is allowed. This will also prevent access to the pages
 		// if overriding is net allowed, thereby prevent options from being modified
-		if ( $this->smt->is_active_for_network() && '0' === $this->smt->get_smt_option( 'allow_network_settings_override' ) ) {
+		if ( $this->smt->is_active_for_network() && $this->smt->use_network_settings() ) {
 			return;
 		}
 
@@ -79,24 +81,20 @@ class socialMetricsSettings {
 		);
 
 		// API Connections
-		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
-			$pages[] = array(
-				'slug'    => 'connections',
-				'label'   => 'API Connection Settings',
-				'url'     => add_query_arg('section', 'connections'),
-				'current' => $this->section == 'connections'
-			);
-		}
+		$pages[] = array(
+			'slug'    => 'connections',
+			'label'   => 'API Connection Settings',
+			'url'     => add_query_arg('section', 'connections'),
+			'current' => $this->section == 'connections'
+		);
 
 		// Google Analytics
-		if ( ! $this->smt->is_active_for_network() || is_network_admin() ) {
-			$pages[] = array(
-				'slug'    => 'gapi',
-				'label'   => 'Google Analytics Setup',
-				'url'     => add_query_arg('section', 'gapi'),
-				'current' => $this->section == 'gapi'
-			);
-		}
+		$pages[] = array(
+			'slug'    => 'gapi',
+			'label'   => 'Google Analytics Setup',
+			'url'     => add_query_arg('section', 'gapi'),
+			'current' => $this->section == 'gapi'
+		);
 
 		// Domain / URL setup
 		$pages[] = array(
@@ -129,6 +127,10 @@ class socialMetricsSettings {
 			return;
 		}
 
+		// Process network settings if submitted
+		if (isset($_POST['use_network_settings_everywhere']) && is_multisite() && current_user_can('manage_network')) {
+			$this->smt->use_network_settings($_POST['use_network_settings_everywhere']);
+		}
 
 		switch ($this->section) {
 			case 'gapi':
@@ -168,12 +170,37 @@ class socialMetricsSettings {
 
 			<h2>Social Metrics Tracker Configuration</h2>
 
-			<?php if ( ! is_network_admin() && $this->smt->is_active_for_network() ) : ?>
-				<div id="message" class="update-nag notice below-h2"><p>Because this plugin is network-activated, some settings can only be configured <a href="<?php echo network_admin_url('settings.php?page=social-metrics-tracker'); ?>">on the Network Settings page</a>.</p></div>
+			<?php /********** Show on single-site if user can network configure **********/ ?>
+			<?php if ( ! is_network_admin() && $this->smt->is_active_for_network() && current_user_can( 'manage_network' ) ) : ?>
+				<div id="message" class="update-nag notice below-h2"><p>This page will only configure the plugin for the current blog. You can configure all sites at once <a href="<?php echo network_admin_url('settings.php?page=social-metrics-tracker'); ?>">on the Network Settings page</a>.</p></div>
 			<?php endif; ?>
+
+			<?php /********** Show on network-admin always **********/ ?>
+			<?php if ( is_network_admin() && $this->smt->is_active_for_network() ) : ?>
+				<div class="box" style="margin: 15px 0;">
+					<form method="post" id="smt-settings-url-page">
+						<h3>Network Settings Mode</h3>
+						<p> 
+							<select name="use_network_settings_everywhere">
+								<option value="1" <?php selected($this->smt->use_network_settings(), 1); ?>>Use one configuration for every site.</option>
+								<option value="0" <?php selected($this->smt->use_network_settings(), 0); ?>>Allow a different configuration set by each blog admin.</option>
+							</select>
+							<input type="submit" class="button" value="Apply">
+						</p>
+					</form>
+				</div>
+			<?php endif; ?>
+
+		
+			<?php /********** Hide settings on network-admin if disabled **********/ ?>
+			<?php if (is_multisite() && is_network_admin() && !$this->smt->use_network_settings()) : ?>
+				<div class="box"><p>You must configure each blogs plugin settings seperately unless you change the setting above.</p></div>
+			<?php else : ?>
 
 			<?php print($this->smt->renderTemplate('settings-nav', array( 'menu_items' => $pages ))); ?>
 			<?php call_user_func(array($this, $this->section.'_section')); ?>
+
+			<?php endif; ?>
 
 		</div>
 	<?php
