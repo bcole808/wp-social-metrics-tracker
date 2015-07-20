@@ -18,6 +18,12 @@ delete_option('smt_version');
 delete_option('smt_gapi_data');
 delete_option('smt_last_full_sync');
 
+// Delete multisite options
+if ( is_multisite() ) {
+	delete_site_option( 'smt_settings' );
+	delete_site_option( 'smt_use_network_settings_everywhere' );
+}
+
 // Remove post meta fields
 global $wpdb;
 
@@ -40,6 +46,8 @@ $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_delicious'" );
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_reddit'" );
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_stumbleupon'" );
+$wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_xing'" );
+$wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'socialcount_flattr'" );
 
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'facebook_shares'" );
 $wpdb->query( "DELETE FROM {$wpdb->prefix}postmeta WHERE meta_key = 'facebook_comments'" );
