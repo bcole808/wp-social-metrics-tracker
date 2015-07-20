@@ -137,7 +137,7 @@ class SocialMetricsTracker {
 		}
 
 		// Update saved value if provided
-		if ( null !== $new_value) {
+		if ( null !== $new_value  && strlen($new_value) > 0 ) {
 
 			// Update option
 			$this->use_network_settings = $new_value;
