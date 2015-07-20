@@ -146,6 +146,7 @@ class SocialMetricsTracker {
 			// Re-load options from DB (IMPORTANT!)
 			$this->options = null;
 			$this->initOptions();
+			$this->add_missing_settings();
 		}
 
 		// Return cached value?
@@ -364,9 +365,6 @@ class SocialMetricsTracker {
 	***************************************************/
 	public function activate() {
 
-		// Set default post types to track
-		$this->set_smt_option('post_types_post', 'post', false);
-		$this->set_smt_option('post_types_page', 'page', false);
 		$this->add_missing_settings(); // Also saves the items above
 
 		$this->version_check();
@@ -383,7 +381,9 @@ class SocialMetricsTracker {
 		// Configure default options here;
 		// They will be set only if a value does not already exist in the DB. 
 		$defaults = array(
-			'connection_type_facebook' => 'public'
+			'connection_type_facebook' => 'public',
+			'post_types_post'          => 'post',
+			'post_types_page'          => 'page',
 		);
 
 		// Allow overriding settings by default

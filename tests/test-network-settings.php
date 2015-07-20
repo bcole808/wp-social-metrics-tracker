@@ -29,7 +29,10 @@ class TestNetworkSettings extends PHPUnit_Extensions_Selenium2TestCase {
 
 		$this->go_to_network_settings_page();
 
-		sleep(5);
+		// Enable network settings mode
+		$select = $this->select($this->byName('use_network_settings_everywhere'));
+		$select->selectOptionByLabel('Use one configuration for every site.');
+		$this->byCssSelector('.button[value="Apply"]')->click();
 
 		// CHANGES
 		$this->assert_default_settings();
