@@ -388,7 +388,7 @@ class SocialMetricsTracker {
 
 		// Allow overriding settings by default
 		if ( $this->is_active_for_network() ) {
-			if ( false === get_site_option('smt_use_network_settings_everywhere') ) update_site_option( 'smt_use_network_settings_everywhere', 0 );
+			if ( 'does-not-exist' === get_site_option('smt_use_network_settings_everywhere', 'does-not-exist') ) update_site_option( 'smt_use_network_settings_everywhere', 0 );
 		}
 
 		foreach ($defaults as $key => $value) {
