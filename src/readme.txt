@@ -227,6 +227,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Upgrade Notice ==
 
+= 1.6.0 =
+Added new social networks for tracking
+
 = 1.5.3 =
 Allow attachments to be tracked, and misc. updates
 
