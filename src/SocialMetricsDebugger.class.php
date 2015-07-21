@@ -51,7 +51,7 @@ class SocialMetricsDebugger {
 	***************************************************/
 	private function executeResourceTest($HTTPResourceUpdater) {
 
-		$HTTPResourceUpdater->setParams(0, 'http://www.wordpress.org');
+		$HTTPResourceUpdater->setParams(0, 'http://www.wikipedia.org');
 		$result = $HTTPResourceUpdater->fetch(true);
 
 		$http_error_detail = array(

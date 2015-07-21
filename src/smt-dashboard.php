@@ -497,7 +497,7 @@ function smt_render_dashboard_view($smt){
 
 					<?php if (count($offline_updaters) > 0 && !isset($_REQUEST['smt_test_http_now'])) : ?>
 					<p><a class="button" href="<?php echo add_query_arg(array('smt_test_http_now' => 1)); ?>">Re-check all connections right now.</a></p>
-					<p><small>If any of the services listed above are displaying errors, they will be automatically excluded when checking for new data. If errors do not resolve themselves within one day, there might be a problem with the servers ability to connect to social network APIs to retrieve data. </small></p>
+					<p><small>If any of the services listed above are displaying errors, they will be automatically excluded when checking for new data. If errors do not resolve themselves within one day, there might be a problem with the servers ability to connect to social network APIs to retrieve data. Clicking "re-check now" will test all connections by attempting to fetch the share count for the url "http://www.wikipedia.org" and will verify that all social networks report at least one share for that URL.</small></p>
 					<?php endif; ?>
 
 				</div>
