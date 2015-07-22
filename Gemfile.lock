@@ -58,4 +58,5 @@ PLATFORMS
 
 DEPENDENCIES
   colorize
+  json
   selenium-connect

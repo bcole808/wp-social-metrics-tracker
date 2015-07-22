@@ -24,9 +24,8 @@ namespace :setup do
 
     # Check if WP is already installed
     if system "if ! $(#{@wpcli} core is-installed); then \nexit 1 \nfi"
-      puts "\n\n*****\nWordPress is already installed. Drop the database and re-install with WordPress #{$options['wp_version']}?".colorize(:red)
       
-      system "mysqladmin drop #{$options['db_name_for_dev']} \
+      system "mysqladmin -f drop #{$options['db_name_for_dev']} \
         --user=#{$options['db_username']} \
         --password=#{$options['db_password']}"
 
