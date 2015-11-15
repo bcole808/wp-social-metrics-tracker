@@ -93,21 +93,31 @@ abstract class HTTPResourceUpdater {
 		// Get the data
 		$result = $this->getURL($this->resource_uri, $this->resource_params, $this->resource_request_method);
 
-		// Report to circuit breaker
-		if (!$result) {
-			$this->wpcb->reportFailure($this->http_error, $this->http_error_detail);
-		} else {
-			$this->wpcb->reportSuccess();
-		}
 
 		// Return either a json_decoded array, or a string, or false (in that order)
 		if (strlen($result) > 0) {
 			$decoded_result = $this->jsonp_decode($result, true);
-			return $this->data = ($decoded_result) ? $decoded_result : $result;
+			$this->data = ($decoded_result) ? $decoded_result : $result;
 		} else {
-			return $this->data = false;
+			$this->data = false;
 		}
 
+		// Report to circuit breaker
+		$this->confirmResponse($result);
+
+		return $this->data;
+	}
+
+	/**
+	 * Checks the response body and reports status to circuit breaker
+	 * @param $response
+     */
+	public function confirmResponse($response) {
+		if ( !$response ) {
+			$this->wpcb->reportFailure($this->http_error, $this->http_error_detail);
+		} else {
+			$this->wpcb->reportSuccess();
+		}
 	}
 
 	/***************************************************
