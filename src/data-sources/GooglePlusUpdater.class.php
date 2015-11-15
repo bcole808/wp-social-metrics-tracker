@@ -48,7 +48,12 @@ class GooglePlusUpdater extends HTTPResourceUpdater {
 	}
 
 	public function get_total() {
-		return ($this->updater->data === null) ? 0 : intval($this->updater->data['result']['metadata']['globalCounts']['count']);
+
+		if ( ($this->updater->data === null) ) return 0;
+		if ( !isset($this->updater->data['result']) ) return 0;
+
+		return intval($this->updater->data['result']['metadata']['globalCounts']['count']);
+
 	}
 
 }
