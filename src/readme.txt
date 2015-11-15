@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.2
-Stable tag: 1.6.1
+Tested up to: 4.3.1
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.6.2 =
+* Improved error handling for Google Plus API
 
 = 1.6.1 =
 * Added colors for XING and Flattr
@@ -229,6 +232,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.6.2 =
+Improved error handling for Google Plus API
 
 = 1.6.1 =
 Added colors for XING and Flattr
