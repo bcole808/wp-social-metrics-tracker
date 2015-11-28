@@ -19,7 +19,7 @@ This WordPress plugin collects and displays an analysis of social media interact
 
 = Get stats from these social networks: =
 
-Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr
+Facebook, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr
 
 = Focus your writing topics: =
 
@@ -53,7 +53,11 @@ The information is retrieved directly from the public APIs that each social netw
 
 = What social networks are measured? =
 
-Facebook, Twitter, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr are available for tracking. By default, not all of the data sources are enabled in order to optimize performance out of the box. You can enable or disable tracking of data from any of these social networks by going to the API Connections Settings page in the plugin configuration area. It is recommended to only turn on the networks where your visitors are actively sharing content in order to conserve server resources when fetching data. 
+Facebook, Reddit, LinkedIn, StumbleUpon, Pinterest, Google+, XING, and Flattr are available for tracking. By default, not all of the data sources are enabled in order to optimize performance out of the box. You can enable or disable tracking of data from any of these social networks by going to the API Connections Settings page in the plugin configuration area. It is recommended to only turn on the networks where your visitors are actively sharing content in order to conserve server resources when fetching data.
+
+= Why is Twitter not available? =
+
+In November of 2015, Twitter officially removed their API which provided share counts of URLS on Twitter. At this time, there is no comparable way to retrieve the number of all-time shares of a URL. Please petition with Twitter to create an API for this!
 
 = What information is sent from my blog to other services? =
 
@@ -103,6 +107,8 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+= 1.6.3 =
+* Remove Twitter API because it has been officially discontinued by Twitter.
 
 = 1.6.2 =
 * Improved error handling for Google Plus API
@@ -233,6 +239,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 == Upgrade Notice ==
 
+= 1.6.3 =
+Remove Twitter API because it has been officially discontinued by Twitter.
+
 = 1.6.2 =
 Improved error handling for Google Plus API
 
@@ -330,7 +339,7 @@ To display the total number of social interactions, get the post meta:
 
 Here is a listing of all of the available data fields which you can access in that way:
 
-socialcount_TOTAL, socialcount_facebook, socialcount_twitter, socialcount_googleplus, socialcount_linkedin, socialcount_pinterest, socialcount_stumbleupon, socialcount_LAST_UPDATED
+socialcount_TOTAL, socialcount_facebook, socialcount_googleplus, socialcount_linkedin, socialcount_pinterest, socialcount_stumbleupon, socialcount_LAST_UPDATED
 
 **Extending the plugin**
 

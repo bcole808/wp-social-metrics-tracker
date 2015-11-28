@@ -6,7 +6,7 @@
 
 ![screenshot](http://i.imgur.com/JdOEBV7.png)
 
-**Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, Twitter, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. The plugin is able to track data from multiple URLs, including differing protocols, subdomains, or other alternate post URLs. 
+**Social Metrics Tracker** is a Wordpress plugin for viewing and analyzing the social performance of your site. Out of the box, the plugin tracks social interactions for all of your posts and pages from a handful of popular networks, including Facebook, GooglePlus, Pinterest, LinkedIn, and StumbleUpon by collecting data directly from social network APIs. The plugin is able to track data from multiple URLs, including differing protocols, subdomains, or other alternate post URLs.
 
 # Quick Start
 
@@ -40,7 +40,6 @@ Service  | Meta Field Name
 ------------- | -------------
 Total | socialcount_TOTAL
 Facebook | socialcount_facebook
-Twitter | socialcount_twitter
 Google Plus | socialcount_googleplus
 LinkedIn | socialcount_linkedin
 Pinterest | socialcount_pinterest
@@ -100,7 +99,7 @@ A: The information is retrieved directly from the public APIs that each social n
 
 ### Q: What social networks are measured?
 
-A: Facebook, Twitter, LinkedIn, StumbleUpon, Pinterest, and Google+.
+A: Facebook, LinkedIn, StumbleUpon, Pinterest, and Google+. Twitter used to be available, but Twitter has removed their API.
 
 ### Q: When is the data updated?
 

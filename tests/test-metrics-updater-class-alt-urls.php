@@ -22,7 +22,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	// B) Set array (true, false, false, true) to indicate that updater should be online, then offline twice, then online. After fourth, Updater returns to regular online state. 
 	private $available = array(
 		'FacebookGraphUpdater' => true,
-		'TwitterUpdater'  => true,
+		'StumbleUponUpdater'  => true,
 		'LinkedInUpdater' => true,
 	);
 
@@ -50,7 +50,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'StumbleUponUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -80,7 +80,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 163,
 				// 'facebook_shares'          => 685,
 				// 'facebook_likes'           => 171,
-				'socialcount_twitter'      => 111,
+				'socialcount_stumbleupon'  => 111,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -90,7 +90,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 163,
 				// 'facebook_shares'          => 685,
 				// 'facebook_likes'           => 171,
-				'socialcount_twitter'      => 0,
+				'socialcount_stumbleupon'  => 0,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -100,7 +100,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 15537,
 				// 'facebook_shares'          => 71650,
 				// 'facebook_likes'           => 23437,
-				'socialcount_twitter'      => 163021,
+				'socialcount_stumbleupon'  => 163021,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -110,7 +110,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 15537,
 				// 'facebook_shares'          => 71650,
 				// 'facebook_likes'           => 23437,
-				'socialcount_twitter'      => 168,
+				'socialcount_stumbleupon'  => 168,
 				'socialcount_linkedin'     => 988,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -121,7 +121,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 16579,
 				// 'facebook_shares'          => 131060,
 				// 'facebook_likes'           => 24120,
-				'socialcount_twitter'      => 5,
+				'socialcount_stumbleupon'  => 5,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -131,7 +131,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 16579,
 				// 'facebook_shares'          => 131060,
 				// 'facebook_likes'           => 24120,
-				'socialcount_twitter'      => 2379,
+				'socialcount_stumbleupon'  => 2379,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -141,7 +141,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 16579,
 				// 'facebook_shares'          => 131060,
 				// 'facebook_likes'           => 24120,
-				'socialcount_twitter'      => 7,
+				'socialcount_stumbleupon'  => 7,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
 			),
@@ -151,7 +151,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 				// 'facebook_comments'        => 16579,
 				// 'facebook_shares'          => 131060,
 				// 'facebook_likes'           => 24120,
-				'socialcount_twitter'      => 69221,
+				'socialcount_stumbleupon'  => 69221,
 				'socialcount_linkedin'     => 241,
 				// 'socialcount_LAST_UPDATED' => time()
 			)
@@ -216,8 +216,8 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 	function verify_correct_primary_data($post_id, $data) {
 		$expected = (is_array($data)) ? $data : $this->correct_alt_data[$data];
 
-		// $keys = array('socialcount_facebook', 'socialcount_twitter', 'socialcount_linkedin', 'facebook_comments', 'facebook_likes', 'facebook_shares');
-		$keys = array('socialcount_facebook', 'socialcount_twitter', 'socialcount_linkedin');
+		// $keys = array('socialcount_facebook', 'socialcount_stumbleupon', 'socialcount_linkedin', 'facebook_comments', 'facebook_likes', 'facebook_shares');
+		$keys = array('socialcount_facebook', 'socialcount_stumbleupon', 'socialcount_linkedin');
 
 		foreach($keys as $key) {
 			$this->assertEquals($expected[$key], get_post_meta($post_id, $key, true), 'The key "'.$key.'" did not have the right value.');
@@ -248,7 +248,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 
 		// MOCK HTTP-RESOURCE-UPDATERS
 		// =====================
-		$updater_classes = array('FacebookGraphUpdater', 'TwitterUpdater', 'LinkedInUpdater');
+		$updater_classes = array('FacebookGraphUpdater', 'StumbleUponUpdater', 'LinkedInUpdater');
 
 		// Create a mock object for each of the desired updater classes. 
 		foreach ($updater_classes as $class_name) {
@@ -360,7 +360,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			'facebook_comments'        => 15700,
 			'facebook_shares'          => 72335,
 			'facebook_likes'           => 23608,
-			'socialcount_twitter'      => 163300,
+			'socialcount_stumbleupon'  => 163300,
 			'socialcount_linkedin'     => 988,
 			'socialcount_TOTAL'        => 275931,
 			'socialcount_LAST_UPDATED' => time()
@@ -390,7 +390,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			// 'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
 			// 'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
 			// 'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
-			'socialcount_twitter'      => 71612,  // the sum of twitter-1, 2, 3, and 4
+			'socialcount_stumbleupon'  => 71612,  // the sum of stumbleupon-1, 2, 3, and 4
 			'socialcount_linkedin'     => 241,     // the sum of linkedin-1, 2, 3, and 4 (which are identical)
 			'socialcount_TOTAL'        => 243612
 		);
@@ -408,14 +408,14 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			// 'facebook_comments'        => 16579,
 			// 'facebook_shares'          => 131060,
 			// 'facebook_likes'           => 24120,
-			'socialcount_twitter'      => 2384, // the sum of twitter-1 and twitter-2
+			'socialcount_stumbleupon'  => 2384, // the sum of stumbleupon-1 and stumbleupon-2
 			'socialcount_linkedin'     => 241,
 			'socialcount_TOTAL'        => 174384
 		));
 
 		// 2. If service is partially offline, it counts everything it can
 		$post_id = $this->factory->post->create();
-		$this->available['TwitterUpdater'] = array(true, true, false, true);
+		$this->available['StumbleUponUpdater'] = array(true, true, false, true);
 
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-2.json');
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-set/service-3.json');
@@ -429,7 +429,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			// 'facebook_comments'        => 16579,  // The sum of facebook-1, 3, and 4 (which are identical)
 			// 'facebook_shares'          => 131060, // The sum of facebook-1, 3, and 4 (which are identical)
 			// 'facebook_likes'           => 24120,  // The sum of facebook-1, 3, and 4 (which are identical)
-			'socialcount_twitter'      => 71605,  // the sum of twitter-1, 2, (not 3), and 4
+			'socialcount_stumbleupon'  => 71605,  // the sum of stumbleupon-1, 2, (not 3), and 4
 			'socialcount_linkedin'     => 241,    // the sum of linkedin-1, 2, 3, and 4 (which are identical)
 			'socialcount_TOTAL'        => 243605
 		));
@@ -478,7 +478,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 			// 'facebook_comments'        => 15700,
 			// 'facebook_shares'          => 72335,
 			// 'facebook_likes'           => 23608,
-			'socialcount_twitter'      => 163300,
+			'socialcount_stumbleupon'  => 163300,
 			'socialcount_linkedin'     => 988,
 			'socialcount_TOTAL'        => 275763,
 			'socialcount_LAST_UPDATED' => time()
@@ -496,7 +496,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		$this->updater->updatePostStats($post_id, true, 'canonical-not-set/service-1.json');
 
 		$expected = $expected_total;
-		$expected['socialcount_twitter'] = 163132; // Minus service-4
+		$expected['socialcount_stumbleupon'] = 163132; // Minus service-4
 
 		$this->verify_correct_primary_data($post_id, $expected);
 		
@@ -761,7 +761,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
 		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(6))->method('getURL');
-		$this->updater->sources->TwitterUpdater->expects($this->exactly(6))->method('getURL');
+		$this->updater->sources->StumbleUponUpdater->expects($this->exactly(6))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(6))->method('getURL');
 
 		// Only one of these should go through
@@ -795,7 +795,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
 		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(4))->method('getURL');
-		$this->updater->sources->TwitterUpdater->expects($this->exactly(4))->method('getURL');
+		$this->updater->sources->StumbleUponUpdater->expects($this->exactly(4))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(4))->method('getURL');
 
 		// Fire update twice, should update total of 4 URLs
@@ -819,7 +819,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
 		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(2))->method('getURL');
-		$this->updater->sources->TwitterUpdater->expects($this->exactly(2))->method('getURL');
+		$this->updater->sources->StumbleUponUpdater->expects($this->exactly(2))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(2))->method('getURL');
 
 		// Fire update twice, should update total of 2 URLs because of TTL
@@ -842,7 +842,7 @@ class MetricUpdaterAltURLTests extends WP_UnitTestCase {
 		add_post_meta($post_id, 'socialcount_url_data', 'canonical-not-set/service-2.json');
 
 		$this->updater->sources->FacebookGraphUpdater->expects($this->exactly(5))->method('getURL');
-		$this->updater->sources->TwitterUpdater->expects($this->exactly(5))->method('getURL');
+		$this->updater->sources->StumbleUponUpdater->expects($this->exactly(5))->method('getURL');
 		$this->updater->sources->LinkedInUpdater->expects($this->exactly(5))->method('getURL');
 
 		// Only one of these should go through

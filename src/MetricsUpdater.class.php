@@ -12,7 +12,6 @@
 require_once('data-sources/HTTPResourceUpdater.class.php');
 require_once('data-sources/FacebookGraphUpdater.class.php');
 require_once('data-sources/FacebookPublicUpdater.class.php');
-require_once('data-sources/TwitterUpdater.class.php');
 require_once('data-sources/LinkedInUpdater.class.php');
 require_once('data-sources/GooglePlusUpdater.class.php');
 require_once('data-sources/PinterestUpdater.class.php');
@@ -74,7 +73,6 @@ class MetricsUpdater {
 
 		// Initialize sources
 		$sources->FacebookUpdater    = $fb_graph_mode ? new FacebookGraphUpdater($fb_access_token) : new FacebookPublicUpdater();
-		$sources->TwitterUpdater     = new TwitterUpdater();
 		$sources->LinkedInUpdater    = new LinkedInUpdater();
 		$sources->RedditUpdater      = new RedditUpdater();
 		$sources->StumbleUponUpdater = new StumbleUponUpdater();

@@ -80,6 +80,8 @@ class TestRemoteServices extends WP_UnitTestCase {
 	*/
 	function test_twitter() {
 
+		$this->markTestSkipped('Twitter API is no longer available.');
+
 		$updater = new TwitterUpdater();
 		$updater->setParams(1, 'http://www.wordpress.org');
 

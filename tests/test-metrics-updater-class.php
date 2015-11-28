@@ -25,15 +25,15 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
-		// MOCK TWITTER
+		// MOCK STUMBLEUPON
 		// =====================
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/urls.api.twitter.com.json'
+			dirname(__FILE__) .'/sample-data/stumbleupon.com.json'
 		);
 
-		$this->updater->sources->TwitterUpdater = $this->getMock('TwitterUpdater', array('getURL'));
+		$this->updater->sources->StumbleUponUpdater = $this->getMock('StumbleUponUpdater', array('getURL'));
 
-		$this->updater->sources->TwitterUpdater->expects($this->any())
+		$this->updater->sources->StumbleUponUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
@@ -66,17 +66,17 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 			// $this->assertEquals(950,  get_post_meta($post_id, 'facebook_likes', true));
 		}
 
-		// Twitter
-		$this->assertEquals(6,    get_post_meta($post_id, 'socialcount_twitter', true));
+		// StumbleUpon
+		$this->assertEquals(148870,    get_post_meta($post_id, 'socialcount_stumbleupon', true));
 
 		// LinkedIn
 		$this->assertEquals(1207, get_post_meta($post_id, 'socialcount_linkedin', true));
 
 		// Totals
 		if ($skip_facebook) {
-			$this->assertEquals(1213, get_post_meta($post_id, 'socialcount_TOTAL', true));
+			$this->assertEquals(150077, get_post_meta($post_id, 'socialcount_TOTAL', true));
 		} else {
-			$this->assertEquals(12063, get_post_meta($post_id, 'socialcount_TOTAL', true));
+			$this->assertEquals(160927, get_post_meta($post_id, 'socialcount_TOTAL', true));
 		}
 
 		// Timestamp / meta
@@ -87,10 +87,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed_last_updated', true) >= time()-5);
 
 		if ($skip_facebook) {
-			$this->assertEquals(1213, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertEquals(150077, get_post_meta($post_id, 'social_aggregate_score', true));
 			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 2420); // Estimate
 		} else {
-			$this->assertEquals(12063, get_post_meta($post_id, 'social_aggregate_score', true));
+			$this->assertEquals(160927, get_post_meta($post_id, 'social_aggregate_score', true));
 			$this->assertTrue(get_post_meta($post_id, 'social_aggregate_score_decayed', true) >= 19320); // Estimate
 		}
 	}
@@ -323,7 +323,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		// 1. It should return a set of $HTTPResourceUpdater objects
 		$sources = $test_updater->getSources();
 
-		$this->assertEquals( 5, count((array)$sources), 'The wrong number of updaters were initialized!' );
+		$this->assertEquals( 4, count((array)$sources), 'The wrong number of updaters were initialized!' );
 
 		foreach ($sources as $HTTPResourceUpdater) {
 			$this->assertTrue( is_a( $HTTPResourceUpdater, 'HTTPResourceUpdater' ), 'Wrong object type found!' );
@@ -336,7 +336,7 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$smt->init();
 
 		// Disable an updater, enable another
-		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'twitter'=>0) );
+		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'stumbleupon'=>0) );
 
 		$test_updater = new MetricsUpdater($smt);
 		$sources = $test_updater->getSources();
@@ -345,13 +345,13 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		foreach ($sources as $HTTPResourceUpdater) {
 			$this->assertFalse( is_a( $HTTPResourceUpdater, 'FacebookGraphUpdater' ), 'This should have been de-activated!' );
 			$this->assertFalse( is_a( $HTTPResourceUpdater, 'FacebookPublicUpdater' ), 'This should have been de-activated!' );
-			$this->assertFalse( is_a( $HTTPResourceUpdater, 'TwitterUpdater' ), 'This should have been de-activated!' );
+			$this->assertFalse( is_a( $HTTPResourceUpdater, 'StumbleUponUpdater' ), 'This should have been de-activated!' );
 		}
 
 		// 2. It should still return "allSources"
 		$allsources = $test_updater->allSources();
 
-		$this->assertEquals( 9, count( (array) $allsources ), 'The wrong number of updaters were initialized!' );
+		$this->assertEquals( 8, count( (array) $allsources ), 'The wrong number of updaters were initialized!' );
 
 	}
 
@@ -367,7 +367,6 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 		$expected = array(
 			'facebook'    => true,
-			'twitter'     => true,
 			'linkedin'    => true,
 			'googleplus'  => false,
 			'pinterest'   => false,
@@ -381,16 +380,15 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 
 		// 2. If items previously disabled, it should persist and missing items should be added
-		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'twitter'=>0, 'googleplus'=>1) );
+		$smt->set_smt_option( 'api_enabled', array('facebook'=>0, 'stumbleupon'=>0, 'googleplus'=>1) );
 		$smt->add_missing_settings();
 		
 		$expected = array(
 			'facebook'    => false,
-			'twitter'     => false,
 			'linkedin'    => true,
 			'googleplus'  => true,
 			'pinterest'   => false,
-			'stumbleupon' => true,
+			'stumbleupon' => false,
 			'reddit'      => true,
 			'flattr'      => false,
 			'xing'        => false,

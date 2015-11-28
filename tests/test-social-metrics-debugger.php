@@ -31,15 +31,15 @@ class TestSocialMetricsDebugger extends WP_UnitTestCase {
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
-		// MOCK TWITTER
+		// MOCK STUMBLEUPON
 		// =====================
 		$this->sample_return = file_get_contents(
-			dirname(__FILE__) .'/sample-data/urls.api.twitter.com.json'
+			dirname(__FILE__) .'/sample-data/stumbleupon.com.json'
 		);
 
-		$this->smt->updater->sources->TwitterUpdater = $this->getMock('TwitterUpdater', array('getURL'));
+		$this->smt->updater->sources->StumbleUponUpdater = $this->getMock('StumbleUponUpdater', array('getURL'));
 
-		$this->smt->updater->sources->TwitterUpdater->expects($this->any())
+		$this->smt->updater->sources->StumbleUponUpdater->expects($this->any())
 		    ->method('getURL')
 		    ->will($this->returnValue($this->sample_return));
 
