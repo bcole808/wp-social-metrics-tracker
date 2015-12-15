@@ -485,10 +485,12 @@ class MetricsUpdater {
 
 		foreach ($alt_data as $key => $val) {
 
+			$url = '';
+
 			// Check data type
 			if (is_string($val)) {
 				$url = $val;
-			} else if (array_key_exists('permalink', $val)) {
+			} else if (is_array($val) && array_key_exists('permalink', $val)) {
 				$url = $val['permalink'];
 			} else {
 				// No matching data type
