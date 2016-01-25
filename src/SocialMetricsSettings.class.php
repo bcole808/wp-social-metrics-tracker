@@ -487,7 +487,7 @@ class socialMetricsSettings {
 				<li><a href="https://console.developers.google.com" target="_new">Set up a free Google Developer account</a></li>
 				<li>Create a new project</li>
 				<li>Enable the Google Analytics API for the project</li>
-				<li>Under <b>APIs & auth > Credentials</b> click "Create new Client ID" and select "Web Appplication"</li>
+				<li>Under <b>Credentials</b>, create a new credential and set it up as an "OAuth Client ID" for a "Web Appplication"</li>
 				<li>Add the following authorized redirect URI: <input value="<?php echo $this->gapi->redirect_uri; ?>" onClick="this.select();" style="min-width:300px; background:white; cursor:text; font-size:11px" readonly></li>
 				<li>Enter the information you receive below: </li>
 			</ol>
