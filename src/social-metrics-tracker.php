@@ -57,6 +57,8 @@ class SocialMetricsTracker {
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('plugins_loaded', array($this, 'version_check'));
 			add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
+
+			new socialMetricsSettings($this);
 		}
 
 		add_action('init', array($this, 'init'));
@@ -222,14 +224,6 @@ class SocialMetricsTracker {
 
 		// Export page
 		add_submenu_page('social-metrics-tracker', 'Data Export Tool', 'Export Data', $visibility, 'social-metrics-tracker-export',  array($this, 'render_view_export'));
-
-		new socialMetricsSettings($this);
-
-	} // end adminMenuSetup()
-
-	public function networkAdminMenuSetup() {
-
-		new socialMetricsSettings($this);
 
 	} // end adminMenuSetup()
 
