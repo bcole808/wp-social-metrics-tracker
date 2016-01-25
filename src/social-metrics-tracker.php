@@ -38,7 +38,7 @@ Handlebars_Autoloader::register();
 
 class SocialMetricsTracker {
 
-	public $version = '1.6.3'; // for db upgrade comparison
+	public $version = '1.6.4'; // for db upgrade comparison
 	public $updater;
 	public $options;
 	protected $network_activated;
