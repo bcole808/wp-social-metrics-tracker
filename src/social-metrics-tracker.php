@@ -3,7 +3,7 @@
 Plugin Name: Social Metrics Tracker
 Plugin URI: https://github.com/ChapmanU/wp-social-metrics-tracker
 Description: Collect and display social network shares, likes, tweets, and view counts of posts.
-Version: 1.6.3
+Version: 1.6.4
 Author: Ben Cole
 Author URI: http://www.bencole.net
 License: GPLv2+
