@@ -33,6 +33,26 @@ $wpsf_settings['smt'] = array(
 			'std'   => 1
 		),
 		array(
+			'id'    => 'update_range',
+			'title' => 'Update Range',
+			'desc'  => 'What posts should be automatically kept in sync? You can use this to limit the number of updates that run in case your site has a lot of older posts. It is recommended to track all posts unless you have too many.',
+			'type'  => 'select',
+			'std'   => 'all',
+			'choices' => array(
+				'all' => 'All posts',
+				'none'    => 'No posts (Disables automatic updates)',
+				'7'    => 'Only posts published within 1 week',
+				'14'   => 'Only posts published within 2 weeks',
+				'30'   => 'Only posts published within 1 month',
+				'60'   => 'Only posts published within 2 months',
+				'90'   => 'Only posts published within 3 months',
+				'180'  => 'Only posts published within 6 months',
+				'365'  => 'Only posts published within 1 year',
+				'730'  => 'Only posts published within 2 years',
+				'1460' => 'Only posts published within 4 years',
+			)
+		),
+		array(
 			'id'    => 'ttl_hours',
 			'title' => 'Data TTL',
 			'desc'  => 'Length of time to wait in between checking for new stats on each post. A shorter time will use more server resources. Longer times are recommended for sites with over 500 posts.',

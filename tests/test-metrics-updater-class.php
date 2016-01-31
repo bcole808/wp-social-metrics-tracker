@@ -398,4 +398,74 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	}
 
+	function test_update_range_is_none() {
+
+		$this->updater->smt->set_smt_option('update_range', 'none');
+
+		$post_id = $this->factory->post->create([
+			'post_date' => date('Y-m-d H:i:s', strtotime('-28 days')),
+		]);
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		$this->assertEquals(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update range option was not enforced!'
+		);
+
+	}
+
+	function test_update_range_is_all() {
+
+		$this->updater->smt->set_smt_option('update_range', 'all');
+
+		$post_id = $this->factory->post->create([
+			'post_date' => date('Y-m-d H:i:s', strtotime('-28 days')),
+		]);
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		$this->assertGreaterThan(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update range option was not enforced!'
+		);
+
+	}
+
+	function test_update_range_is_number() {
+
+		$post_id = $this->factory->post->create([
+			'post_date' => date('Y-m-d H:i:s', strtotime('-28 days')),
+		]);
+
+		// It does not schedule
+		$this->updater->smt->set_smt_option('update_range', 27);
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		$this->assertEquals(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update range option was not enforced!'
+		);
+
+		// It does schedule
+		$this->updater->smt->set_smt_option('update_range', 29);
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		$this->assertGreaterThan(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update range option was not enforced!'
+		);
+
+	}
+
 }

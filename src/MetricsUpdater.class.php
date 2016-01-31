@@ -190,7 +190,7 @@ class MetricsUpdater {
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
 		// If TTL has elapsed
-		if ($this->isPostReadyForNextUpdate($post_id)) {
+		if ($this->isPostReadyForNextUpdate($post_id) && $this->isPostWithinAllowedRange($post)) {
 
 			// Schedule an update
 			wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
@@ -199,6 +199,36 @@ class MetricsUpdater {
 
 		return true;
 	} // end checkThisPost()
+
+
+	/**
+	 * Checks if the post was published with the date range for auto-updates
+	 *
+	 * @param $post
+	 * @return bool
+     */
+	private function isPostWithinAllowedRange($post) {
+
+		// See what date range we want to allow auto-updates for
+		$range = $this->smt->get_smt_option('update_range');
+
+		if ($range == 'none') {
+			return false;
+		}
+
+		if ($range == 'all') {
+			return true;
+		}
+
+		$cutoff = current_time('timestamp') - ( $range * DAY_IN_SECONDS );
+
+		if (strtotime($post->post_date) > $cutoff) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
 
 
 	/**
