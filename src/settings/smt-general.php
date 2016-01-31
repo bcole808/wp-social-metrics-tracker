@@ -50,6 +50,7 @@ $wpsf_settings['smt'] = array(
 				'48'  => '2 Days',
 				'72'  => '3 Days',
 				'168' => '1 Week',
+				'720' => '1 Month',
 			)
 		),
 		array(
