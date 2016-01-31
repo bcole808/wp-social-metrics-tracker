@@ -33,24 +33,9 @@ $wpsf_settings['smt'] = array(
 			'std'   => 1
 		),
 		array(
-			'id'    => 'report_visibility',
-			'title' => 'Report Visibility',
-			'desc'  => 'The Social Metrics Tracker reports will be visible to users who have this capability.',
-			'type'  => 'select',
-			'std'   => 'publish_posts',
-			'choices' => array(
-				'manage_network'    => 'Super Admins (Users who can manage the network)',
-				'manage_options'    => 'Admins (Users who can manage options)',
-				'edit_others_posts' => 'Editors (Users who can edit others posts)',
-				'publish_posts'     => 'Authors (Users who can publish posts)',
-				'edit_posts'        => 'Contributors (Users who can edit their own posts)',
-				'read'              => 'Subscribers (Users who can read)'
-			)
-		),
-		array(
 			'id'    => 'ttl_hours',
 			'title' => 'Data TTL',
-			'desc'  => 'Length of time to store the statistics locally before downloading new data. A lower value will use more server resources. High values are recommended for blogs with over 500 posts.',
+			'desc'  => 'Length of time to wait in between checking for new stats on each post. A shorter time will use more server resources. Longer times are recommended for sites with over 500 posts.',
 			'type'  => 'select',
 			'std'   => '12',
 			'choices' => array(
@@ -68,8 +53,23 @@ $wpsf_settings['smt'] = array(
 			)
 		),
 		array(
+			'id'    => 'report_visibility',
+			'title' => 'Report Visibility',
+			'desc'  => 'The Social Metrics Tracker reports will be visible to users who have this capability.',
+			'type'  => 'select',
+			'std'   => 'publish_posts',
+			'choices' => array(
+				'manage_network'    => 'Super Admins (Users who can manage the network)',
+				'manage_options'    => 'Admins (Users who can manage options)',
+				'edit_others_posts' => 'Editors (Users who can edit others posts)',
+				'publish_posts'     => 'Authors (Users who can publish posts)',
+				'edit_posts'        => 'Contributors (Users who can edit their own posts)',
+				'read'              => 'Subscribers (Users who can read)'
+			)
+		),
+		array(
 			'id'    => 'default_sort_column',
-			'title' => 'Default Sort Order',
+			'title' => 'Report Sort Order',
 			'desc'  => 'Which column should be sorted by default?',
 			'type'  => 'select',
 			'std'   => 'social',
@@ -82,7 +82,7 @@ $wpsf_settings['smt'] = array(
 		),
 		array(
 			'id'    => 'default_date_range_months',
-			'title' => 'Default Date Range',
+			'title' => 'Report Date Range',
 			'desc'  => 'Reports should display posts published within this date range.',
 			'type'  => 'select',
 			'std'   => '0',
@@ -96,7 +96,7 @@ $wpsf_settings['smt'] = array(
 		),
 		array(
 			'id'    => 'default_posts_per_page',
-			'title' => 'Default Posts per Page',
+			'title' => 'Report Posts per Page',
 			'desc'  => 'Number of posts per page to display in reports',
 			'type'  => 'select',
 			'std'   => '10',
