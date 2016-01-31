@@ -199,11 +199,31 @@ class MetricsUpdater {
 			return false;
 		}
 
-		// Schedule an update
-		wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
+		// Schedule the update!
+		switch($this->smt->get_smt_option('update_mode')) {
+
+			case 'pageload' :
+					add_action('wp_footer', array($this, 'updateCurrentPostNow'), 100);
+				break;
+
+			case 'cron' :
+				// use default for case 'cron'
+			default :
+
+				// Schedule an update for cron
+				wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
+
+				break;
+		}
 
 		return true;
 	} // end checkThisPost()
+
+	public function updateCurrentPostNow() {
+		global $post;
+		wp_reset_postdata();
+		$this->updatePostStats($post->ID);
+	}
 
 
 	/**

@@ -33,6 +33,17 @@ $wpsf_settings['smt'] = array(
 			'std'   => 1
 		),
 		array(
+			'id'    => 'update_mode',
+			'title' => 'Update Mode',
+			'desc'  => 'By default, the plugin will connect to social network APIs during the WP Cron (as a background task). This will keep your posts loading fast! If for some reason this is a problem, you can change the it to perform updates during regular page loads instead.',
+			'type'  => 'select',
+			'std'   => 'all',
+			'choices' => array(
+				'cron'     => 'WP Cron (Default - Runs in the background)',
+				'pageload' => 'Page Footer (Can make posts load more slowly)',
+			),
+		),
+		array(
 			'id'    => 'update_range',
 			'title' => 'Update Range',
 			'desc'  => 'What posts should be automatically kept in sync? You can use this to limit the number of updates that run in case your site has a lot of older posts. It is recommended to track all posts unless you have too many.',

@@ -468,4 +468,45 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 
 	}
 
+	function test_update_mode_cron() {
+		$post_id = $this->factory->post->create();
+
+		// It schedules
+		$this->updater->smt->set_smt_option('update_mode', 'cron');
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		// No footer hook added
+		$this->assertFalse(has_action('wp_footer', array($this->updater, 'updateCurrentPostNow')));
+
+		// Cron scheduled
+		$this->assertGreaterThan(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update mode option was broken!'
+		);
+	}
+
+	function test_update_mode_pageload() {
+		$post_id = $this->factory->post->create();
+
+		// It schedules
+		$this->updater->smt->set_smt_option('update_mode', 'pageload');
+
+		$this->go_to("/?p={$post_id}");
+		$this->updater->checkThisPost($post_id);
+
+		$this->assertNotFalse(has_action('wp_footer', array($this->updater, 'updateCurrentPostNow')));
+		do_action('wp_footer');
+
+		$this->assertEquals(
+			0,
+			wp_next_scheduled('social_metrics_update_single_post', array($post_id)),
+			'The update mode option was broken!'
+		);
+
+		$this->assert_correct_data($post_id);
+	}
+
 }
