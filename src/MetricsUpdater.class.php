@@ -189,13 +189,18 @@ class MetricsUpdater {
 		if (!$post || !in_array($post->post_status, array('publish', 'inherit')))   return false; // Allow only published posts
 		if ((count($types) > 0) && !is_singular($types)) return false; // Allow singular view of enabled post types
 
-		// If TTL has elapsed
-		if ($this->isPostReadyForNextUpdate($post_id) && $this->isPostWithinAllowedRange($post)) {
-
-			// Schedule an update
-			wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
-
+		// Block if TTL has not elapsed
+		if ( !$this->isPostReadyForNextUpdate($post_id) ) {
+			return false;
 		}
+
+		// Block if restricted by date range
+		if ( !$this->isPostWithinAllowedRange($post) ) {
+			return false;
+		}
+
+		// Schedule an update
+		wp_schedule_single_event( $this->getLocalTime(), 'social_metrics_update_single_post', array( $post_id ) );
 
 		return true;
 	} // end checkThisPost()
