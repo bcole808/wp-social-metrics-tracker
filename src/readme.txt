@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
 Tested up to: 4.4.1
-Stable tag: 1.6.4
+Stable tag: 1.6.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,11 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.6.5 =
+* Added option to run updates in the page footer instead of the cron
+* Added option to set an update range to disable updating of older posts
+* Change wording of some options to make them easier to understand
 
 = 1.6.4 =
 * Minor bug fixes: resolved some PHP errors and warnings
@@ -242,6 +247,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.6.5 =
+Added options to help control how and when updates occur
 
 = 1.6.4 =
 Minor bug fixes
