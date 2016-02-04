@@ -25,12 +25,16 @@ class socialMetricsSettings {
 		$pages = array('social-metrics-tracker', 'social-metrics-tracker-export', 'social-metrics-tracker-settings');
 
 		if (isset($_REQUEST['page']) && in_array($_REQUEST['page'], $pages)) {
-			$this->section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : 'general';
-			$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
+			add_action( 'init', array($this, 'setup') );
 		}
 
 		// $this->smt->use_network_settings = get_site_option('smt_use_network_settings_everywhere');
 
+	}
+
+	function setup() {
+		$this->section = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : 'general';
+		$this->wpsf = new WordPressSettingsFramework( plugin_dir_path( __FILE__ ) .'settings/smt-'.$this->section.'.php', 'smt' );
 	}
 
 	function admin_menu() {
@@ -222,6 +226,7 @@ class socialMetricsSettings {
 	// Saves the general settings page
 	function process_general_form() {
 		if (!isset($_POST) || count($_POST) == 0) return;
+		if (!isset($_POST['smt_settings'])) return;
 		$this->smt->merge_smt_options($_POST['smt_settings']);
 	}
 
@@ -427,7 +432,8 @@ class socialMetricsSettings {
 		);
 		$posts_array = get_posts( $args );
 
-		return $posts_array[0]->ID;
+		if ($posts_array)
+			return $posts_array[0]->ID;
 
 	}
 

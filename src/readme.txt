@@ -112,6 +112,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 * Added option to run updates in the page footer instead of the cron
 * Added option to set an update range to disable updating of older posts
 * Change wording of some options to make them easier to understand
+* Fixed some PHP errors with WP Multisite
 
 = 1.6.4 =
 * Minor bug fixes: resolved some PHP errors and warnings

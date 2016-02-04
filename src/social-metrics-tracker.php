@@ -53,7 +53,6 @@ class SocialMetricsTracker {
 
 		if (is_admin()) {
 			add_action('admin_menu', array($this,'adminMenuSetup'));
-			add_action('network_admin_menu', array($this,'networkAdminMenuSetup'));
 			add_action('admin_enqueue_scripts', array($this, 'adminHeaderScripts'));
 			add_action('plugins_loaded', array($this, 'version_check'));
 			add_action('wp_dashboard_setup', array($this, 'dashboard_setup'));
