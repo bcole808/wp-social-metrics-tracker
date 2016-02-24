@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.4.1
-Stable tag: 1.6.5
+Tested up to: 4.4.2
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.6.6 =
+* Fixed a bug where custom post types were not being listed on the settings page
 
 = 1.6.5 =
 * Added option to run updates in the page footer instead of the cron
@@ -248,6 +251,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.6.6 =
+Fixed a bug where custom post types were not being listed on the settings page
 
 = 1.6.5 =
 Added options to help control how and when updates occur
