@@ -25,7 +25,7 @@ class socialMetricsSettings {
 		$pages = array('social-metrics-tracker', 'social-metrics-tracker-export', 'social-metrics-tracker-settings');
 
 		if (isset($_REQUEST['page']) && in_array($_REQUEST['page'], $pages)) {
-			add_action( 'init', array($this, 'setup') );
+			add_action( 'admin_init', array($this, 'setup'), 5 );
 		}
 
 		// $this->smt->use_network_settings = get_site_option('smt_use_network_settings_everywhere');
