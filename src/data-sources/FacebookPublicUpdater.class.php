@@ -62,7 +62,35 @@ class FacebookPublicUpdater extends HTTPResourceUpdater {
 		if ($match === false) return 0;
 
 		// Convert the string with commas to an integer
-		return intval(str_replace(',', '', $match));
+		return $this->convert_abbreviated_num($match);
+	}
+
+	/**
+	 * Converts strings like 
+	 *    "1.2k" into "1200"
+	 *    "1,582" into "1582"
+	 */
+	private function convert_abbreviated_num($input) {
+
+		$unit_values = array(
+			"k" => 1000,
+			"m" => 1000000,
+			"b" => 1000000000,
+			"t" => 1000000000000,
+		);
+
+		$input = trim($input);
+
+		$input = str_replace(',', '', $input);
+
+		$unit = strtolower( substr($input, -1) );
+
+		if (array_key_exists($unit, $unit_values)) {
+			return floatval($input) * $unit_values[$unit];
+		} else {
+			return intval($input);
+		}
+
 	}
 
 }

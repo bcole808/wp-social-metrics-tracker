@@ -3,8 +3,8 @@ Contributors: bcole808
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2Z4QFWKJ5DM4
 Tags: admin, dashboard, social, social media, facebook, twitter, metrics, analytics, tracking, stats, engagement, share, sharing, shares, likes, tweets
 Requires at least: 3.5
-Tested up to: 4.4.2
-Stable tag: 1.6.6
+Tested up to: 4.5.3
+Stable tag: 1.6.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Changelog ==
+
+= 1.6.7 =
+* Updated the Facebook "Publicly Available Data" option to correctly retrieve shares over 999. Note that it is strongly recommended to configure the Facebook Graph API option as it is more accurate and reliable. 
 
 = 1.6.6 =
 * Fixed a bug where custom post types were not being listed on the settings page
@@ -251,6 +254,9 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 
 == Upgrade Notice ==
+
+= 1.6.7 =
+Fixed a bug with the Facebook Public data
 
 = 1.6.6 =
 Fixed a bug where custom post types were not being listed on the settings page
