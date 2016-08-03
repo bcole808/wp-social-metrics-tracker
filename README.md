@@ -10,7 +10,7 @@
 
 # Quick Start
 
-1. Download the [latest release](https://github.com/chapmanu/wp-social-metrics-tracker/releases/latest).
+1. Download the [latest release](https://github.com/bcole808/wp-social-metrics-tracker/releases/latest).
 2. Upload the folder `src` to your wp-plugins directory and rename it to `social-metrics-tracker`
 3. From your [Dashboard Screen](http://codex.wordpress.org/Dashboard_Screen), add and activate the plugin.
 

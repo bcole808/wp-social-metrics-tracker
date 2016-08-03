@@ -378,4 +378,4 @@ There are some WordPress action hooks which can be used to extend the functional
 **social_metrics_post_sync_complete** is called when an individual post is done being updated.
 
 **Contributing to the project**
-We have a Git repository for the project which you can access here: https://github.com/chapmanu/wp-social-metrics-tracker
+We have a Git repository for the project which you can access here: https://github.com/bcole808/wp-social-metrics-tracker
