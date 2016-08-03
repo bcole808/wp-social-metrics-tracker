@@ -110,6 +110,7 @@ This plugin was created by Ben Cole, as a member of the Chapman University web m
 
 = 1.6.7 =
 * Updated the Facebook "Publicly Available Data" option to correctly retrieve shares over 999. Note that it is strongly recommended to configure the Facebook Graph API option as it is more accurate and reliable. 
+* Fixed a bug with the progress bar when scheduling a full sync
 
 = 1.6.6 =
 * Fixed a bug where custom post types were not being listed on the settings page

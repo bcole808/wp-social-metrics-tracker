@@ -837,7 +837,7 @@ class MetricsUpdater {
 		* We really need a template engine here... the horror, the horror....
 		***************************************************/
 		if ($verbose) {
-			$percent = round(($offset + $q->post_count) / max(1, $q->found_posts * 100));
+			$percent = round(($offset + $q->post_count) / max(1, $q->found_posts) * 100);
 			print('<div style="width: 100%; border:1px solid #CCC; background:#EEE; border-radius: 6px; padding:20px; margin: 15px 0; box-sizing:border-box;">');
 			print('<h1 style="margin-top:0;">Scheduled '.($offset + $q->post_count).' out of '.$q->found_posts.' posts.</h1>');
 			print('<div style="width:100%; border:1px solid #CCC; background: #BDBFC2; border-radius: 10px; overflow: hidden;">');
