@@ -1,15 +1,22 @@
+require 'open-uri'
+
 namespace :seed do
 
   task :reddit => :requires_wpcli do
 
     # Get data from Reddit
-    reddit = JSON.parse(`curl -s -k https://www.reddit.com/rising.json`)
+    # use custom user agent because reddit throttles unique user agents
+    response = open('https://www.reddit.com/rising.json', 'User-Agent' => 'wp-social-metrics-tracker-development').read
+
+    json = JSON.parse(response)
+
+    puts "****************** SERVER ERROR: " << json['message'] if json['error'] == 429
 
     # Add each item as a WP Post
-    reddit['data']['children'].each do |item|
+    json['data']['children'].each do |item|
 
       post_title  = item['data']['title'].gsub("'", "") || 'No Title'
-      post_date   = Time.at(item['data']['created']).to_datetime.to_s
+      post_date   = Time.at(item['data']['created_utc']).to_datetime.to_s
       content_url = item['data']['url'].strip
 
       # Create a post
