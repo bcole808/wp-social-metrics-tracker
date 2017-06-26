@@ -90,7 +90,8 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 		return (
 			intval($engagement['reaction_count']) +
 			intval($engagement['comment_count']) +
-			intval($engagement['share_count'])
+			intval($engagement['share_count']) +
+			intval($engagement['comment_plugin_count'])
 		);
 	}
 
