@@ -12,7 +12,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 	public $enabled_by_default = true;
 
-	private $uri = 'https://graph.facebook.com/v2.3';
+	private $uri = 'https://graph.facebook.com/v2.9';
 
 	public function __construct($access_token=false) {
 		$this->updater = parent::__construct($this->slug, $this->name, $this->uri);
@@ -33,7 +33,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 	public function requestAccessToken($app_id, $app_secret) {
 		if (strlen($app_id) == 0 || strlen($app_secret) == 0) return false;
 
-		$oauth_uri = "https://graph.facebook.com/v2.3/oauth/access_token?client_id=$app_id&client_secret=$app_secret&grant_type=client_credentials";
+		$oauth_uri = "https://graph.facebook.com/v2.9/oauth/access_token?client_id=$app_id&client_secret=$app_secret&grant_type=client_credentials";
 
 		$response = wp_remote_get($oauth_uri);
 		if (is_wp_error($response)) return false;
@@ -56,7 +56,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 		$this->updater->resource_params = array(
 			'id' => $url,
-			'fields' => 'og_object{engagement}'
+			'fields' => 'engagement'
 		);
 
 		// Append the access token, if set
@@ -65,7 +65,7 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 		}
 
 		// Note: The final encoded URL should look a bit like this:
-		// https://graph.facebook.com/v2.3/?id=http://www.wordpress.org&fields=og_object{engagement}&access_token=TOKEN_HERE
+		// https://graph.facebook.com/v2.9/?id=http://www.wordpress.org&fields=engagement&access_token=TOKEN_HERE
 	}
 
 	public function parse() {
@@ -82,12 +82,17 @@ class FacebookGraphUpdater extends HTTPResourceUpdater {
 
 		// Validation
 		if (!is_array($this->updater->data)) return 0;
-		if (!isset($this->updater->data['og_object'])) return 0;
-		if (!isset($this->updater->data['og_object']['engagement'])) return 0;
-		if (!isset($this->updater->data['og_object']['engagement']['count'])) return 0;
+		if (!isset($this->updater->data['engagement'])) return 0;
+
+		$engagement = $this->updater->data['engagement'];
 
 		// Return count
-		return intval($this->updater->data['og_object']['engagement']['count']);
+		return (
+			intval($engagement['reaction_count']) +
+			intval($engagement['comment_count']) +
+			intval($engagement['share_count']) +
+			intval($engagement['comment_plugin_count'])
+		);
 	}
 
 }
