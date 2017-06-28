@@ -498,7 +498,10 @@ class MetricUpdaterTests extends WP_UnitTestCase {
 		$this->updater->checkThisPost($post_id);
 
 		$this->assertNotFalse(has_action('wp_footer', array($this->updater, 'updateCurrentPostNow')));
+
+		ob_start();
 		do_action('wp_footer');
+		ob_end_clean();
 
 		$this->assertEquals(
 			0,

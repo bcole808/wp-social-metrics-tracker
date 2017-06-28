@@ -786,9 +786,9 @@ class MetricsUpdater {
 			}
 
 			$total['count']++;
-			$total['socialscore'] += $socialcount_TOTAL;
-			$total['views'] += $ga_pageviews;
-			$total['comments'] += $post->comment_count;
+			$total['socialscore'] += intval($socialcount_TOTAL);
+			$total['views'] += intval($ga_pageviews);
+			$total['comments'] += intval($post->comment_count);
 
 		}
 
