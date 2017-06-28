@@ -1,10 +1,9 @@
 {
-   "og_object": {
-      "engagement": {
-         "count": 10850,
-         "social_sentence": "10,850 people like this."
-      },
-      "id": "10150383043501002"
-   },
-   "id": "http://www.wordpress.org"
+  "engagement":{
+    "reaction_count":13284,
+    "comment_count":18789,
+    "share_count":39679,
+    "comment_plugin_count":1
+  },
+  "id":"http:\/\/www.wordpress.org"
 }

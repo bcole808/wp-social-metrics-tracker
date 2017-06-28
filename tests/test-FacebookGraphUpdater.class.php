@@ -32,7 +32,7 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 	}
 
 	function assertMatchingMetaProperty() {
-		$this->assertEquals($this->updater->meta['socialcount_facebook'], 10850);
+		$this->assertEquals($this->updater->meta['socialcount_facebook'], 71753);
 		// $this->assertEquals($this->updater->meta['facebook_comments'], 331);
 		// $this->assertEquals($this->updater->meta['facebook_shares'], 7169);
 		// $this->assertEquals($this->updater->meta['facebook_likes'], 950);
@@ -157,7 +157,7 @@ class TestFacebookGraphUpdater extends WP_UnitTestCase {
 		$this->updater->sync($post_id, get_permalink($post_id));
 
 		// 1. It should return the total
-		$this->assertEquals($this->updater->get_total(), 10850);
+		$this->assertEquals($this->updater->get_total(), 71753);
 
 		// 2. If Facebook returns a null response, we should return zero
 		$result = $this->emptyResponseUpdater->sync($post_id, get_permalink($post_id));

@@ -1,11 +1,9 @@
-
 {
-   "og_object": {
-      "engagement": {
-         "count": 1019,
-         "social_sentence": "1,019 people like this."
-      },
-      "id": "10150167331681884"
+   "engagement": {
+      "reaction_count": 1019,
+      "comment_count": 0,
+      "share_count": 0,
+      "comment_plugin_count": 0
    },
    "id": "https://www.wikipedia.org"
 }
